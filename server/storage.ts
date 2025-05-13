@@ -2,6 +2,8 @@ import {
   users, type User, type InsertUser, 
   translationRequests, type TranslationRequest, type InsertTranslationRequest 
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -14,54 +16,47 @@ export interface IStorage {
   createTranslationRequest(request: InsertTranslationRequest): Promise<TranslationRequest>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private translationRequests: Map<number, TranslationRequest>;
-  private userCurrentId: number;
-  private translationRequestCurrentId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.translationRequests = new Map();
-    this.userCurrentId = 1;
-    this.translationRequestCurrentId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userCurrentId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   async getAllTranslationRequests(): Promise<TranslationRequest[]> {
-    return Array.from(this.translationRequests.values());
+    return await db.select().from(translationRequests);
   }
 
   async getTranslationRequest(id: number): Promise<TranslationRequest | undefined> {
-    return this.translationRequests.get(id);
+    const [request] = await db
+      .select()
+      .from(translationRequests)
+      .where(eq(translationRequests.id, id));
+    return request || undefined;
   }
 
   async createTranslationRequest(insertTranslationRequest: InsertTranslationRequest): Promise<TranslationRequest> {
-    const id = this.translationRequestCurrentId++;
-    const translationRequest: TranslationRequest = { 
-      ...insertTranslationRequest, 
-      id, 
-      status: "pending" 
-    };
-    this.translationRequests.set(id, translationRequest);
+    const [translationRequest] = await db
+      .insert(translationRequests)
+      .values({
+        ...insertTranslationRequest,
+        status: "pending"
+      })
+      .returning();
     return translationRequest;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
