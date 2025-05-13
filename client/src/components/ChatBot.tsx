@@ -165,7 +165,7 @@ const ChatBot = () => {
             className={`flex items-start space-x-2 ${message.type === 'user' ? 'justify-end' : ''}`}
           >
             {message.type === 'bot' && (
-              <div className="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0">
+              <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
                 <FileText className="h-5 w-5" />
               </div>
             )}
@@ -173,8 +173,8 @@ const ChatBot = () => {
             <div 
               className={`rounded-lg p-3 max-w-[85%] ${
                 message.type === 'user' 
-                  ? 'bg-primary text-white' 
-                  : 'bg-slate-100 text-slate-800'
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-muted text-muted-foreground'
               }`}
             >
               <p className="text-sm whitespace-pre-line">{message.text}</p>
@@ -185,7 +185,7 @@ const ChatBot = () => {
                     <Button
                       key={option.value}
                       variant="outline"
-                      className="justify-start h-auto py-2 px-3 text-left hover:bg-blue-50 hover:border-blue-200"
+                      className="justify-start h-auto py-2 px-3 text-left hover:bg-accent dark:hover:bg-accent"
                       onClick={() => handleOptionClick(option.action)}
                     >
                       {option.label}
@@ -196,7 +196,7 @@ const ChatBot = () => {
             </div>
             
             {message.type === 'user' && (
-              <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0 text-slate-600">
+              <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 text-muted-foreground">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                 </svg>
@@ -206,16 +206,16 @@ const ChatBot = () => {
         ))}
       </div>
       
-      <form onSubmit={handleSubmit} className="p-3 border-t border-slate-200">
+      <form onSubmit={handleSubmit} className="p-3 border-t border-border">
         <div className="flex items-center space-x-2">
           <Input
             type="text"
             placeholder="Type your message..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            className="flex-1 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary"
+            className="flex-1 border border-input rounded-lg text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary bg-background text-foreground"
           />
-          <Button type="submit" size="icon" className="bg-primary rounded-lg text-white hover:bg-primary/90">
+          <Button type="submit" size="icon" className="bg-primary rounded-lg text-primary-foreground hover:bg-primary/90">
             <Send className="h-5 w-5" />
           </Button>
         </div>

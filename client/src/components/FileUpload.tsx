@@ -91,28 +91,28 @@ const FileUpload = () => {
   });
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <h2 className="text-lg font-semibold text-slate-800 mb-2">Upload Your File</h2>
-      <p className="text-sm text-slate-600 mb-4">Drag and drop your file or click to browse</p>
+    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+      <h2 className="text-lg font-semibold text-card-foreground mb-2">Upload Your File</h2>
+      <p className="text-sm text-muted-foreground mb-4">Drag and drop your file or click to browse</p>
       
       <div 
         {...getRootProps()} 
         className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
           isDragActive 
-            ? 'border-primary bg-blue-50' 
-            : 'border-slate-300 hover:border-primary hover:bg-slate-50'
+            ? 'border-primary bg-primary/10 dark:bg-primary/20' 
+            : 'border-muted hover:border-primary hover:bg-muted/50'
         }`}
       >
         <input {...getInputProps()} />
         {isDragActive ? (
           <Cloud className="h-12 w-12 mx-auto text-primary" />
         ) : (
-          <FileText className="h-12 w-12 mx-auto text-slate-400" />
+          <FileText className="h-12 w-12 mx-auto text-muted-foreground" />
         )}
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-muted-foreground">
           Drag your file here, or <span className="text-primary font-medium">browse</span>
         </p>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-muted-foreground/70">
           Supported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML
         </p>
       </div>
@@ -120,7 +120,7 @@ const FileUpload = () => {
       {isUploading && (
         <div className="mt-4">
           <div className="flex justify-between text-sm mb-1">
-            <span className="font-medium text-slate-700">{fileName}</span>
+            <span className="font-medium text-card-foreground">{fileName}</span>
             <span className="text-primary">{Math.round(uploadProgress)}%</span>
           </div>
           <Progress value={uploadProgress} className="h-2" />

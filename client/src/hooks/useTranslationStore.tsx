@@ -23,7 +23,7 @@ interface TranslationStore {
   setShowFileAnalysis: (show: boolean) => void;
   setShowApiDocs: (show: boolean) => void;
   setFileAnalysis: (analysis: FileAnalysis) => void;
-  setSelectedLanguages: (languages: string[]) => void;
+  setSelectedLanguages: (languages: string[] | ((prev: string[]) => string[])) => void;
   setCalculationSummary: (summary: CalculationSummary | null) => void;
   reset: () => void;
 }

@@ -106,38 +106,38 @@ const FileAnalysis = () => {
 
   const handleLanguageChange = (language: string, checked: boolean) => {
     if (checked) {
-      setSelectedLanguages(prev => [...prev, language]);
+      setSelectedLanguages((prev: string[]) => [...prev, language]);
     } else {
-      setSelectedLanguages(prev => prev.filter(lang => lang !== language));
+      setSelectedLanguages((prev: string[]) => prev.filter((lang: string) => lang !== language));
     }
   };
 
   if (!fileAnalysis) return null;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-slate-800">File Analysis</h2>
-        <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">
+        <h2 className="text-lg font-semibold text-card-foreground">File Analysis</h2>
+        <Badge variant="outline" className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30">
           Analysis Complete
         </Badge>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="bg-slate-50 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-slate-700 mb-3">File Information</h3>
+        <div className="bg-muted rounded-lg p-4">
+          <h3 className="text-sm font-medium text-muted-foreground mb-3">File Information</h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-slate-600">File Name:</span>
-              <span className="font-medium text-slate-800">{fileAnalysis.fileName}</span>
+              <span className="text-muted-foreground">File Name:</span>
+              <span className="font-medium text-card-foreground">{fileAnalysis.fileName}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">File Format:</span>
-              <span className="font-medium text-slate-800">{fileAnalysis.fileFormat}</span>
+              <span className="text-muted-foreground">File Format:</span>
+              <span className="font-medium text-card-foreground">{fileAnalysis.fileFormat}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">File Size:</span>
-              <span className="font-medium text-slate-800">
+              <span className="text-muted-foreground">File Size:</span>
+              <span className="font-medium text-card-foreground">
                 {fileAnalysis.fileSize < 1024 
                   ? `${fileAnalysis.fileSize} B` 
                   : fileAnalysis.fileSize < 1024 * 1024 
@@ -147,42 +147,42 @@ const FileAnalysis = () => {
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">Subject Matter:</span>
-              <span className="font-medium text-slate-800">{fileAnalysis.subjectMatter}</span>
+              <span className="text-muted-foreground">Subject Matter:</span>
+              <span className="font-medium text-card-foreground">{fileAnalysis.subjectMatter}</span>
             </div>
           </div>
         </div>
         
-        <div className="bg-slate-50 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-slate-700 mb-3">Content Analysis</h3>
+        <div className="bg-muted rounded-lg p-4">
+          <h3 className="text-sm font-medium text-muted-foreground mb-3">Content Analysis</h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-slate-600">Word Count:</span>
-              <span className="font-medium text-slate-800">{fileAnalysis.wordCount.toLocaleString()} words</span>
+              <span className="text-muted-foreground">Word Count:</span>
+              <span className="font-medium text-card-foreground">{fileAnalysis.wordCount.toLocaleString()} words</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">Character Count:</span>
-              <span className="font-medium text-slate-800">{fileAnalysis.charCount.toLocaleString()} chars</span>
+              <span className="text-muted-foreground">Character Count:</span>
+              <span className="font-medium text-card-foreground">{fileAnalysis.charCount.toLocaleString()} chars</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">Images with Text:</span>
-              <span className="font-medium text-slate-800">{fileAnalysis.imagesWithText} detected</span>
+              <span className="text-muted-foreground">Images with Text:</span>
+              <span className="font-medium text-card-foreground">{fileAnalysis.imagesWithText} detected</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-600">Source Language:</span>
-              <span className="font-medium text-slate-800">{fileAnalysis.sourceLanguage}</span>
+              <span className="text-muted-foreground">Source Language:</span>
+              <span className="font-medium text-card-foreground">{fileAnalysis.sourceLanguage}</span>
             </div>
           </div>
         </div>
       </div>
       
       <div>
-        <h3 className="text-sm font-medium text-slate-700 mb-3">Select Target Languages</h3>
+        <h3 className="text-sm font-medium text-card-foreground mb-3">Select Target Languages</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
           {languages.map((language) => (
             <label 
               key={language.value}
-              className="flex items-center space-x-2 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer"
+              className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:bg-muted/70 cursor-pointer"
             >
               <Checkbox 
                 id={`lang-${language.value}`} 
@@ -191,30 +191,30 @@ const FileAnalysis = () => {
                   handleLanguageChange(language.value, checked as boolean)
                 }
               />
-              <span className="text-sm">{language.label}</span>
+              <span className="text-sm text-muted-foreground">{language.label}</span>
             </label>
           ))}
         </div>
         
         {calculationSummary && (
-          <div className="mt-4 bg-slate-50 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-slate-700 mb-2">Translation Summary</h3>
+          <div className="mt-4 bg-muted rounded-lg p-4">
+            <h3 className="text-sm font-medium text-card-foreground mb-2">Translation Summary</h3>
             <div className="space-y-2 text-sm mb-3">
               <div className="flex justify-between">
-                <span className="text-slate-600">Selected Languages:</span>
-                <span className="font-medium text-slate-800">{selectedLanguages.join(", ")}</span>
+                <span className="text-muted-foreground">Selected Languages:</span>
+                <span className="font-medium text-card-foreground">{selectedLanguages.join(", ")}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Total Characters:</span>
-                <span className="font-medium text-slate-800">{calculationSummary.totalChars.toLocaleString()}</span>
+                <span className="text-muted-foreground">Total Characters:</span>
+                <span className="font-medium text-card-foreground">{calculationSummary.totalChars.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Credits Required:</span>
-                <span className="font-medium text-slate-800">{calculationSummary.creditsRequired.toLocaleString()}</span>
+                <span className="text-muted-foreground">Credits Required:</span>
+                <span className="font-medium text-card-foreground">{calculationSummary.creditsRequired.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Total Cost:</span>
-                <span className="font-medium text-slate-800">{calculationSummary.totalCost}</span>
+                <span className="text-muted-foreground">Total Cost:</span>
+                <span className="font-medium text-card-foreground">{calculationSummary.totalCost}</span>
               </div>
             </div>
             <Button 
