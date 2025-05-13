@@ -24,6 +24,13 @@ const Home = () => {
       <Header />
       
       <main className="container mx-auto px-4 py-6 flex-1">
+        <div className="mb-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500 dark:from-primary dark:to-blue-300 mb-2">Professional Translation Service</h2>
+          <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
+            Our powerful AI-driven translation platform helps you translate documents in multiple languages with precision and speed.
+          </p>
+        </div>
+        
         <div className="flex flex-col md:flex-row gap-6">
           {/* Chat Panel */}
           <div className="md:w-1/3">
