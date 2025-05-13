@@ -54,14 +54,21 @@ const FileAnalysis = () => {
     });
   };
 
-  // Recalculate when selected languages change
-  useEffect(() => {
+  // We'll now calculate only when the user clicks the Complete Selection button
+  const [showCalculation, setShowCalculation] = useState(false);
+  
+  const handleCompleteSelection = () => {
     if (selectedLanguages.length > 0 && fileAnalysis) {
       calculateTranslation();
+      setShowCalculation(true);
     } else {
-      setCalculationSummary(null);
+      toast({
+        title: "Selection required",
+        description: "Please select at least one target language.",
+        variant: "destructive",
+      });
     }
-  }, [selectedLanguages, fileAnalysis]);
+  };
 
   const submitMutation = useMutation({
     mutationFn: async () => {
@@ -196,36 +203,54 @@ const FileAnalysis = () => {
           ))}
         </div>
         
-        {calculationSummary && (
-          <div className="mt-4 bg-muted rounded-lg p-4">
-            <h3 className="text-sm font-medium text-card-foreground mb-2">Translation Summary</h3>
-            <div className="space-y-2 text-sm mb-3">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Selected Languages:</span>
-                <span className="font-medium text-card-foreground">{selectedLanguages.join(", ")}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Characters:</span>
-                <span className="font-medium text-card-foreground">{calculationSummary.totalChars.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Credits Required:</span>
-                <span className="font-medium text-card-foreground">{calculationSummary.creditsRequired.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Cost:</span>
-                <span className="font-medium text-card-foreground">{calculationSummary.totalCost}</span>
-              </div>
-            </div>
+        <div className="mt-4">
+          {!showCalculation ? (
             <Button 
               className="w-full py-2" 
-              onClick={handleSubmit}
-              disabled={submitMutation.isPending}
+              onClick={handleCompleteSelection}
             >
-              {submitMutation.isPending ? "Submitting..." : "Submit Translation Request"}
+              Complete Language Selection
             </Button>
-          </div>
-        )}
+          ) : calculationSummary && (
+            <div className="bg-muted rounded-lg p-4">
+              <h3 className="text-sm font-medium text-card-foreground mb-2">Translation Summary</h3>
+              <div className="space-y-2 text-sm mb-3">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Selected Languages:</span>
+                  <span className="font-medium text-card-foreground">{selectedLanguages.join(", ")}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total Characters:</span>
+                  <span className="font-medium text-card-foreground">{calculationSummary.totalChars.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Credits Required:</span>
+                  <span className="font-medium text-card-foreground">{calculationSummary.creditsRequired.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Total Cost:</span>
+                  <span className="font-medium text-card-foreground">{calculationSummary.totalCost}</span>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline"
+                  className="flex-1 py-2" 
+                  onClick={() => setShowCalculation(false)}
+                >
+                  Edit Selection
+                </Button>
+                <Button 
+                  className="flex-1 py-2" 
+                  onClick={handleSubmit}
+                  disabled={submitMutation.isPending}
+                >
+                  {submitMutation.isPending ? "Submitting..." : "Submit Request"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

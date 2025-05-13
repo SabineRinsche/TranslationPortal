@@ -88,24 +88,27 @@ const ChatBot = () => {
         `Images with Text: ${fileAnalysis.imagesWithText} detected\n` +
         `Source Language: ${fileAnalysis.sourceLanguage}\n` +
         `Subject Matter: ${fileAnalysis.subjectMatter}\n\n` +
-        `Please select your target languages in the panel.`
+        `Please select your target languages in the panel, then click "Complete Language Selection" to view your translation summary.`
       );
     }
   }, [fileAnalysis, showFileAnalysis]);
 
-  // Add calculation summary message when languages are selected
-  useEffect(() => {
-    if (calculationSummary && selectedLanguages.length > 0) {
+  // Add calculation message when the user clicks the "Complete Language Selection" button
+  // Instead of doing this on calculationSummary change, 
+  // we'll have FileAnalysis.tsx call this function directly when needed
+  
+  const addCalculationMessage = () => {
+    if (calculationSummary && selectedLanguages.length > 0 && fileAnalysis) {
       addMessage("bot", 
         `Based on your selections, here's the translation summary:\n\n` +
         `Target Languages: ${selectedLanguages.join(", ")}\n` +
-        `Characters per Language: ${fileAnalysis?.charCount.toLocaleString()}\n` +
+        `Characters per Language: ${fileAnalysis.charCount.toLocaleString()}\n` +
         `Total Characters: ${calculationSummary.totalChars.toLocaleString()}\n` +
         `Credits Required: ${calculationSummary.creditsRequired.toLocaleString()} (1 credit per character)\n` +
         `Total Cost: ${calculationSummary.totalCost}\n`
       );
     }
-  }, [calculationSummary, selectedLanguages]);
+  };
 
   // Add API docs message when API is selected
   useEffect(() => {
