@@ -186,7 +186,7 @@ const FileAnalysis = () => {
             >
               <Checkbox 
                 id={`lang-${language.value}`} 
-                checked={selectedLanguages.includes(language.value)}
+                checked={Array.isArray(selectedLanguages) && selectedLanguages.includes(language.value)}
                 onCheckedChange={(checked) => 
                   handleLanguageChange(language.value, checked as boolean)
                 }

@@ -149,10 +149,10 @@ const ChatBot = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[calc(100vh-5rem)]">
-      <div className="p-4 border-b border-slate-200 bg-slate-50">
-        <h2 className="text-lg font-semibold text-slate-800">Translation Assistant</h2>
-        <p className="text-sm text-slate-600">I'll guide you through your translation request</p>
+    <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden flex flex-col h-[calc(100vh-5rem)]">
+      <div className="p-4 border-b border-border bg-muted">
+        <h2 className="text-lg font-semibold text-foreground">Translation Assistant</h2>
+        <p className="text-sm text-muted-foreground">I'll guide you through your translation request</p>
       </div>
       
       <div 
