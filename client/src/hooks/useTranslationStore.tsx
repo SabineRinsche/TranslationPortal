@@ -44,7 +44,11 @@ export const useTranslationStore = create<TranslationStore>((set) => ({
   setShowFileAnalysis: (show) => set({ showFileAnalysis: show }),
   setShowApiDocs: (show) => set({ showApiDocs: show }),
   setFileAnalysis: (analysis) => set({ fileAnalysis: analysis }),
-  setSelectedLanguages: (languages) => set({ selectedLanguages: languages }),
+  setSelectedLanguages: (languages) => set((state) => ({ 
+    selectedLanguages: typeof languages === 'function' 
+      ? languages(state.selectedLanguages) 
+      : languages 
+  })),
   setCalculationSummary: (summary) => set({ calculationSummary: summary }),
   reset: () => set({
     showFileUpload: false,

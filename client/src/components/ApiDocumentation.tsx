@@ -14,12 +14,12 @@ const ApiDocumentation = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <h2 className="text-lg font-semibold text-slate-800 mb-4">API Documentation</h2>
+    <div className="bg-card rounded-xl shadow-sm border border-border p-6">
+      <h2 className="text-lg font-semibold text-card-foreground mb-4">API Documentation</h2>
       
-      <div className="bg-slate-50 rounded-lg p-4 mb-6">
-        <h3 className="text-sm font-medium text-slate-700 mb-2">API Overview</h3>
-        <p className="text-sm text-slate-600">
+      <div className="bg-muted rounded-lg p-4 mb-6">
+        <h3 className="text-sm font-medium text-card-foreground mb-2">API Overview</h3>
+        <p className="text-sm text-muted-foreground">
           Use our REST API to submit translation requests programmatically. 
           Our API supports JSON and multipart/form-data for file uploads.
         </p>
@@ -28,7 +28,7 @@ const ApiDocumentation = () => {
       <div className="space-y-6">
         <div>
           <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-medium text-slate-700">Authentication</h3>
+            <h3 className="text-sm font-medium text-card-foreground">Authentication</h3>
             <Button 
               variant="ghost" 
               size="sm" 
@@ -39,7 +39,7 @@ const ApiDocumentation = () => {
               <span className="text-xs">Copy</span>
             </Button>
           </div>
-          <div className="bg-slate-800 text-slate-200 rounded-lg p-4 text-sm font-mono overflow-x-auto">
+          <div className="bg-slate-900 dark:bg-black/90 text-slate-200 rounded-lg p-4 text-sm font-mono overflow-x-auto">
             <p>// API requests require an API key in the header</p>
             <p>Authorization: Bearer YOUR_API_KEY</p>
           </div>
@@ -47,7 +47,7 @@ const ApiDocumentation = () => {
         
         <div>
           <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-medium text-slate-700">Submit a Translation Request</h3>
+            <h3 className="text-sm font-medium text-card-foreground">Submit a Translation Request</h3>
             <Button 
               variant="ghost" 
               size="sm" 
@@ -63,7 +63,7 @@ const ApiDocumentation = () => {
               <span className="text-xs">Copy</span>
             </Button>
           </div>
-          <div className="bg-slate-800 text-slate-200 rounded-lg p-4 text-sm font-mono overflow-x-auto">
+          <div className="bg-slate-900 dark:bg-black/90 text-slate-200 rounded-lg p-4 text-sm font-mono overflow-x-auto">
             <p>POST /api/v1/translation</p>
             <p>{`{`}</p>
             <p className="ml-4">"source_language": "en",</p>
@@ -75,7 +75,7 @@ const ApiDocumentation = () => {
         
         <div>
           <div className="flex justify-between items-center mb-2">
-            <h3 className="text-sm font-medium text-slate-700">Upload a File</h3>
+            <h3 className="text-sm font-medium text-card-foreground">Upload a File</h3>
             <Button 
               variant="ghost" 
               size="sm" 
@@ -88,7 +88,7 @@ file=@/path/to/your/file.pdf`)}
               <span className="text-xs">Copy</span>
             </Button>
           </div>
-          <div className="bg-slate-800 text-slate-200 rounded-lg p-4 text-sm font-mono overflow-x-auto">
+          <div className="bg-slate-900 dark:bg-black/90 text-slate-200 rounded-lg p-4 text-sm font-mono overflow-x-auto">
             <p>POST /api/v1/files</p>
             <p>Content-Type: multipart/form-data</p>
             <p>file=@/path/to/your/file.pdf</p>
@@ -97,10 +97,10 @@ file=@/path/to/your/file.pdf`)}
       </div>
       
       <div className="mt-6 flex flex-wrap gap-3">
-        <Button>
+        <Button className="dark:bg-primary/90 dark:hover:bg-primary">
           Request API Key
         </Button>
-        <Button variant="outline">
+        <Button variant="outline" className="border-border hover:bg-muted">
           View Full Documentation
         </Button>
       </div>
