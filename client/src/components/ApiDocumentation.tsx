@@ -15,7 +15,7 @@ const ApiDocumentation = () => {
 
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-      <h2 className="text-lg font-semibold text-card-foreground mb-4">Alpha AI Translation API</h2>
+      <h2 className="text-lg font-semibold text-card-foreground mb-4">Alpha's AI Translation API</h2>
       
       <div className="bg-muted rounded-lg p-4 mb-6">
         <h3 className="text-sm font-medium text-card-foreground mb-2">API Overview</h3>

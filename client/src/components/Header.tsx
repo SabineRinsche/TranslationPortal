@@ -29,7 +29,7 @@ const Header = () => {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M7 2a1 1 0 011 1v1h3a1 1 0 110 2H9.5v1.5h2a1 1 0 110 2h-2V11H10a1 1 0 110 2h1.5v1.5h-2a1 1 0 110 2H12v1a1 1 0 11-2 0v-1H7a1 1 0 110-2h3v-1.5H8a1 1 0 110-2h2V9.5H7a1 1 0 010-2h3V6H7a1 1 0 010-2h2V3a1 1 0 011-1z" clipRule="evenodd" />
             </svg>
-            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500 dark:from-primary dark:to-blue-300">Alpha AI</h1>
+            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500 dark:from-primary dark:to-blue-300">Alpha's AI</h1>
           </div>
         </Link>
         <div className="flex items-center space-x-4">
