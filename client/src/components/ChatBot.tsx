@@ -37,7 +37,7 @@ const ChatBot = () => {
       {
         id: "welcome",
         type: "bot",
-        text: "Welcome to TranslateNow! I'm here to help you with your translation request. How would you like to proceed?",
+        text: "Welcome to Alpha's AI Translation Service! I'm here to help you with your translation request. How would you like to proceed?",
         options: [
           { 
             value: "upload", 
@@ -151,8 +151,8 @@ const ChatBot = () => {
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden flex flex-col h-[calc(100vh-5rem)]">
       <div className="p-4 border-b border-border bg-muted">
-        <h2 className="text-lg font-semibold text-foreground">Translation Assistant</h2>
-        <p className="text-sm text-muted-foreground">I'll guide you through your translation request</p>
+        <h2 className="text-lg font-semibold text-foreground">Alpha AI Assistant</h2>
+        <p className="text-sm text-muted-foreground">I'll guide you through your translation request and help optimize your workflow</p>
       </div>
       
       <div 

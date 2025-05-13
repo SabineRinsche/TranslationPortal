@@ -25,9 +25,9 @@ const Home = () => {
       
       <main className="container mx-auto px-4 py-6 flex-1">
         <div className="mb-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500 dark:from-primary dark:to-blue-300 mb-2">Professional Translation Service</h2>
+          <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500 dark:from-primary dark:to-blue-300 mb-2">Alpha's AI Client Translation Service</h2>
           <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
-            Our powerful AI-driven translation platform helps you translate documents in multiple languages with precision and speed.
+            Our powerful AI-driven translation platform translates documents into multiple languages with precision and speed. We can advise you on the best workflows to use and how to leverage your existing translation assets.
           </p>
         </div>
         

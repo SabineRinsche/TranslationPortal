@@ -92,8 +92,8 @@ const FileUpload = () => {
 
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-      <h2 className="text-lg font-semibold text-card-foreground mb-2">Upload Your File</h2>
-      <p className="text-sm text-muted-foreground mb-4">Drag and drop your file or click to browse</p>
+      <h2 className="text-lg font-semibold text-card-foreground mb-2">Upload Your Document</h2>
+      <p className="text-sm text-muted-foreground mb-4">Drag and drop your file or click to browse. We support multiple formats and can analyze text in images.</p>
       
       <div 
         {...getRootProps()} 
