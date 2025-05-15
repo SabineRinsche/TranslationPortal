@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslationStore } from "@/hooks/useTranslationStore";
 import { Send, Upload, FileText } from "lucide-react";
+import { ChatContext } from "@/contexts/ChatContext";
 
 interface Message {
   id: string;
@@ -152,78 +153,80 @@ const ChatBot = () => {
   };
 
   return (
-    <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden flex flex-col h-[calc(100vh-5rem)]">
-      <div className="p-4 border-b border-border bg-muted">
-        <h2 className="text-lg font-semibold text-foreground">Alpha's AI Assistant</h2>
-        <p className="text-sm text-muted-foreground">I'll guide you through your translation request and help optimize your workflow</p>
-      </div>
-      
-      <div 
-        className="flex-1 overflow-y-auto p-4 space-y-4" 
-        ref={chatMessagesRef}
-      >
-        {messages.map(message => (
-          <div 
-            key={message.id} 
-            className={`flex items-start space-x-2 ${message.type === 'user' ? 'justify-end' : ''}`}
-          >
-            {message.type === 'bot' && (
-              <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
-                <FileText className="h-5 w-5" />
-              </div>
-            )}
-            
+    <ChatContext.Provider value={{ addCalculationMessage }}>
+      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden flex flex-col h-[calc(100vh-5rem)]">
+        <div className="p-4 border-b border-border bg-muted">
+          <h2 className="text-lg font-semibold text-foreground">Alpha's AI Assistant</h2>
+          <p className="text-sm text-muted-foreground">I'll guide you through your translation request and help optimize your workflow</p>
+        </div>
+        
+        <div 
+          className="flex-1 overflow-y-auto p-4 space-y-4" 
+          ref={chatMessagesRef}
+        >
+          {messages.map(message => (
             <div 
-              className={`rounded-lg p-3 max-w-[85%] ${
-                message.type === 'user' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-muted text-muted-foreground'
-              }`}
+              key={message.id} 
+              className={`flex items-start space-x-2 ${message.type === 'user' ? 'justify-end' : ''}`}
             >
-              <p className="text-sm whitespace-pre-line">{message.text}</p>
+              {message.type === 'bot' && (
+                <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
+                  <FileText className="h-5 w-5" />
+                </div>
+              )}
               
-              {message.options && message.options.length > 0 && (
-                <div className="mt-3 flex flex-col space-y-2">
-                  {message.options.map(option => (
-                    <Button
-                      key={option.value}
-                      variant="outline"
-                      className="justify-start h-auto py-2 px-3 text-left hover:bg-accent dark:hover:bg-accent"
-                      onClick={() => handleOptionClick(option.action)}
-                    >
-                      {option.label}
-                    </Button>
-                  ))}
+              <div 
+                className={`rounded-lg p-3 max-w-[85%] ${
+                  message.type === 'user' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                <p className="text-sm whitespace-pre-line">{message.text}</p>
+                
+                {message.options && message.options.length > 0 && (
+                  <div className="mt-3 flex flex-col space-y-2">
+                    {message.options.map(option => (
+                      <Button
+                        key={option.value}
+                        variant="outline"
+                        className="justify-start h-auto py-2 px-3 text-left hover:bg-accent dark:hover:bg-accent"
+                        onClick={() => handleOptionClick(option.action)}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {message.type === 'user' && (
+                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 text-muted-foreground">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
                 </div>
               )}
             </div>
-            
-            {message.type === 'user' && (
-              <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 text-muted-foreground">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                </svg>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-      
-      <form onSubmit={handleSubmit} className="p-3 border-t border-border">
-        <div className="flex items-center space-x-2">
-          <Input
-            type="text"
-            placeholder="Type your message..."
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            className="flex-1 border border-input rounded-lg text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary bg-background text-foreground"
-          />
-          <Button type="submit" size="icon" className="bg-primary rounded-lg text-primary-foreground hover:bg-primary/90">
-            <Send className="h-5 w-5" />
-          </Button>
+          ))}
         </div>
-      </form>
-    </div>
+        
+        <form onSubmit={handleSubmit} className="p-3 border-t border-border">
+          <div className="flex items-center space-x-2">
+            <Input
+              type="text"
+              placeholder="Type your message..."
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              className="flex-1 border border-input rounded-lg text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary bg-background text-foreground"
+            />
+            <Button type="submit" size="icon" className="bg-primary rounded-lg text-primary-foreground hover:bg-primary/90">
+              <Send className="h-5 w-5" />
+            </Button>
+          </div>
+        </form>
+      </div>
+    </ChatContext.Provider>
   );
 };
 

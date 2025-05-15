@@ -8,6 +8,7 @@ import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { InsertTranslationRequest } from '@shared/schema';
+import { useChatContext } from '@/contexts/ChatContext';
 
 interface LanguageOption {
   value: string;
@@ -38,6 +39,7 @@ const FileAnalysis = () => {
     setCalculationSummary
   } = useTranslationStore();
   const { toast } = useToast();
+  const { addCalculationMessage } = useChatContext();
 
   const calculateTranslation = () => {
     if (!fileAnalysis) return;
@@ -61,6 +63,11 @@ const FileAnalysis = () => {
     if (selectedLanguages.length > 0 && fileAnalysis) {
       calculateTranslation();
       setShowCalculation(true);
+      
+      // Add a small delay to ensure the calculation summary is ready
+      setTimeout(() => {
+        addCalculationMessage();
+      }, 300);
     } else {
       toast({
         title: "Selection required",
