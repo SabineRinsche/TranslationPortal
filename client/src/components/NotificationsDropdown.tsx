@@ -32,13 +32,17 @@ export function NotificationsDropdown() {
     }
   };
 
-  // Handle notification click - mark as read and navigate if it has a job ID
+  // Handle notification click - mark as read and navigate to jobs list with selected job
   const handleNotificationClick = (notification: any) => {
     markAsRead(notification.id);
     
     if (notification.jobId) {
+      // Close dropdown
       setOpen(false);
-      setLocation(`/job/${notification.jobId}`);
+      
+      // Navigate to jobs list and store jobId in sessionStorage to open the details dialog
+      sessionStorage.setItem('openJobDetails', notification.jobId.toString());
+      setLocation('/');
     }
   };
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,6 +43,27 @@ export default function JobsList() {
     queryKey: ['/api/translation-requests'],
     staleTime: 30000, // 30 seconds
   });
+  
+  // Check if we should open a job details dialog from notification
+  useEffect(() => {
+    if (!jobs) return; // Skip if jobs aren't loaded yet
+    
+    const jobIdToOpen = sessionStorage.getItem('openJobDetails');
+    if (jobIdToOpen) {
+      // Clear the session storage item to prevent reopening on refresh
+      sessionStorage.removeItem('openJobDetails');
+      
+      // Find the job with the specified ID and open its details dialog
+      const jobId = parseInt(jobIdToOpen, 10);
+      if (!isNaN(jobId)) {
+        const jobToOpen = jobs.find(job => job.id === jobId);
+        if (jobToOpen) {
+          setSelectedJob(jobToOpen);
+          setIsDetailsOpen(true);
+        }
+      }
+    }
+  }, [jobs]);
   
   // Filter and sort jobs
   const filteredJobs = jobs?.filter(job => {
