@@ -1,18 +1,18 @@
 import { useState } from "react";
-import { useLocation, useRoute } from "wouter";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { login, isLoading } = useAuth();
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -26,36 +26,23 @@ export default function Login() {
       });
       return;
     }
-
-    setLoading(true);
     
     try {
-      const response = await apiRequest("POST", "/api/login", { username, password });
-      const data = await response.json();
+      // Use the auth context login function instead of direct API call
+      const success = await login(username, password);
       
-      if (response.ok) {
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
-        
+      if (success) {
         // Redirect to home page after successful login
         setLocation("/");
-      } else {
-        toast({
-          title: "Login failed",
-          description: data.message || "Invalid username or password",
-          variant: "destructive"
-        });
       }
+      // Toast notifications are handled by the auth context
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Login failed",
-        description: "An error occurred. Please try again.",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -94,8 +81,8 @@ export default function Login() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Signing in...
@@ -107,8 +94,20 @@ export default function Login() {
             </form>
           </CardContent>
           <CardFooter className="flex flex-col space-y-2">
-            <div className="text-center text-sm text-muted-foreground mt-2">
-              Contact your account manager if you're having trouble signing in.
+            <div className="text-center text-sm mt-2">
+              <p className="text-primary font-semibold mb-2">Demo Credentials:</p>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="border p-2 rounded-md">
+                  <p className="font-bold">Admin User</p>
+                  <p>Username: <span className="font-mono bg-muted px-1">admin</span></p>
+                  <p>Password: <span className="font-mono bg-muted px-1">admin123</span></p>
+                </div>
+                <div className="border p-2 rounded-md">
+                  <p className="font-bold">Client User</p>
+                  <p>Username: <span className="font-mono bg-muted px-1">client</span></p>
+                  <p>Password: <span className="font-mono bg-muted px-1">client123</span></p>
+                </div>
+              </div>
             </div>
           </CardFooter>
         </Card>
