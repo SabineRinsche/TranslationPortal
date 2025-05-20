@@ -42,13 +42,6 @@ const Header = () => {
             </Button>
           </Link>
           
-          <Link href="/profile">
-            <Button variant="ghost" size="sm" className="gap-2">
-              <User className="h-4 w-4" />
-              <span className="hidden md:inline">Profile</span>
-            </Button>
-          </Link>
-          
           <ThemeToggle />
           
           <TooltipProvider>
