@@ -146,7 +146,7 @@ const FileAnalysis = () => {
   const calculateTranslation = () => {
     if (!fileAnalysis || !selectedWorkflow) return;
     
-    const charsPerLanguage = fileAnalysis.charCount;
+    const charsPerLanguage = fileAnalysis.characterCount;
     const totalChars = charsPerLanguage * selectedLanguages.length;
     
     // Apply credit requirements based on workflow type
@@ -214,7 +214,7 @@ const FileAnalysis = () => {
         fileFormat: fileAnalysis.fileFormat,
         fileSize: fileAnalysis.fileSize,
         wordCount: fileAnalysis.wordCount,
-        charCount: fileAnalysis.charCount,
+        characterCount: fileAnalysis.characterCount,
         imagesWithText: fileAnalysis.imagesWithText,
         subjectMatter: fileAnalysis.subjectMatter,
         sourceLanguage: fileAnalysis.sourceLanguage,
