@@ -760,7 +760,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileFormat: fileExtension.toUpperCase(),
         fileSize: req.file.size,
         wordCount: Math.floor(req.file.size / 10), // Simplified estimate
-        charCount: Math.floor(req.file.size / 2), // Simplified estimate
+        characterCount: Math.floor(req.file.size / 2), // Simplified estimate - renamed to match frontend expectations
         imagesWithText: Math.floor(Math.random() * 3), // Simplified detection
         subjectMatter: detectedSubjectMatter,
         sourceLanguage: detectedLanguage,
