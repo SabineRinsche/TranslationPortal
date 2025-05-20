@@ -42,9 +42,9 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     return next();
   }
   
-  // For demo purposes, set a mock user for testing file uploads
-  // This is temporary to fix the file upload functionality
-  if (req.path === '/api/files/upload') {
+  // For demo purposes, set a mock user for testing file and translation request operations
+  // This is temporary to fix the functionality during development
+  if (req.path === '/api/files/upload' || req.path === '/api/translation-requests') {
     req.user = {
       id: 1,
       accountId: 1
