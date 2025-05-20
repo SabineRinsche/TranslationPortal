@@ -114,6 +114,7 @@ export const insertUserSchema = createInsertSchema(users).omit({
 export const insertTranslationRequestSchema = createInsertSchema(translationRequests).omit({
   id: true,
   status: true,
+  createdAt: true,
 }).extend({
   workflow: z.string().nullable().optional(),
 });
