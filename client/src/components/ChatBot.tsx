@@ -156,12 +156,51 @@ const ChatBot = () => {
       setHasShownUploadMessage(true);
       
       if (uploadOption === "assets") {
-        addMessage("bot", "Please upload your translation assets using the panel on the right. You can upload translation memories, bilingual files, glossaries, reference materials, style guides, or any other supporting documents that will help with your translation. Our AI Translation team will then contact you to decide how to best leverage your assets to improve your translation output.\n\nSupported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML, ZIP");
+        addMessage("bot", "Please upload your translation assets using the panel on the right. You can upload translation memories, bilingual files, glossaries, reference materials, style guides, or any other supporting documents that will help with your translation.\n\nSupported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML, ZIP");
       } else if (uploadOption === "translation") {
         addMessage("bot", "Great! Please upload your file using the panel on the right. I'll analyze it and help you select target languages.\n\nSupported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML");
       }
     }
   }, [uploadOption, hasShownUploadMessage, showFileUpload]);
+  
+  // Track file uploads for translation assets
+  const [hasUploadedAssets, setHasUploadedAssets] = useState(false);
+  
+  // After file upload, check if it was for translation assets and show confirmation
+  useEffect(() => {
+    if (fileAnalysis && uploadOption === "assets" && !hasUploadedAssets) {
+      setHasUploadedAssets(true);
+      
+      // Clear file analysis panel
+      setTimeout(() => {
+        // Reset the file upload panel
+        useTranslationStore.setState({ 
+          showFileUpload: false,
+          fileAnalysis: null,
+          showFileAnalysis: false
+        });
+        
+        // Show thank you message
+        addMessage("bot", 
+          "Thank you for submitting your translation assets! Our AI Translation team will be in touch soon to discuss how we can best leverage these assets to enhance your translation workflow.", 
+          [
+            {
+              value: "upload-file",
+              label: "Upload a translation file instead",
+              icon: <Upload className="h-4 w-4 mr-2" />,
+              action: () => {
+                setShowFileUpload(true);
+                setShowApiDocs(false);
+                addMessage("user", "I'd like to upload a file for translation instead.");
+                setUploadOption("translation");
+                setHasShownUploadMessage(false);
+              }
+            }
+          ]
+        );
+      }, 1500);
+    }
+  }, [fileAnalysis, uploadOption, hasUploadedAssets]);
 
   // Analysis completed message without redundant details
   useEffect(() => {
@@ -203,8 +242,11 @@ const ChatBot = () => {
 
   // Enhanced message adding with typing animation
   const addMessage = (type: "bot" | "user", text: string, options?: Message["options"], emoji?: string) => {
+    // Use a combination of timestamp and a random string to ensure truly unique IDs
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    
     const newMessage: Message = {
-      id: Date.now().toString(),
+      id: uniqueId,
       type,
       text,
       options,
@@ -214,7 +256,7 @@ const ChatBot = () => {
     if (type === "bot") {
       // First add a typing indicator
       const typingMessage: Message = {
-        id: `typing-${Date.now()}`,
+        id: `typing-${uniqueId}`,
         type: "bot",
         text: "",
         isTyping: true
