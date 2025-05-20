@@ -29,9 +29,8 @@ const Header = () => {
             <img 
               src="/images/alpha_logo.svg" 
               alt="Alpha Logo" 
-              className="h-9 w-9"
+              className="h-12 w-12"
             />
-            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500 dark:from-primary dark:to-blue-300">Alpha's AI</h1>
           </div>
         </Link>
         <div className="flex items-center space-x-4">
