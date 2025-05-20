@@ -251,17 +251,7 @@ export default function JobsList() {
                           setIsDetailsOpen(true);
                         }}
                       >
-                        Quick View
-                      </Button>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setLocation(`/jobs/${job.id}`);
-                        }}
-                      >
-                        Full Details
+                        View Details
                       </Button>
                     </div>
                   </div>
@@ -391,19 +381,6 @@ export default function JobsList() {
               </Button>
 
               <div className="flex flex-col sm:flex-row gap-2 sm:order-2">
-                <Button 
-                  variant="default" 
-                  size="sm" 
-                  className="flex items-center gap-2" 
-                  onClick={() => {
-                    setIsDetailsOpen(false);
-                    setLocation(`/jobs/${selectedJob.id}`);
-                  }}
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Full Details
-                </Button>
-                
                 <Button 
                   variant="secondary" 
                   size="sm" 
