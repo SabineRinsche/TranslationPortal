@@ -34,12 +34,12 @@ export const translationRequests = pgTable("translation_requests", {
   fileFormat: text("file_format").notNull(),
   fileSize: integer("file_size").notNull(),
   wordCount: integer("word_count").notNull(),
-  charCount: integer("char_count").notNull(),
+  characterCount: integer("character_count").notNull(), // Changed from charCount for API consistency
   imagesWithText: integer("images_with_text").notNull(),
   subjectMatter: text("subject_matter").notNull(),
   sourceLanguage: text("source_language").notNull(),
   targetLanguages: text("target_languages").array().notNull(),
-  workflow: text("workflow"), // Selected workflow type
+  workflow: text("workflow"), // ai-neural, ai-translation-qc, ai-translation-human
   creditsRequired: integer("credits_required").notNull(),
   totalCost: text("total_cost").notNull(),
   status: text("status").notNull().default("pending"),
@@ -59,7 +59,7 @@ export const projectUpdates = pgTable("project_updates", {
   requestId: integer("request_id").notNull().references(() => translationRequests.id),
   userId: integer("user_id").notNull().references(() => users.id),
   updateText: text("update_text").notNull(),
-  updateType: text("update_type").default("note"), // Could be 'note', 'status_change', 'milestone'
+  updateType: text("update_type").default("note"), // 'note', 'status_change', 'milestone', 'issue'
   newStatus: text("new_status"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -166,7 +166,7 @@ export const fileAnalysisSchema = z.object({
   fileFormat: z.string(),
   fileSize: z.number(),
   wordCount: z.number(),
-  charCount: z.number(),
+  characterCount: z.number(), // Changed from charCount for API consistency
   imagesWithText: z.number(),
   subjectMatter: z.string(),
   sourceLanguage: z.string(),

@@ -12,6 +12,7 @@ import { fromZodError } from "zod-validation-error";
 import multer from 'multer';
 import AdmZip from 'adm-zip';
 import { z } from "zod";
+import apiRouter from "./api-v1";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -103,6 +104,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Apply auth middleware to all API routes
   app.use('/api', authMiddleware);
+  
+  // Register the versioned API routes
+  app.use('/api/v1', apiRouter);
   
   // User profile routes
   app.get("/api/user/profile", (req, res) => {
