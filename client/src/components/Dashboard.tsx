@@ -15,7 +15,30 @@ import {
   LineChart,
   Line,
   Legend,
+  PieChart,
+  Pie,
+  Cell,
+  RadialBarChart,
+  RadialBar,
+  AreaChart,
+  Area,
 } from 'recharts';
+import { 
+  Activity, 
+  BarChart as BarChartIcon, 
+  Calendar, 
+  ChevronDown, 
+  ChevronUp,
+  Clock, 
+  CreditCard, 
+  DollarSign, 
+  FileText, 
+  HelpCircle, 
+  MoreHorizontal, 
+  PieChart as PieChartIcon,
+  TrendingDown,
+  TrendingUp
+} from 'lucide-react';
 import { format } from 'date-fns';
 
 // TranslationRequestTable component to show translation requests
@@ -81,6 +104,26 @@ const Dashboard = () => {
   
   // Prepare data for language popularity
   const languagePopularityData = requests && requests.length > 0 ? prepareLanguageData(requests) : [];
+  
+  // Prepare data for workflow distribution
+  const workflowData = requests && requests.length > 0 ? prepareWorkflowData(requests) : [];
+  
+  // Prepare data for target language count by source language
+  const languagePairsData = requests && requests.length > 0 ? prepareLanguagePairsData(requests) : [];
+  
+  // Calculate month-over-month change in credit usage
+  const creditTrend = calculateTrend(creditUsageData, 'credits');
+  const costTrend = calculateTrend(creditUsageData, 'cost');
+  
+  // Color palette for charts
+  const COLORS = ['#16173f', '#ee3667', '#5271ff', '#28c1f5', '#8b5cf6', '#fca5a5', '#34d399'];
+  
+  // Analytics summary data
+  const totalCredits = requests ? requests.reduce((total, req) => total + req.creditsRequired, 0) : 0;
+  const totalCost = requests ? requests.reduce((total, req) => {
+    const cost = parseFloat(req.totalCost.replace('£', ''));
+    return total + cost;
+  }, 0) : 0;
 
   return (
     <div className="container mx-auto py-6">
@@ -94,94 +137,282 @@ const Dashboard = () => {
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Total Requests</CardTitle>
-                <CardDescription>All time translation requests</CardDescription>
+          {/* KPI Cards with trend indicators */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="overflow-hidden border-l-4 border-l-primary">
+              <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+                  <CardDescription className="text-xs">All time translation requests</CardDescription>
+                </div>
+                <div className="p-2 bg-primary/10 rounded-full">
+                  <FileText className="h-4 w-4 text-primary" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{requests?.length ?? 0}</div>
+                <div className="text-2xl font-bold">{requests?.length.toLocaleString() ?? 0}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  <span className="text-xs font-medium">
+                    {creditUsageData.length > 1 ? (
+                      creditUsageData[creditUsageData.length - 1].month
+                    ) : "No data"}
+                  </span>
+                </p>
               </CardContent>
             </Card>
             
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Total Credits Used</CardTitle>
-                <CardDescription>All time credit usage</CardDescription>
+            <Card className="overflow-hidden border-l-4 border-l-blue-500">
+              <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle className="text-sm font-medium">Total Credits Used</CardTitle>
+                  <CardDescription className="text-xs">All time credit usage</CardDescription>
+                </div>
+                <div className="p-2 bg-blue-500/10 rounded-full">
+                  <CreditCard className="h-4 w-4 text-blue-500" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">
-                  {requests ? requests.reduce((total, req) => total + req.creditsRequired, 0).toLocaleString() : '0'}
+                <div className="text-2xl font-bold">{totalCredits.toLocaleString()}</div>
+                {creditTrend.percentage !== 0 && (
+                  <div className="flex items-center gap-1 mt-1">
+                    {creditTrend.isPositive ? (
+                      <TrendingUp className="h-3 w-3 text-green-500" />
+                    ) : (
+                      <TrendingDown className="h-3 w-3 text-red-500" />
+                    )}
+                    <span className={`text-xs font-medium ${creditTrend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                      {creditTrend.percentage}% from last month
+                    </span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            <Card className="overflow-hidden border-l-4 border-l-purple-500">
+              <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
+                  <CardDescription className="text-xs">All time cost</CardDescription>
+                </div>
+                <div className="p-2 bg-purple-500/10 rounded-full">
+                  <DollarSign className="h-4 w-4 text-purple-500" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">£{totalCost.toFixed(2)}</div>
+                {costTrend.percentage !== 0 && (
+                  <div className="flex items-center gap-1 mt-1">
+                    {costTrend.isPositive ? (
+                      <TrendingUp className="h-3 w-3 text-green-500" />
+                    ) : (
+                      <TrendingDown className="h-3 w-3 text-red-500" />
+                    )}
+                    <span className={`text-xs font-medium ${costTrend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                      {costTrend.percentage}% from last month
+                    </span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            <Card className="overflow-hidden border-l-4 border-l-amber-500">
+              <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle className="text-sm font-medium">Average Cost per Request</CardTitle>
+                  <CardDescription className="text-xs">Cost efficiency metric</CardDescription>
+                </div>
+                <div className="p-2 bg-amber-500/10 rounded-full">
+                  <Activity className="h-4 w-4 text-amber-500" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  £{requests && requests.length > 0 ? (totalCost / requests.length).toFixed(2) : '0.00'}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Per translation request</p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Visualization Row 1 */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {/* Workflow Distribution */}
+            <Card className="lg:col-span-1">
+              <CardHeader>
+                <CardTitle className="text-sm font-medium">Workflow Distribution</CardTitle>
+                <CardDescription className="text-xs">Translation workflow usage</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-60">
+                  {workflowData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={workflowData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={80}
+                          paddingAngle={2}
+                          dataKey="count"
+                          label={({ name, percent }) => `${name.split(' ').pop() || ''} ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {workflowData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value, name, props) => [`${value} requests`, props.payload.name]}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <p className="text-sm text-muted-foreground">No workflow data available</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Total Spent</CardTitle>
-                <CardDescription>All time cost</CardDescription>
+            {/* Credit Usage Over Time (Area Chart) */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-sm font-medium">Credit Usage Over Time</CardTitle>
+                <CardDescription className="text-xs">Monthly usage trends</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">
-                  £{requests ? (requests.reduce((total, req) => {
-                    const cost = parseFloat(req.totalCost.replace('£', ''));
-                    return total + cost;
-                  }, 0)).toFixed(2) : '0.00'}
+                <div className="h-60">
+                  {creditUsageData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart
+                        data={creditUsageData}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
+                      >
+                        <defs>
+                          <linearGradient id="colorCredits" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#16173f" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#16173f" stopOpacity={0.1}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip 
+                          formatter={(value, name) => [
+                            `${value.toLocaleString()}`, 
+                            name === 'credits' ? 'Credits' : 'Cost (£)'
+                          ]}
+                        />
+                        <Legend />
+                        <Area 
+                          type="monotone" 
+                          dataKey="credits" 
+                          name="Credits Used"
+                          stroke="#16173f" 
+                          fillOpacity={1}
+                          fill="url(#colorCredits)" 
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="cost" 
+                          name="Cost (£)"
+                          stroke="#ee3667" 
+                          strokeWidth={2}
+                          activeDot={{ r: 6 }} 
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <p className="text-sm text-muted-foreground">No credit usage data available</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
           </div>
           
+          {/* Visualization Row 2 */}
           <div className="grid gap-4 md:grid-cols-2">
+            {/* Language Popularity Chart (Horizontal Bar) */}
             <Card>
               <CardHeader>
-                <CardTitle>Credit Usage Over Time</CardTitle>
-                <CardDescription>Monthly usage trends</CardDescription>
+                <CardTitle className="text-sm font-medium">Most Popular Languages</CardTitle>
+                <CardDescription className="text-xs">Target language distribution</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={creditUsageData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => [`${value} credits`, 'Usage']} />
-                      <Line 
-                        type="monotone" 
-                        dataKey="credits" 
-                        stroke="#16173f" 
-                        activeDot={{ r: 8 }} 
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  {languagePopularityData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={languagePopularityData}
+                        layout="vertical"
+                        margin={{ top: 5, right: 30, left: 80, bottom: 25 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis type="number" />
+                        <YAxis type="category" dataKey="language" />
+                        <Tooltip formatter={(value) => [`${value} requests`, 'Frequency']} />
+                        <Bar 
+                          dataKey="count" 
+                          name="Requests" 
+                          radius={[0, 4, 4, 0]}
+                        >
+                          {languagePopularityData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <p className="text-sm text-muted-foreground">No language data available</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
             
+            {/* Workflow Credit Comparison */}
             <Card>
               <CardHeader>
-                <CardTitle>Most Popular Languages</CardTitle>
-                <CardDescription>Target language distribution</CardDescription>
+                <CardTitle className="text-sm font-medium">Workflow Credit Usage</CardTitle>
+                <CardDescription className="text-xs">Credits by workflow type</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={languagePopularityData}
-                      layout="vertical"
-                      margin={{ top: 5, right: 30, left: 80, bottom: 25 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" />
-                      <YAxis type="category" dataKey="language" />
-                      <Tooltip formatter={(value) => [`${value} requests`, 'Frequency']} />
-                      <Bar dataKey="count" fill="#ee3667" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {workflowData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={workflowData}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 70 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis 
+                          dataKey="name" 
+                          tickFormatter={(value) => value.split(' ').pop() || value} 
+                          angle={-45} 
+                          textAnchor="end"
+                          height={70}
+                        />
+                        <YAxis />
+                        <Tooltip 
+                          formatter={(value, name) => [
+                            `${value.toLocaleString()}`, 
+                            name === 'credits' ? 'Credits' : 'Cost (£)'
+                          ]} 
+                        />
+                        <Legend />
+                        <Bar dataKey="credits" name="Credits Used" fill="#16173f" />
+                        <Bar dataKey="cost" name="Cost (£)" fill="#ee3667" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <p className="text-sm text-muted-foreground">No workflow data available</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -206,31 +437,203 @@ const Dashboard = () => {
           </Card>
         </TabsContent>
         
-        <TabsContent value="usage">
+        <TabsContent value="usage" className="space-y-4">
+          {/* Credit Usage Summary Cards */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Total Credits Used</CardTitle>
+                <CardDescription className="text-xs">All time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{totalCredits.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  £{(totalCredits * 0.001).toFixed(2)} total value
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Average Credits Per Request</CardTitle>
+                <CardDescription className="text-xs">Efficiency metric</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {requests && requests.length > 0 
+                    ? Math.round(totalCredits / requests.length).toLocaleString() 
+                    : '0'}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Per translation request
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Average Characters</CardTitle>
+                <CardDescription className="text-xs">Per target language</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {requests && requests.length > 0 
+                    ? Math.round(requests.reduce((sum, req) => sum + req.charCount, 0) / requests.length).toLocaleString() 
+                    : '0'}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Characters per document
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Average Languages</CardTitle>
+                <CardDescription className="text-xs">Per request</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {requests && requests.length > 0 
+                    ? (requests.reduce((sum, req) => sum + req.targetLanguages.length, 0) / requests.length).toFixed(1) 
+                    : '0'}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Target languages per request
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Credit Usage Chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Credit Usage Analytics</CardTitle>
-              <CardDescription>Monitor your translation credit usage over time</CardDescription>
+              <CardTitle>Credit Usage Trends</CardTitle>
+              <CardDescription>Monthly credit and cost analytics</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={creditUsageData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 25 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => [`${value} credits`, 'Usage']} />
-                    <Legend />
-                    <Bar dataKey="credits" name="Credits Used" fill="#16173f" />
-                    <Bar dataKey="cost" name="Cost (£)" fill="#ee3667" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {creditUsageData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={creditUsageData}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 25 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="month" />
+                      <YAxis yAxisId="left" orientation="left" stroke="#16173f" />
+                      <YAxis yAxisId="right" orientation="right" stroke="#ee3667" />
+                      <Tooltip 
+                        formatter={(value, name) => [
+                          name === 'Credits Used' 
+                            ? `${value.toLocaleString()} credits` 
+                            : `£${value.toFixed(2)}`, 
+                          name
+                        ]} 
+                      />
+                      <Legend />
+                      <Bar yAxisId="left" dataKey="credits" name="Credits Used" fill="#16173f" radius={[4, 4, 0, 0]} />
+                      <Line yAxisId="right" type="monotone" dataKey="cost" name="Cost (£)" stroke="#ee3667" strokeWidth={3} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <p className="text-sm text-muted-foreground">No credit usage data available</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
+          
+          {/* Credit Usage by Workflow Type */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Workflow Comparison</CardTitle>
+                <CardDescription>Credit usage by workflow type</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-72">
+                  {workflowData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadialBarChart 
+                        data={workflowData} 
+                        cx="50%" 
+                        cy="50%" 
+                        innerRadius="10%" 
+                        outerRadius="80%" 
+                        barSize={20}
+                        startAngle={180} 
+                        endAngle={0}
+                      >
+                        <RadialBar
+                          minAngle={15}
+                          background
+                          clockWise={true}
+                          dataKey="credits"
+                          label={({ credits, name }) => `${name.split(' ').pop()}: ${credits.toLocaleString()}`}
+                        >
+                          {workflowData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </RadialBar>
+                        <Tooltip
+                          formatter={(value, name, props) => [
+                            `${value.toLocaleString()} credits`, 
+                            props.payload.name
+                          ]}
+                        />
+                      </RadialBarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <p className="text-sm text-muted-foreground">No workflow data available</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Cost Distribution</CardTitle>
+                <CardDescription>Cost breakdown by workflow</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-72">
+                  {workflowData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={workflowData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={true}
+                          outerRadius={80}
+                          dataKey="cost"
+                          nameKey="name"
+                          label={({ name, cost, percent }) => 
+                            `${name.split(' ').pop()}: £${cost.toFixed(2)} (${(percent * 100).toFixed(0)}%)`
+                          }
+                        >
+                          {workflowData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value) => `£${value.toFixed(2)}`}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <p className="text-sm text-muted-foreground">No cost data available</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
@@ -301,6 +704,94 @@ function prepareLanguageData(requests: TranslationRequest[]) {
     .map(([language, count]) => ({ language, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10); // Take top 10 languages
+}
+
+// Helper function to prepare workflow distribution data
+function prepareWorkflowData(requests: TranslationRequest[]) {
+  const workflowCount: Record<string, {count: number, credits: number, cost: number}> = {
+    'AI Neural Translation': {count: 0, credits: 0, cost: 0},
+    'AI Translation with Quality Assurance': {count: 0, credits: 0, cost: 0},
+    'AI Translation with Expert Review': {count: 0, credits: 0, cost: 0},
+  };
+  
+  requests.forEach(request => {
+    let workflowName = 'AI Neural Translation'; // Default
+    
+    if (request.workflow === 'ai-translation-qc') {
+      workflowName = 'AI Translation with Quality Assurance';
+    } else if (request.workflow === 'ai-translation-human') {
+      workflowName = 'AI Translation with Expert Review';
+    }
+    
+    workflowCount[workflowName].count++;
+    workflowCount[workflowName].credits += request.creditsRequired;
+    workflowCount[workflowName].cost += parseFloat(request.totalCost.replace('£', ''));
+  });
+  
+  // Convert to array format for charts
+  return Object.entries(workflowCount)
+    .map(([name, data]) => ({
+      name,
+      count: data.count,
+      credits: data.credits,
+      cost: parseFloat(data.cost.toFixed(2)),
+      value: data.count, // For pie charts
+    }))
+    .filter(item => item.count > 0); // Only include workflows with requests
+}
+
+// Helper function to prepare language pair data
+function prepareLanguagePairsData(requests: TranslationRequest[]) {
+  const languagePairs: Record<string, {[targetLang: string]: number}> = {};
+  
+  requests.forEach(request => {
+    const sourceLang = request.sourceLanguage;
+    
+    if (!languagePairs[sourceLang]) {
+      languagePairs[sourceLang] = {};
+    }
+    
+    request.targetLanguages.forEach(targetLang => {
+      if (!languagePairs[sourceLang][targetLang]) {
+        languagePairs[sourceLang][targetLang] = 0;
+      }
+      languagePairs[sourceLang][targetLang]++;
+    });
+  });
+  
+  // Convert to array format for charts
+  const result = [];
+  for (const [source, targets] of Object.entries(languagePairs)) {
+    for (const [target, count] of Object.entries(targets)) {
+      result.push({
+        sourceLang: source,
+        targetLang: target,
+        count
+      });
+    }
+  }
+  
+  return result.sort((a, b) => b.count - a.count).slice(0, 15); // Top 15 language pairs
+}
+
+// Helper function to calculate trend (percentage change)
+function calculateTrend(data: any[], key: string): { value: number, percentage: number, isPositive: boolean } {
+  if (data.length < 2) {
+    return { value: 0, percentage: 0, isPositive: true };
+  }
+  
+  // Get the last two months of data
+  const current = data[data.length - 1][key] || 0;
+  const previous = data[data.length - 2][key] || 0;
+  
+  const difference = current - previous;
+  const percentage = previous === 0 ? 100 : Math.round((difference / previous) * 100);
+  
+  return {
+    value: difference,
+    percentage,
+    isPositive: percentage >= 0
+  };
 }
 
 export default Dashboard;
