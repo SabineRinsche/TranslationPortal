@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useParams } from 'wouter';
 import { TranslationRequest, ProjectUpdate } from '@shared/schema';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { format, parseISO } from 'date-fns';
 import { 
   Card, 

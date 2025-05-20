@@ -50,7 +50,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   const unreadCount = notifications.filter(notification => !notification.read).length;
   
   // Get job data to check for completed jobs
-  const { data: jobs } = useQuery({
+  const { data: jobs = [] } = useQuery({
     queryKey: ['/api/translation-requests'],
   });
 
@@ -59,7 +59,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   
   // Check for newly completed jobs
   useEffect(() => {
-    if (jobs) {
+    if (jobs && Array.isArray(jobs)) {
       const newlyCompletedJobs = jobs.filter((job: any) => 
         job.status === 'complete' && !completedJobIds.includes(job.id)
       );

@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { ManualNotificationTrigger } from "@/components/ManualNotificationTrigger";
 import { Toaster } from "@/components/ui/toaster";
 import Header from "@/components/Header";
 import NotFound from "@/pages/not-found";
@@ -28,14 +29,18 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark">
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <div className="flex flex-col min-h-screen">
-            <Header />
-            <main className="flex-1">
-              <Router />
-            </main>
-          </div>
-        </TooltipProvider>
+        <NotificationProvider>
+          <TooltipProvider>
+            <div className="flex flex-col min-h-screen">
+              <Header />
+              <main className="flex-1">
+                <Router />
+              </main>
+              <ManualNotificationTrigger />
+            </div>
+            <Toaster />
+          </TooltipProvider>
+        </NotificationProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );
