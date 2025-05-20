@@ -83,7 +83,7 @@ const ChatBot = () => {
     setTimeout(() => {
       addMessage(
         "bot",
-        "Welcome to Alpha's AI Translation Service! I'm here to help you with your translation request. How would you like to proceed?",
+        "Welcome to Alpha's AI Translation Portal! I'm here to help you with your translation request. How would you like to proceed?",
         [
           { 
             value: "upload", 
@@ -197,7 +197,7 @@ const ChatBot = () => {
         
         // Show thank you message
         addMessage("bot", 
-          "Thank you for uploading your translation assets! Our AI Translation team will be in touch soon to discuss how we can best leverage these assets to enhance your translation workflow.", 
+          "Thank you for uploading your translation assets! Our AI Translation Portal team will be in touch soon to discuss how we can best leverage these assets to enhance your translation workflow.", 
           [
             {
               value: "upload-file",
@@ -361,7 +361,7 @@ const ChatBot = () => {
       // Default response for unrecognized queries
       addMessage(
         "bot", 
-        "I'm here to help with your translation needs. How can I assist you further?",
+        "I'm here to help with your translation needs through our portal. How can I assist you further?",
         [
           {
             value: "help",
