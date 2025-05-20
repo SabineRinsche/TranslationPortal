@@ -13,49 +13,82 @@
 }
 
 :root {
-      --background: 0 0% 100%;
---foreground: 20 14.3% 4.1%;
---muted: 60 4.8% 95.9%;
---muted-foreground: 25 5.3% 44.7%;
---popover: 0 0% 100%;
---popover-foreground: 20 14.3% 4.1%;
---card: 0 0% 100%;
---card-foreground: 20 14.3% 4.1%;
---border: 20 5.9% 90%;
---input: 20 5.9% 90%;
---primary: 240 75% 17%; /* #16173f */
---primary-foreground: 0 0% 98%;
---secondary: 60 4.8% 95.9%;
---secondary-foreground: 24 9.8% 10%;
---accent: 346 79% 57%; /* #ee3667 */
---accent-foreground: 0 0% 98%;
---destructive: 0 84.2% 60.2%;
---destructive-foreground: 60 9.1% 97.8%;
---ring: 240 75% 17%; /* #16173f */
---radius: 0.5rem;
-  }
-  .dark {
-      --background: 240 75% 8%; /* Darker variant of #16173f */
---foreground: 0 0% 98%;
---muted: 240 75% 15%; /* #16173f variant */
---muted-foreground: 240 5% 64.9%;
---card: 240 75% 10%;
---card-foreground: 0 0% 98%;
---popover: 240 75% 10%;
---popover-foreground: 0 0% 98%;
---border: 240 3.7% 15.9%;
---input: 240 3.7% 15.9%;
---primary: 240 75% 17%; /* #16173f */
---primary-foreground: 0 0% 98%;
---secondary: 240 3.7% 15.9%;
---secondary-foreground: 0 0% 98%;
---accent: 346 79% 57%; /* #ee3667 */
---accent-foreground: 0 0% 98%;
---destructive: 0 62.8% 30.6%;
---destructive-foreground: 0 0% 98%;
---ring: 240 75% 17%; /* #16173f */
---radius: 0.5rem;
-  }
+  /* Base colors */
+  --background: 0 0% 100%;
+  --foreground: 20 14.3% 4.1%;
+  --muted: 60 4.8% 95.9%;
+  --muted-foreground: 25 5.3% 44.7%;
+  
+  /* UI elements */
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 14.3% 4.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 20 14.3% 4.1%;
+  --border: 20 5.9% 90%;
+  --input: 20 5.9% 90%;
+  
+  /* Brand colors */
+  --primary: 240 75% 17%; /* #16173f - Alpha brand color */
+  --primary-foreground: 0 0% 98%;
+  --secondary: 60 4.8% 95.9%;
+  --secondary-foreground: 24 9.8% 10%;
+  --accent: 346 79% 57%; /* #ee3667 - Alpha accent color */
+  --accent-foreground: 0 0% 98%;
+  
+  /* Feedback colors */
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 98%;
+  --info: 199 89% 48%;
+  --info-foreground: 0 0% 98%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 98%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  
+  /* Focus/interactive */
+  --ring: 240 75% 17%; /* #16173f */
+  --ring-focus: 346 79% 57%; /* #ee3667 */
+  --radius: 0.5rem;
+}
+
+.dark {
+  /* Base colors - dark theme */
+  --background: 240 75% 8%; /* Darker variant of #16173f */
+  --foreground: 0 0% 98%;
+  --muted: 240 75% 15%; /* #16173f variant */
+  --muted-foreground: 240 5% 64.9%;
+  
+  /* UI elements - dark theme */
+  --card: 240 75% 10%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 75% 10%;
+  --popover-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  
+  /* Brand colors - dark theme */
+  --primary: 240 75% 23%; /* Brighter #16173f for dark mode contrast */
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 346 79% 65%; /* Brighter #ee3667 for dark mode contrast */
+  --accent-foreground: 0 0% 98%;
+  
+  /* Feedback colors - dark theme */
+  --success: 142 76% 45%;
+  --success-foreground: 0 0% 98%;
+  --info: 199 89% 60%;
+  --info-foreground: 0 0% 98%;
+  --warning: 38 92% 60%;
+  --warning-foreground: 0 0% 10%;
+  --destructive: 0 84.2% 40.2%;
+  --destructive-foreground: 0 0% 98%;
+  
+  /* Focus/interactive - dark theme */
+  --ring: 240 75% 30%; /* Brighter for dark mode */
+  --ring-focus: 346 79% 65%; /* Brighter accent for focus in dark mode */
+  --radius: 0.5rem;
+}
 
 @layer base {
   * {
@@ -64,5 +97,47 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+  }
+  
+  /* Focus state improvements for better accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-background;
+  }
+  
+  /* Improved text contrast */
+  .text-high-contrast {
+    @apply dark:text-white text-black font-medium;
+  }
+  
+  .text-secondary-contrast {
+    @apply dark:text-slate-200 text-slate-800;
+  }
+  
+  /* Status indicators with improved contrast */
+  .status-badge {
+    @apply px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  /* Card with higher contrast */
+  .card-high-contrast {
+    @apply bg-card shadow-md border-2 dark:border-slate-700 border-slate-200;
+  }
+  
+  /* Accessible tables */
+  .accessible-table th {
+    @apply text-left p-3 dark:bg-muted bg-slate-100 font-medium text-high-contrast;
+  }
+  
+  .accessible-table td {
+    @apply p-3 border-b dark:border-slate-700 border-slate-200;
+  }
+  
+  .accessible-table tr:hover {
+    @apply dark:bg-muted/50 bg-slate-50;
+  }
+  
+  /* Improved form element focus states */
+  input:focus, select:focus, textarea:focus {
+    @apply ring-2 ring-accent ring-offset-1 ring-offset-background;
   }
 }
