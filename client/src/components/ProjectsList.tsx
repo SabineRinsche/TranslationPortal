@@ -46,7 +46,7 @@ export default function ProjectsList() {
       (project.projectName && project.projectName.toLowerCase().includes(searchTerm.toLowerCase()));
       
     // Apply status filter
-    const matchesStatus = !statusFilter || 
+    const matchesStatus = !statusFilter || statusFilter === 'all' || 
       project.status === statusFilter;
       
     return matchesSearch && matchesStatus;
@@ -63,9 +63,10 @@ export default function ProjectsList() {
   });
   
   // Format date
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date) => {
     try {
-      return format(new Date(dateString), 'MMM d, yyyy');
+      const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+      return format(date, 'MMM d, yyyy');
     } catch (e) {
       return 'Invalid date';
     }
@@ -135,7 +136,7 @@ export default function ProjectsList() {
                 </div>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="in-progress">In Progress</SelectItem>
                 <SelectItem value="review">Review</SelectItem>
@@ -214,7 +215,7 @@ export default function ProjectsList() {
                 </div>
                 
                 {/* Progress bar for completion percentage */}
-                {project.completionPercentage !== undefined && project.completionPercentage > 0 && (
+                {project.completionPercentage !== undefined && project.completionPercentage !== null && project.completionPercentage > 0 && (
                   <div className="mt-3">
                     <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                       <div 
