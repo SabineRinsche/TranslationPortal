@@ -108,10 +108,34 @@ const languageGroups: LanguageGroup[] = [
 ];
 
 const FileAnalysis = () => {
+  // Define available translation workflows
+  const workflows = [
+    { 
+      id: 'ai-translation', 
+      name: 'Automated AI/MT Translation', 
+      description: 'Machine translation without human review',
+      icon: '🤖'
+    },
+    { 
+      id: 'ai-translation-qc', 
+      name: 'Automated AI/MT Translation with automated Language Quality check', 
+      description: 'Machine translation with automated quality assurance',
+      icon: '🤖✓'
+    },
+    { 
+      id: 'ai-translation-human', 
+      name: 'Automated AI/MT Translation with Human review', 
+      description: 'Machine translation with professional human post-editing',
+      icon: '🤖👤'
+    },
+  ];
+  
   const { 
     fileAnalysis, 
     selectedLanguages, 
     setSelectedLanguages,
+    selectedWorkflow,
+    setSelectedWorkflow,
     calculationSummary,
     setCalculationSummary,
     setShowCalculationMessage
@@ -119,12 +143,21 @@ const FileAnalysis = () => {
   const { toast } = useToast();
 
   const calculateTranslation = () => {
-    if (!fileAnalysis) return;
+    if (!fileAnalysis || !selectedWorkflow) return;
     
     const charsPerLanguage = fileAnalysis.charCount;
     const totalChars = charsPerLanguage * selectedLanguages.length;
-    const creditsRequired = totalChars; // 1 character = 1 credit
-    const costInPounds = totalChars * 0.01; // 1 character = £0.01
+    
+    // Apply multiplier based on workflow type
+    let multiplier = 1;
+    if (selectedWorkflow === 'ai-translation-qc') {
+      multiplier = 1.25; // 25% more for automated QC
+    } else if (selectedWorkflow === 'ai-translation-human') {
+      multiplier = 2; // Double for human review
+    }
+    
+    const creditsRequired = Math.ceil(totalChars * multiplier);
+    const costInPounds = creditsRequired * 0.01; // 1 credit = £0.01
     
     setCalculationSummary({
       totalChars,
@@ -133,11 +166,24 @@ const FileAnalysis = () => {
     });
   };
 
-  // We'll now calculate only when the user clicks the Complete Selection button
+  // Step management
   const [showCalculation, setShowCalculation] = useState(false);
+  const [showWorkflowStep, setShowWorkflowStep] = useState(false);
   
-  const handleCompleteSelection = () => {
+  const handleCompleteLanguageSelection = () => {
     if (selectedLanguages.length > 0 && fileAnalysis) {
+      setShowWorkflowStep(true);
+    } else {
+      toast({
+        title: "Selection required",
+        description: "Please select at least one target language.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleCompleteWorkflowSelection = () => {
+    if (selectedWorkflow && fileAnalysis) {
       calculateTranslation();
       setShowCalculation(true);
       
@@ -146,7 +192,7 @@ const FileAnalysis = () => {
     } else {
       toast({
         title: "Selection required",
-        description: "Please select at least one target language.",
+        description: "Please select a workflow for your translation.",
         variant: "destructive",
       });
     }
@@ -355,13 +401,56 @@ const FileAnalysis = () => {
         </div>
         
         <div className="mt-4">
-          {!showCalculation ? (
+          {!showWorkflowStep && !showCalculation ? (
             <Button 
               className="w-full py-2" 
-              onClick={handleCompleteSelection}
+              onClick={handleCompleteLanguageSelection}
             >
-              Complete Language Selection
+              Continue to Workflow Selection
             </Button>
+          ) : showWorkflowStep && !showCalculation ? (
+            <>
+              <h3 className="text-sm font-medium mb-2">Select Translation Workflow</h3>
+              <div className="space-y-3 mb-4">
+                {workflows.map((workflow) => (
+                  <div 
+                    key={workflow.id}
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                      selectedWorkflow === workflow.id 
+                        ? 'border-primary bg-primary/5' 
+                        : 'border-border hover:border-primary/30'
+                    }`}
+                    onClick={() => setSelectedWorkflow(workflow.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{workflow.icon}</span>
+                      <div>
+                        <h4 className="font-medium text-sm">{workflow.name}</h4>
+                        <p className="text-xs text-muted-foreground">{workflow.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline"
+                  className="flex-1 py-2" 
+                  onClick={() => {
+                    setShowWorkflowStep(false);
+                    setSelectedWorkflow(null);
+                  }}
+                >
+                  Back to Languages
+                </Button>
+                <Button 
+                  className="flex-1 py-2" 
+                  onClick={handleCompleteWorkflowSelection}
+                >
+                  Calculate Translation
+                </Button>
+              </div>
+            </>
           ) : calculationSummary && (
             <div className="bg-muted rounded-lg p-4">
               <h3 className="text-sm font-medium text-card-foreground mb-2">Translation Summary</h3>
@@ -369,6 +458,12 @@ const FileAnalysis = () => {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Selected Languages:</span>
                   <span className="font-medium text-card-foreground">{selectedLanguages.join(", ")}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Workflow:</span>
+                  <span className="font-medium text-card-foreground">
+                    {workflows.find(w => w.id === selectedWorkflow)?.name || 'Standard Translation'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Characters:</span>
@@ -387,7 +482,10 @@ const FileAnalysis = () => {
                 <Button 
                   variant="outline"
                   className="flex-1 py-2" 
-                  onClick={() => setShowCalculation(false)}
+                  onClick={() => {
+                    setShowCalculation(false);
+                    setShowWorkflowStep(true);
+                  }}
                 >
                   Edit Selection
                 </Button>
