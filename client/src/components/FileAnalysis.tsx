@@ -326,7 +326,7 @@ const FileAnalysis = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Character Count:</span>
-              <span className="font-medium text-card-foreground">{fileAnalysis.charCount.toLocaleString()} chars</span>
+              <span className="font-medium text-card-foreground">{fileAnalysis.characterCount.toLocaleString()} chars</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Images with Text:</span>

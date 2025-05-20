@@ -7,7 +7,7 @@ import fs from 'fs';
 import { z } from 'zod';
 import { ZodError } from 'zod';
 import { fromZodError } from 'zod-validation-error';
-import { insertTranslationRequestSchema } from '@shared/schema';
+import { insertTranslationRequestSchema, type User } from '@shared/schema';
 
 // Configure multer for file uploads
 const upload = multer({
@@ -131,10 +131,11 @@ apiRouter.post('/translation-requests', async (req, res) => {
       userId: req.user?.id || 1,
       fileName: validatedData.fileName || 'Unknown File',
       fileFormat: validatedData.fileName ? validatedData.fileName.split('.').pop()?.toUpperCase() || 'UNKNOWN' : 'UNKNOWN',
-      fileSize: 256000, // Placeholder
-      wordCount: 5000, // Placeholder
-      characterCount: 25000, // Placeholder
-      imagesWithText: 3, // Placeholder
+      fileSize: 256000, // Will be replaced with actual file size in production
+      wordCount: 5000, // Will be replaced with actual word count in production
+      characterCount: 25000, // Will be replaced with actual character count in production
+      imagesWithText: 3, // Will be replaced with actual image count in production
+      subjectMatter: 'Technical, Marketing', // Will be determined through analysis in production
       sourceLanguage: validatedData.sourceLanguage,
       targetLanguages: validatedData.targetLanguages,
       workflow: validatedData.workflow,
@@ -329,7 +330,156 @@ apiRouter.get('/translation-requests', async (req, res) => {
   }
 });
 
-// 2. Files & Assets API Endpoints
+// 2. Account & User Management API Endpoints
+
+// Get account details
+apiRouter.get('/account', async (req, res) => {
+  try {
+    // Get account ID from authenticated user
+    const accountId = req.user?.accountId || 1;
+    
+    // Get account details
+    const account = await storage.getAccount(accountId);
+    if (!account) {
+      return res.status(404).json({ error: 'Account not found' });
+    }
+    
+    // Get all users associated with this account
+    const users = await storage.getUsersByAccountId(accountId);
+    
+    res.json({
+      id: account.id,
+      name: account.name,
+      credits: account.credits,
+      subscriptionPlan: account.subscriptionPlan,
+      subscriptionStatus: account.subscriptionStatus,
+      subscriptionRenewal: account.subscriptionRenewal,
+      usersCount: users.length
+    });
+  } catch (error) {
+    console.error('Error fetching account details:', error);
+    res.status(500).json({ error: 'Failed to fetch account details' });
+  }
+});
+
+// Purchase credits
+apiRouter.post('/account/purchase-credits', async (req, res) => {
+  try {
+    // Get account ID from authenticated user
+    const accountId = req.user?.accountId || 1;
+    
+    // Get account details
+    const account = await storage.getAccount(accountId);
+    if (!account) {
+      return res.status(404).json({ error: 'Account not found' });
+    }
+    
+    // Validate request body
+    const { creditAmount } = req.body;
+    const amount = parseInt(creditAmount);
+    
+    if (isNaN(amount) || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid credit amount' });
+    }
+    
+    // In a real implementation, we would process a payment here
+    // For demo purposes, we'll just update the account credits
+    
+    const updatedAccount = await storage.updateAccountCredits(accountId, account.credits + amount);
+    
+    res.json({
+      id: updatedAccount.id,
+      credits: updatedAccount.credits,
+      purchasedCredits: amount,
+      purchaseDate: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error purchasing credits:', error);
+    res.status(500).json({ error: 'Failed to purchase credits' });
+  }
+});
+
+// Get user profile
+apiRouter.get('/user/profile', async (req, res) => {
+  try {
+    // Get user ID from authenticated user
+    const userId = req.user?.id || 1;
+    
+    // Get user details
+    const user = await storage.getUser(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Exclude sensitive information (like password hash)
+    const { password, ...userProfile } = user;
+    
+    res.json(userProfile);
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ error: 'Failed to fetch user profile' });
+  }
+});
+
+// Update user profile
+apiRouter.patch('/user/profile', async (req, res) => {
+  try {
+    // Get user ID from authenticated user
+    const userId = req.user?.id || 1;
+    
+    // Get user details
+    const user = await storage.getUser(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Validate request body
+    const { firstName, lastName, email, jobTitle, phoneNumber } = req.body;
+    
+    // Update fields that were provided
+    const updatedFields: any = {};
+    if (firstName) updatedFields.firstName = firstName;
+    if (lastName) updatedFields.lastName = lastName;
+    if (email) updatedFields.email = email;
+    if (jobTitle) updatedFields.jobTitle = jobTitle;
+    if (phoneNumber) updatedFields.phoneNumber = phoneNumber;
+    
+    // Update user
+    const updatedUser = await storage.updateUser(userId, updatedFields);
+    
+    // Exclude sensitive information (like password hash)
+    const { password, ...userProfile } = updatedUser;
+    
+    res.json(userProfile);
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    res.status(500).json({ error: 'Failed to update user profile' });
+  }
+});
+
+// Get all users for the account
+apiRouter.get('/users', async (req, res) => {
+  try {
+    // Get account ID from authenticated user
+    const accountId = req.user?.accountId || 1;
+    
+    // Get all users for the account
+    const users = await storage.getUsersByAccountId(accountId);
+    
+    // Exclude sensitive information (like password hash)
+    const sanitizedUsers = users.map(user => {
+      const { password, ...sanitizedUser } = user;
+      return sanitizedUser;
+    });
+    
+    res.json(sanitizedUsers);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+// 3. Files & Assets API Endpoints
 
 // Upload a file
 apiRouter.post('/files/upload', upload.single('file'), validateFileUpload, (req: Request & { file?: Express.Multer.File }, res) => {

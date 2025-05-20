@@ -64,7 +64,7 @@ const FileUpload = () => {
             fileFormat: file.name.split('.').pop() || 'unknown',
             fileSize: file.size,
             wordCount: 0,
-            charCount: 0,
+            characterCount: 0,
             imagesWithText: 0,
             subjectMatter: 'Translation Assets',
             sourceLanguage: 'N/A',
