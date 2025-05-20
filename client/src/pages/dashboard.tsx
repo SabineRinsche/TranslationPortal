@@ -6,7 +6,7 @@ import JobsList from '@/components/JobsList';
 
 export default function DashboardPage() {
   const [location] = useLocation();
-  const [activeTab, setActiveTab] = useState('analytics');
+  const [activeTab, setActiveTab] = useState('overview');
   
   // Get tab from URL parameters
   useEffect(() => {
@@ -17,8 +17,8 @@ export default function DashboardPage() {
       setActiveTab('usage');
     } else if (tabParam === 'jobs') {
       setActiveTab('jobs');
-    } else if (tabParam === 'analytics') {
-      setActiveTab('analytics');
+    } else if (tabParam === 'overview') {
+      setActiveTab('overview');
     }
   }, [location]);
   
@@ -36,13 +36,13 @@ export default function DashboardPage() {
       
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="jobs">Jobs</TabsTrigger>
           <TabsTrigger value="usage">Credit Usage</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="analytics">
-          <Dashboard />
+        <TabsContent value="overview">
+          <Dashboard initialTab="overview" />
         </TabsContent>
         
         <TabsContent value="jobs">
@@ -50,13 +50,7 @@ export default function DashboardPage() {
         </TabsContent>
         
         <TabsContent value="usage">
-          <div className="grid gap-6">
-            <h2 className="text-xl font-semibold">Credit Usage History</h2>
-            <p className="text-muted-foreground">
-              Track your translation credit usage across all projects and time periods
-            </p>
-            <Dashboard initialTab="usage" />
-          </div>
+          <Dashboard initialTab="usage" />
         </TabsContent>
       </Tabs>
     </div>

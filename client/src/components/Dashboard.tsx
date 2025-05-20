@@ -130,15 +130,15 @@ const Dashboard = ({ initialTab }: DashboardProps = {}) => {
   }, 0) : 0;
 
   return (
-    <div className="container mx-auto py-6">
-      <h1 className="text-2xl font-bold mb-6">Translation Dashboard</h1>
-      
+    <div className="w-full">
       <Tabs defaultValue={initialTab || "overview"} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="requests">Translation Requests</TabsTrigger>
-          <TabsTrigger value="usage">Credit Usage</TabsTrigger>
-        </TabsList>
+        {!initialTab && (
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="requests">Translation Requests</TabsTrigger>
+            <TabsTrigger value="usage">Credit Usage</TabsTrigger>
+          </TabsList>
+        )}
         
         <TabsContent value="overview" className="space-y-4">
           {/* KPI Cards with trend indicators */}
