@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Dashboard from '@/components/Dashboard';
 import JobsList from '@/components/JobsList';
+import TranslationAssetsList from '@/components/TranslationAssetsList';
 
 export default function DashboardPage() {
   const [location] = useLocation();
@@ -17,6 +18,8 @@ export default function DashboardPage() {
       setActiveTab('usage');
     } else if (tabParam === 'jobs') {
       setActiveTab('jobs');
+    } else if (tabParam === 'assets') {
+      setActiveTab('assets');
     } else if (tabParam === 'overview') {
       setActiveTab('overview');
     }
@@ -38,6 +41,7 @@ export default function DashboardPage() {
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="jobs">Jobs</TabsTrigger>
+          <TabsTrigger value="assets">Translation Assets</TabsTrigger>
           <TabsTrigger value="usage">Credit Usage</TabsTrigger>
         </TabsList>
         
@@ -47,6 +51,10 @@ export default function DashboardPage() {
         
         <TabsContent value="jobs">
           <JobsList />
+        </TabsContent>
+        
+        <TabsContent value="assets">
+          <TranslationAssetsList />
         </TabsContent>
         
         <TabsContent value="usage">
