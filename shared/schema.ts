@@ -39,6 +39,7 @@ export const translationRequests = pgTable("translation_requests", {
   subjectMatter: text("subject_matter").notNull(),
   sourceLanguage: text("source_language").notNull(),
   targetLanguages: text("target_languages").array().notNull(),
+  workflow: text("workflow"), // Selected workflow type
   creditsRequired: integer("credits_required").notNull(),
   totalCost: text("total_cost").notNull(),
   status: text("status").notNull().default("pending"),
@@ -113,6 +114,8 @@ export const insertUserSchema = createInsertSchema(users).omit({
 export const insertTranslationRequestSchema = createInsertSchema(translationRequests).omit({
   id: true,
   status: true,
+}).extend({
+  workflow: z.string().nullable().optional(),
 });
 
 export type InsertAccount = z.infer<typeof insertAccountSchema>;

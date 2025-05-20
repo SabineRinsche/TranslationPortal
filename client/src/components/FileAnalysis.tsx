@@ -216,6 +216,7 @@ const FileAnalysis = () => {
         subjectMatter: fileAnalysis.subjectMatter,
         sourceLanguage: fileAnalysis.sourceLanguage,
         targetLanguages: selectedLanguages,
+        workflow: selectedWorkflow,
         creditsRequired: calculationSummary.creditsRequired,
         totalCost: calculationSummary.totalCost,
       } as InsertTranslationRequest;
