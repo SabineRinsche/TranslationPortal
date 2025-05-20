@@ -188,6 +188,24 @@ const FileAnalysis = () => {
       calculateTranslation();
       setShowCalculation(true);
       
+      // Add summary message based on workflow selection
+      const selectedWorkflowDetails = workflows.find(w => w.id === selectedWorkflow);
+      const workflowCostImpact = 
+        selectedWorkflow === 'ai-translation-qc' ? "25% more than basic translation" :
+        selectedWorkflow === 'ai-translation-human' ? "twice the cost of basic translation" :
+        "standard pricing";
+      
+      // Create a summary message
+      const summaryMessage = `You've selected ${selectedWorkflowDetails?.name}. This ${
+        selectedWorkflow !== 'ai-translation' ? 'enhanced workflow has ' + workflowCostImpact : 'standard workflow has no additional cost'
+      }.`;
+      
+      // Show toast with summary
+      toast({
+        title: "Workflow Selected",
+        description: summaryMessage,
+      });
+      
       // Trigger the chat message
       setShowCalculationMessage(true);
     } else {
