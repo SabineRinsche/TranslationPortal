@@ -14,9 +14,10 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
-import { HelpCircle, Bell } from "lucide-react";
-import { Link } from "wouter";
+import { HelpCircle, Bell, LayoutDashboard } from "lucide-react";
+import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const [notificationsCount, setNotificationsCount] = useState(0);
@@ -34,6 +35,13 @@ const Header = () => {
           </div>
         </Link>
         <div className="flex items-center space-x-4">
+          <Link href="/dashboard">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <LayoutDashboard className="h-4 w-4" />
+              <span className="hidden md:inline">Dashboard</span>
+            </Button>
+          </Link>
+          
           <ThemeToggle />
           
           <TooltipProvider>
