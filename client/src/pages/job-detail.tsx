@@ -298,9 +298,12 @@ export default function JobDetail() {
                     <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
                     <div className="mt-1">
                       <Badge 
-                        className={statusColors[job.status as keyof typeof statusColors] || statusColors.pending}
+                        className={statusColors[(job?.status || 'pending') as keyof typeof statusColors]}
                       >
-                        {job.status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                        {job?.status 
+                          ? job.status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+                          : 'Pending'
+                        }
                       </Badge>
                     </div>
                   </div>
@@ -309,9 +312,9 @@ export default function JobDetail() {
                     <h3 className="text-sm font-medium text-muted-foreground">Priority</h3>
                     <div className="mt-1">
                       <Badge 
-                        className={priorityColors[job.priority as keyof typeof priorityColors] || priorityColors.medium}
+                        className={priorityColors[(job?.priority || 'medium') as keyof typeof priorityColors]}
                       >
-                        {job.priority?.charAt(0).toUpperCase() + job.priority?.slice(1)}
+                        {(job?.priority || 'medium').charAt(0).toUpperCase() + (job?.priority || 'medium').slice(1)}
                       </Badge>
                     </div>
                   </div>
