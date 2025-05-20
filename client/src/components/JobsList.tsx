@@ -221,15 +221,6 @@ export default function JobsList() {
                   </div>
                   
                   <div className="flex items-center mt-3 md:mt-0">
-                    {job.priority && (
-                      <Badge 
-                        className={`mr-3 ${priorityColors[job.priority as keyof typeof priorityColors] || priorityColors.medium}`}
-                        variant="outline"
-                      >
-                        {job.priority.charAt(0).toUpperCase() + job.priority.slice(1)} Priority
-                      </Badge>
-                    )}
-                    
                     <Button
                       variant="outline"
                       size="sm"
