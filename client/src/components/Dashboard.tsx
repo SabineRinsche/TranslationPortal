@@ -524,12 +524,15 @@ const Dashboard = () => {
                       <YAxis yAxisId="left" orientation="left" stroke="#16173f" />
                       <YAxis yAxisId="right" orientation="right" stroke="#ee3667" />
                       <Tooltip 
-                        formatter={(value, name) => [
-                          name === 'Credits Used' 
-                            ? `${value.toLocaleString()} credits` 
-                            : `£${value.toFixed(2)}`, 
-                          name
-                        ]} 
+                        formatter={(value, name) => {
+                          if (name === 'Credits Used') {
+                            const numValue = Number(value);
+                            return [isNaN(numValue) ? '0 credits' : `${numValue.toLocaleString()} credits`, name];
+                          } else {
+                            const numValue = Number(value);
+                            return [isNaN(numValue) ? '£0.00' : `£${numValue.toFixed(2)}`, name];
+                          }
+                        }} 
                       />
                       <Legend />
                       <Bar yAxisId="left" dataKey="credits" name="Credits Used" fill="#16173f" radius={[4, 4, 0, 0]} />
@@ -556,34 +559,34 @@ const Dashboard = () => {
                 <div className="h-72">
                   {workflowData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <RadialBarChart 
-                        data={workflowData} 
-                        cx="50%" 
-                        cy="50%" 
-                        innerRadius="10%" 
-                        outerRadius="80%" 
-                        barSize={20}
-                        startAngle={180} 
-                        endAngle={0}
+                      <BarChart
+                        data={workflowData}
+                        layout="vertical"
+                        margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
                       >
-                        <RadialBar
-                          minAngle={15}
-                          background
-                          clockWise={true}
-                          dataKey="credits"
-                          label={({ credits, name }) => `${name.split(' ').pop()}: ${credits.toLocaleString()}`}
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis type="number" />
+                        <YAxis 
+                          type="category" 
+                          dataKey="name" 
+                          tickFormatter={(value) => value.split(' ').pop() || value}
+                        />
+                        <Tooltip 
+                          formatter={(value, name) => [
+                            `${Number(value).toLocaleString()} credits`, 
+                            'Credit Usage'
+                          ]} 
+                        />
+                        <Bar 
+                          dataKey="credits" 
+                          name="Credits Used" 
+                          radius={[0, 4, 4, 0]}
                         >
                           {workflowData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
-                        </RadialBar>
-                        <Tooltip
-                          formatter={(value, name, props) => [
-                            `${value.toLocaleString()} credits`, 
-                            props.payload.name
-                          ]}
-                        />
-                      </RadialBarChart>
+                        </Bar>
+                      </BarChart>
                     </ResponsiveContainer>
                   ) : (
                     <div className="flex h-full items-center justify-center">
@@ -612,8 +615,8 @@ const Dashboard = () => {
                           outerRadius={80}
                           dataKey="cost"
                           nameKey="name"
-                          label={({ name, cost, percent }) => 
-                            `${name.split(' ').pop()}: £${cost.toFixed(2)} (${(percent * 100).toFixed(0)}%)`
+                          label={({ name, percent }) => 
+                            `${name.split(' ').pop()}: ${(percent * 100).toFixed(0)}%`
                           }
                         >
                           {workflowData.map((entry, index) => (
@@ -621,7 +624,10 @@ const Dashboard = () => {
                           ))}
                         </Pie>
                         <Tooltip 
-                          formatter={(value) => `£${value.toFixed(2)}`}
+                          formatter={(value) => {
+                            const numValue = Number(value);
+                            return isNaN(numValue) ? '£0.00' : `£${numValue.toFixed(2)}`;
+                          }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
