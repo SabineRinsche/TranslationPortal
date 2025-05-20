@@ -8,6 +8,7 @@ import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { InsertTranslationRequest } from '@shared/schema';
+import { Brain, Cpu, Sparkles } from 'lucide-react';
 // Remove ChatContext dependency
 
 interface LanguageOption {
@@ -112,21 +113,21 @@ const FileAnalysis = () => {
   const workflows = [
     { 
       id: 'ai-translation', 
-      name: 'Automated AI/MT Translation', 
-      description: 'Machine translation without human review',
-      icon: '🤖'
+      name: 'AI Neural Translation', 
+      description: 'Advanced neural machine translation without human review',
+      icon: <Brain className="h-5 w-5 text-blue-500" />
     },
     { 
       id: 'ai-translation-qc', 
-      name: 'Automated AI/MT Translation with automated Language Quality check', 
-      description: 'Machine translation with automated quality assurance',
-      icon: '🤖✓'
+      name: 'AI Translation with Quality Assurance', 
+      description: 'Neural translation with automated quality verification',
+      icon: <Cpu className="h-5 w-5 text-purple-500" />
     },
     { 
       id: 'ai-translation-human', 
-      name: 'Automated AI/MT Translation with Human review', 
-      description: 'Machine translation with professional human post-editing',
-      icon: '🤖👤'
+      name: 'AI Translation with Expert Review', 
+      description: 'Neural translation with professional human post-editing',
+      icon: <Sparkles className="h-5 w-5 text-yellow-500" />
     },
   ];
   
