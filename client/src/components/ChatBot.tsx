@@ -34,7 +34,7 @@ const commonQuestions = [
   },
   {
     patterns: ["cost", "price", "pricing", "expensive", "cheap"],
-    response: "Our pricing is straightforward: £0.01 per character, with potential workflow adjustments. Volume discounts are available for large projects! 💰",
+    response: "Our pricing is based on your selected workflow: \n• AI Neural Translation: 1 credit per character (£0.001) \n• AI Translation with Quality Assurance: 2 credits per character (£0.002) \n• AI Translation with Expert Review: 3 credits per character (£0.003) \nVolume discounts are available for large projects! 💰",
     suggestions: ["Tell me about subscription options", "How are credits calculated?"]
   },
   {
@@ -234,12 +234,26 @@ const ChatBot = () => {
   // Add calculation summary message when showCalculationMessage is true
   useEffect(() => {
     if (showCalculationMessage && calculationSummary && selectedLanguages.length > 0 && fileAnalysis) {
+      // Determine credit rate based on workflow
+      const selectedWorkflow = useTranslationStore.getState().selectedWorkflow;
+      let creditsPerChar = "1";
+      let workflowName = "AI Neural Translation";
+      
+      if (selectedWorkflow === 'ai-translation-qc') {
+        creditsPerChar = "2";
+        workflowName = "AI Translation with Quality Assurance";
+      } else if (selectedWorkflow === 'ai-translation-human') {
+        creditsPerChar = "3";
+        workflowName = "AI Translation with Expert Review";
+      }
+      
       addMessage("bot", 
         `Based on your selections, here's the translation summary:\n\n` +
         `Target Languages: ${selectedLanguages.join(", ")}\n` +
         `Characters per Language: ${fileAnalysis.charCount.toLocaleString()}\n` +
         `Total Characters: ${calculationSummary.totalChars.toLocaleString()}\n` +
-        `Credits Required: ${calculationSummary.creditsRequired.toLocaleString()} (1 credit per character)\n` +
+        `Workflow: ${workflowName}\n` +
+        `Credits Required: ${calculationSummary.creditsRequired.toLocaleString()} (${creditsPerChar} credit${creditsPerChar !== "1" ? "s" : ""} per character)\n` +
         `Total Cost: ${calculationSummary.totalCost}\n`
       );
       // Reset the flag after showing the message
