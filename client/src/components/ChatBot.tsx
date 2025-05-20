@@ -2,18 +2,62 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslationStore } from "@/hooks/useTranslationStore";
-import { Send, FileText } from "lucide-react";
+import { Send, FileText, HelpCircle, Image, Upload, Globe, Download, Zap, Sparkles, RefreshCw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 interface Message {
   id: string;
   type: "bot" | "user";
   text: string;
+  isTyping?: boolean;  // For typing animation
+  emoji?: string;      // Optional emoji to display
   options?: Array<{
     value: string;
     label: string;
+    icon?: React.ReactNode; // Icon for option
     action: () => void;
   }>;
 }
+
+// Common questions and predefined answers
+const commonQuestions = [
+  {
+    patterns: ["hello", "hi", "hey", "greetings"],
+    response: "Hello! How can I assist with your translation needs today? 👋",
+    suggestions: ["What languages do you support?", "How much does translation cost?", "Tell me about your AI"]
+  },
+  {
+    patterns: ["language", "languages", "support", "translate"],
+    response: "We support translation between 100+ languages including English, Spanish, French, German, Chinese, Japanese, and many more! 🌐",
+    suggestions: ["Which languages are most popular?", "Can you translate specialized content?"]
+  },
+  {
+    patterns: ["cost", "price", "pricing", "expensive", "cheap"],
+    response: "Our pricing is straightforward: £0.01 per character, with potential workflow adjustments. Volume discounts are available for large projects! 💰",
+    suggestions: ["Tell me about subscription options", "How are credits calculated?"]
+  },
+  {
+    patterns: ["ai", "technology", "machine", "neural", "how does it work"],
+    response: "Our AI translation uses advanced neural networks trained on billions of documents across domains. We combine machine learning with specialized language models for context-aware translations! ✨",
+    suggestions: ["How accurate is the AI?", "Do you offer human review?"]
+  },
+  {
+    patterns: ["help", "support", "assist", "contact"],
+    response: "Need help? Our support team is available 24/7. You can also email support@alpha-ai.com or call +44 1234 567890 for immediate assistance. 🤝",
+    suggestions: ["What file formats do you support?", "How long does translation take?"]
+  },
+  {
+    patterns: ["format", "file", "document", "types"],
+    response: "We support many file formats including PDF, DOCX, XLSX, PPTX, TXT, HTML, and ZIP archives. Our system preserves formatting during translation! 📄",
+    suggestions: ["What about images with text?", "Maximum file size?"]
+  },
+  {
+    patterns: ["time", "long", "duration", "turnaround", "fast"],
+    response: "Translation time depends on volume and complexity. Small documents (under 1000 words) are typically ready within hours, while larger projects may take 1-2 business days. ⏱️",
+    suggestions: ["Do you offer rush service?", "How do I check status?"]
+  }
+];
 
 const ChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -33,17 +77,18 @@ const ChatBot = () => {
   
   const chatMessagesRef = useRef<HTMLDivElement>(null);
 
-  // Initial bot message
+  // Initial bot message with enhanced options and icons
   useEffect(() => {
-    setMessages([
-      {
-        id: "welcome",
-        type: "bot",
-        text: "Welcome to Alpha's AI Translation Service! I'm here to help you with your translation request. How would you like to proceed?",
-        options: [
+    // Delay the welcome message slightly for a more natural feel
+    setTimeout(() => {
+      addMessage(
+        "bot",
+        "Welcome to Alpha's AI Translation Service! I'm here to help you with your translation request. How would you like to proceed?",
+        [
           { 
             value: "upload", 
-            label: "Upload a file for translation", 
+            label: "Upload a file for translation",
+            icon: <Upload className="h-4 w-4 mr-2" />,
             action: () => {
               setShowFileUpload(true);
               setShowApiDocs(false);
@@ -53,7 +98,8 @@ const ChatBot = () => {
           },
           { 
             value: "assets", 
-            label: "Submit translation assets", 
+            label: "Submit translation assets",
+            icon: <FileText className="h-4 w-4 mr-2" />,
             action: () => {
               setShowFileUpload(true);
               setShowApiDocs(false);
@@ -63,16 +109,26 @@ const ChatBot = () => {
           },
           { 
             value: "api", 
-            label: "Access API documentation", 
+            label: "Access API documentation",
+            icon: <Globe className="h-4 w-4 mr-2" />,
             action: () => {
               setShowApiDocs(true);
               setShowFileUpload(false);
               addMessage("user", "I'd like to access the API documentation.");
             }
+          },
+          {
+            value: "help",
+            label: "What can you help me with?",
+            icon: <HelpCircle className="h-4 w-4 mr-2" />,
+            action: () => {
+              addMessage("user", "What can you help me with?");
+              showCapabilities();
+            }
           }
         ]
-      }
-    ]);
+      );
+    }, 500);
   }, []);
 
   // Scroll to bottom of chat when messages change
@@ -145,28 +201,173 @@ const ChatBot = () => {
     return (bytes / (1024 * 1024)).toFixed(1) + " MB";
   };
 
-  const addMessage = (type: "bot" | "user", text: string, options?: Message["options"]) => {
+  // Enhanced message adding with typing animation
+  const addMessage = (type: "bot" | "user", text: string, options?: Message["options"], emoji?: string) => {
     const newMessage: Message = {
       id: Date.now().toString(),
       type,
       text,
-      options
+      options,
+      emoji
     };
     
-    setMessages(prev => [...prev, newMessage]);
+    if (type === "bot") {
+      // First add a typing indicator
+      const typingMessage: Message = {
+        id: `typing-${Date.now()}`,
+        type: "bot",
+        text: "",
+        isTyping: true
+      };
+      
+      setMessages(prev => [...prev, typingMessage]);
+      
+      // Calculate a realistic typing delay based on message length
+      const typingDelay = Math.min(1000, Math.max(500, text.length * 15));
+      
+      // Then replace it with the actual message after the delay
+      setTimeout(() => {
+        setMessages(prev => 
+          prev.map(m => 
+            m.id === typingMessage.id ? newMessage : m
+          )
+        );
+      }, typingDelay);
+    } else {
+      // User messages appear immediately
+      setMessages(prev => [...prev, newMessage]);
+    }
+  };
+
+  // Find the best matching response for a user query
+  const findBestResponse = (query: string): {response: string, suggestions: string[]} | null => {
+    const normalizedQuery = query.toLowerCase();
+    
+    for (const question of commonQuestions) {
+      // Check if the query contains any of the patterns
+      if (question.patterns.some(pattern => normalizedQuery.includes(pattern))) {
+        return {
+          response: question.response,
+          suggestions: question.suggestions
+        };
+      }
+    }
+    
+    // If no match, return null
+    return null;
+  };
+
+  // Generate quick reply options from suggestions
+  const createQuickReplies = (suggestions: string[]) => {
+    return suggestions.map(suggestion => ({
+      value: suggestion.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+      label: suggestion,
+      action: () => {
+        addMessage("user", suggestion);
+        handleBotResponse(suggestion);
+      }
+    }));
+  };
+
+  // Handle the bot's response to user input
+  const handleBotResponse = (userInput: string) => {
+    // Try to find a matching predefined response
+    const matchedResponse = findBestResponse(userInput);
+    
+    if (matchedResponse) {
+      // If we have a match, use it with quick replies
+      addMessage(
+        "bot", 
+        matchedResponse.response,
+        createQuickReplies(matchedResponse.suggestions)
+      );
+    } else {
+      // Default response for unrecognized queries
+      addMessage(
+        "bot", 
+        "I'm here to help with your translation needs. How can I assist you further?",
+        [
+          {
+            value: "help",
+            label: "Show me what you can do",
+            icon: <HelpCircle className="h-4 w-4 mr-2" />,
+            action: () => {
+              addMessage("user", "Show me what you can do");
+              showCapabilities();
+            }
+          },
+          {
+            value: "upload",
+            label: "Upload a file for translation",
+            icon: <Upload className="h-4 w-4 mr-2" />,
+            action: () => {
+              setShowFileUpload(true);
+              setShowApiDocs(false);
+              addMessage("user", "I'd like to upload a file for translation.");
+              setUploadOption("translation");
+            }
+          }
+        ]
+      );
+    }
+  };
+
+  // Show a message detailing what the chatbot can do
+  const showCapabilities = () => {
+    addMessage(
+      "bot",
+      "I can help you with many translation-related tasks! Here are some things you can ask me about:",
+      [
+        {
+          value: "languages",
+          label: "Languages we support",
+          icon: <Globe className="h-4 w-4 mr-2" />,
+          action: () => {
+            addMessage("user", "What languages do you support?");
+            handleBotResponse("languages");
+          }
+        },
+        {
+          value: "pricing",
+          label: "Pricing information",
+          icon: <Download className="h-4 w-4 mr-2" />,
+          action: () => {
+            addMessage("user", "How much does translation cost?");
+            handleBotResponse("pricing");
+          }
+        },
+        {
+          value: "tech",
+          label: "Our AI technology",
+          icon: <Zap className="h-4 w-4 mr-2" />,
+          action: () => {
+            addMessage("user", "Tell me about your AI");
+            handleBotResponse("ai");
+          }
+        },
+        {
+          value: "formats",
+          label: "Supported file formats",
+          icon: <FileText className="h-4 w-4 mr-2" />,
+          action: () => {
+            addMessage("user", "What file formats do you support?");
+            handleBotResponse("format");
+          }
+        }
+      ]
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
     
-    addMessage("user", inputValue);
+    const userInput = inputValue;
+    addMessage("user", userInput);
     setInputValue("");
     
-    // Simple bot response - in a real app, this would be more sophisticated
-    setTimeout(() => {
-      addMessage("bot", "I'm here to help with your translation needs. How can I assist you further?");
-    }, 1000);
+    // Process the user's input and generate a response
+    handleBotResponse(userInput);
   };
 
   const handleOptionClick = (action: () => void) => {
@@ -184,63 +385,172 @@ const ChatBot = () => {
         className="flex-1 overflow-y-auto p-4 space-y-4" 
         ref={chatMessagesRef}
       >
-        {messages.map(message => (
-          <div 
-            key={message.id} 
-            className={`flex items-start space-x-2 ${message.type === 'user' ? 'justify-end' : ''}`}
-          >
-            {message.type === 'bot' && (
-              <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
-                <FileText className="h-5 w-5" />
-              </div>
-            )}
-            
-            <div 
-              className={`rounded-lg p-3 max-w-[85%] ${
-                message.type === 'user' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-muted text-muted-foreground'
-              }`}
+        <AnimatePresence>
+          {messages.map(message => (
+            <motion.div 
+              key={message.id} 
+              className={`flex items-start space-x-2 ${message.type === 'user' ? 'justify-end' : ''}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
             >
-              <p className="text-sm whitespace-pre-line">{message.text}</p>
-              
-              {message.options && message.options.length > 0 && (
-                <div className="mt-3 flex flex-col space-y-2">
-                  {message.options.map(option => (
-                    <Button
-                      key={option.value}
-                      variant="outline"
-                      className="justify-start h-auto py-2 px-3 text-left hover:bg-accent dark:hover:bg-accent"
-                      onClick={() => handleOptionClick(option.action)}
-                    >
-                      {option.label}
-                    </Button>
-                  ))}
+              {message.type === 'bot' && (
+                <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 shadow-md">
+                  <FileText className="h-5 w-5" />
                 </div>
               )}
-            </div>
-            
-            {message.type === 'user' && (
-              <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 text-muted-foreground">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                </svg>
-              </div>
-            )}
-          </div>
-        ))}
+              
+              <motion.div 
+                className={`rounded-lg p-3 max-w-[85%] shadow-sm ${
+                  message.type === 'user' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-muted text-foreground/90'
+                }`}
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.1 }}
+              >
+                {message.isTyping ? (
+                  // Typing animation
+                  <div className="flex items-center space-x-1 h-6">
+                    <motion.div 
+                      className="w-2 h-2 rounded-full bg-primary/70"
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 0.6, repeat: Infinity, repeatType: "loop", delay: 0 }}
+                    />
+                    <motion.div 
+                      className="w-2 h-2 rounded-full bg-primary/70"
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 0.6, repeat: Infinity, repeatType: "loop", delay: 0.15 }}
+                    />
+                    <motion.div 
+                      className="w-2 h-2 rounded-full bg-primary/70"
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 0.6, repeat: Infinity, repeatType: "loop", delay: 0.3 }}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm whitespace-pre-line">
+                      {message.emoji && <span className="mr-1">{message.emoji}</span>}
+                      {message.text}
+                    </p>
+                    
+                    {message.options && message.options.length > 0 && (
+                      <div className="mt-3 flex flex-col space-y-2">
+                        {message.options.map(option => (
+                          <Button
+                            key={option.value}
+                            variant="outline"
+                            className="justify-start h-auto py-2 px-3 text-left hover:bg-accent dark:hover:bg-accent group"
+                            onClick={() => handleOptionClick(option.action)}
+                          >
+                            <div className="flex items-center w-full">
+                              {option.icon}
+                              <span className="flex-grow">{option.label}</span>
+                              <motion.span 
+                                className="opacity-0 group-hover:opacity-100 text-primary" 
+                                initial={{ x: -5 }} 
+                                animate={{ x: 0 }}
+                                transition={{ duration: 0.2 }}
+                              >→</motion.span>
+                            </div>
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </motion.div>
+              
+              {message.type === 'user' && (
+                <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 text-secondary-foreground shadow-md">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
       
       <form onSubmit={handleSubmit} className="p-3 border-t border-border">
+        {/* Quick suggestions */}
+        <div className="mb-2 flex flex-wrap gap-2">
+          <Badge 
+            variant="outline" 
+            className="cursor-pointer hover:bg-accent transition-colors px-3 py-1 text-xs"
+            onClick={() => {
+              addMessage("user", "What languages do you support?");
+              handleBotResponse("languages");
+            }}
+          >
+            <Globe className="h-3 w-3 mr-1" />
+            Languages
+          </Badge>
+          <Badge 
+            variant="outline" 
+            className="cursor-pointer hover:bg-accent transition-colors px-3 py-1 text-xs"
+            onClick={() => {
+              addMessage("user", "How much does translation cost?");
+              handleBotResponse("cost");
+            }}
+          >
+            <Download className="h-3 w-3 mr-1" />
+            Pricing
+          </Badge>
+          <Badge 
+            variant="outline" 
+            className="cursor-pointer hover:bg-accent transition-colors px-3 py-1 text-xs"
+            onClick={() => {
+              addMessage("user", "Tell me about your AI technology");
+              handleBotResponse("ai");
+            }}
+          >
+            <Sparkles className="h-3 w-3 mr-1" />
+            AI Technology
+          </Badge>
+          <Badge 
+            variant="outline" 
+            className="cursor-pointer hover:bg-accent transition-colors px-3 py-1 text-xs"
+            onClick={() => {
+              addMessage("user", "What file formats do you support?");
+              handleBotResponse("format");
+            }}
+          >
+            <FileText className="h-3 w-3 mr-1" />
+            File Formats
+          </Badge>
+        </div>
+        
         <div className="flex items-center space-x-2">
-          <Input
-            type="text"
-            placeholder="Type your message..."
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            className="flex-1 border border-input rounded-lg text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary bg-background text-foreground"
-          />
-          <Button type="submit" size="icon" className="bg-primary rounded-lg text-primary-foreground hover:bg-primary/90">
+          <div className="relative flex-1">
+            <Input
+              type="text"
+              placeholder="Type your message..."
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              className="w-full border border-input rounded-lg text-sm pr-10 focus:ring-2 focus:ring-primary/50 focus:border-primary bg-background text-foreground"
+            />
+            {inputValue.trim() === "" && (
+              <motion.div 
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <HelpCircle className="h-4 w-4" />
+              </motion.div>
+            )}
+          </div>
+          <Button 
+            type="submit" 
+            size="icon" 
+            className="bg-primary rounded-lg text-primary-foreground hover:bg-primary/90 transition-colors"
+            disabled={inputValue.trim() === ""}
+          >
             <Send className="h-5 w-5" />
           </Button>
         </div>
