@@ -287,6 +287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       if (error instanceof ZodError) {
         const validationError = fromZodError(error);
+        console.error("Validation error details:", JSON.stringify(error.format(), null, 2));
         res.status(400).json({ message: validationError.message });
       } else {
         console.error("Error creating translation request:", error);
