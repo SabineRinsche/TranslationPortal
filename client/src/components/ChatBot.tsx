@@ -48,6 +48,7 @@ const ChatBot = () => {
               setShowFileUpload(true);
               setShowApiDocs(false);
               addMessage("user", "I'd like to upload a file for translation.");
+              setUploadOption("translation");
             }
           },
           { 
@@ -83,21 +84,28 @@ const ChatBot = () => {
 
   // Function to track which upload option was selected
   const [uploadOption, setUploadOption] = useState<string>("");
+  const [hasShownUploadMessage, setHasShownUploadMessage] = useState(false);
   
-  // Add new file upload instructions when file upload is shown
+  // Track when file upload panel is shown
   useEffect(() => {
-    if (showFileUpload) {
-      const lastUserMessage = messages.filter(m => m.type === "user").pop()?.text || "";
+    // Only track changes in showFileUpload
+    if (!showFileUpload) {
+      setHasShownUploadMessage(false);
+    }
+  }, [showFileUpload]);
+  
+  // Add appropriate upload message when upload option changes
+  useEffect(() => {
+    if (showFileUpload && !hasShownUploadMessage && uploadOption) {
+      setHasShownUploadMessage(true);
       
-      if (lastUserMessage.includes("submit translation assets")) {
-        setUploadOption("assets");
+      if (uploadOption === "assets") {
         addMessage("bot", "Please upload your translation assets using the panel on the right. You can upload glossaries, reference materials, style guides, or any other supporting documents that will help with your translation.\n\nSupported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML, ZIP");
-      } else {
-        setUploadOption("translation");
+      } else if (uploadOption === "translation") {
         addMessage("bot", "Great! Please upload your file using the panel on the right. I'll analyze it and help you select target languages.\n\nSupported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML");
       }
     }
-  }, [showFileUpload, messages]);
+  }, [uploadOption, hasShownUploadMessage, showFileUpload]);
 
   // Add new file analysis message when analysis is completed
   useEffect(() => {
