@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Dashboard from '@/components/Dashboard';
-import JobsList from '@/components/ProjectsList';
+import JobsList from '@/components/JobsList';
 
 export default function DashboardPage() {
   const [location] = useLocation();

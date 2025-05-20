@@ -217,6 +217,22 @@ export default function JobsList() {
                   </div>
                 </div>
                 
+                {/* Additional translation request details */}
+                <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Source Language:</span>{" "}
+                    <span className="font-medium">{job.sourceLanguage || "Unknown"}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Target Languages:</span>{" "}
+                    <span className="font-medium">{job.targetLanguages?.join(", ") || "None"}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Credits Used:</span>{" "}
+                    <span className="font-medium">{job.creditsRequired?.toLocaleString() || "0"}</span>
+                  </div>
+                </div>
+                
                 {/* Progress bar for completion percentage */}
                 {job.completionPercentage !== undefined && job.completionPercentage !== null && job.completionPercentage > 0 && (
                   <div className="mt-3">
