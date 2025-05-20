@@ -20,6 +20,7 @@ interface TranslationStore {
   showWorkflowSelection: boolean;
   calculationSummary: CalculationSummary | null;
   showCalculationMessage: boolean;
+  uploadOption: string | null; // 'translation' or 'assets'
   
   // Actions
   setShowFileUpload: (show: boolean) => void;
@@ -31,6 +32,7 @@ interface TranslationStore {
   setShowWorkflowSelection: (show: boolean) => void;
   setCalculationSummary: (summary: CalculationSummary | null) => void;
   setShowCalculationMessage: (show: boolean) => void;
+  setUploadOption: (option: string | null) => void;
   reset: () => void;
 }
 
@@ -47,6 +49,7 @@ export const useTranslationStore = create<TranslationStore>((set) => ({
   showWorkflowSelection: false,
   calculationSummary: null,
   showCalculationMessage: false,
+  uploadOption: null,
   
   // Actions
   setShowFileUpload: (show) => set({ showFileUpload: show }),
@@ -62,6 +65,7 @@ export const useTranslationStore = create<TranslationStore>((set) => ({
   setShowWorkflowSelection: (show) => set({ showWorkflowSelection: show }),
   setCalculationSummary: (summary) => set({ calculationSummary: summary }),
   setShowCalculationMessage: (show) => set({ showCalculationMessage: show }),
+  setUploadOption: (option) => set({ uploadOption: option }),
   reset: () => set({
     showFileUpload: false,
     showFileAnalysis: false,

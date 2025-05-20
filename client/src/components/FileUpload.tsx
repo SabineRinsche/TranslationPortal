@@ -15,6 +15,9 @@ const FileUpload = () => {
   const [fileName, setFileName] = useState<string | null>(null);
   const { setFileAnalysis, setShowFileAnalysis } = useTranslationStore();
   const { toast } = useToast();
+  
+  // Get the current upload option from the translation store
+  const uploadOption = useTranslationStore(state => state.uploadOption);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
