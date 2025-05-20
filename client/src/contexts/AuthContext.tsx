@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
+// Define user interface
 interface User {
   id: number;
   username: string;
@@ -22,51 +23,61 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Demo users for testing without backend authentication
+const DEMO_USERS = {
+  admin: {
+    id: 1,
+    username: "admin",
+    firstName: "Admin",
+    lastName: "User",
+    email: "admin@example.com",
+    role: "admin",
+    profileImageUrl: null
+  },
+  client: {
+    id: 2,
+    username: "client",
+    firstName: "Client",
+    lastName: "User",
+    email: "client@example.com",
+    role: "client",
+    profileImageUrl: null
+  }
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Check if user is already in local storage on initialization
+  const storedUser = localStorage.getItem('currentUser');
+  const [user, setUser] = useState<User | null>(storedUser ? JSON.parse(storedUser) : null);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await apiRequest('GET', '/api/auth/user');
-        
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Error fetching user:', error);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
+  // Simple login function that uses demo users
   const login = async (username: string, password: string): Promise<boolean> => {
     setIsLoading(true);
+    
     try {
-      const response = await apiRequest('POST', '/api/login', { username, password });
-      
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
+      // For demo, just check against our hardcoded users
+      if (username === "admin" && password === "admin123") {
+        setUser(DEMO_USERS.admin);
+        localStorage.setItem('currentUser', JSON.stringify(DEMO_USERS.admin));
         toast({
           title: 'Login Successful',
-          description: `Welcome back, ${userData.firstName}!`,
+          description: 'Welcome back, Admin!',
+        });
+        return true;
+      } else if (username === "client" && password === "client123") {
+        setUser(DEMO_USERS.client);
+        localStorage.setItem('currentUser', JSON.stringify(DEMO_USERS.client));
+        toast({
+          title: 'Login Successful',
+          description: 'Welcome back, Client!',
         });
         return true;
       } else {
-        const error = await response.json();
         toast({
           title: 'Login Failed',
-          description: error.message || 'Invalid username or password',
+          description: 'Invalid username or password',
           variant: 'destructive',
         });
         return false;
@@ -84,22 +95,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Simple logout function
   const logout = async (): Promise<void> => {
-    try {
-      await apiRequest('POST', '/api/logout');
-      setUser(null);
-      toast({
-        title: 'Logout Successful',
-        description: 'You have been logged out.',
-      });
-    } catch (error) {
-      console.error('Logout error:', error);
-      toast({
-        title: 'Logout Error',
-        description: 'An error occurred during logout.',
-        variant: 'destructive',
-      });
-    }
+    setUser(null);
+    localStorage.removeItem('currentUser');
+    toast({
+      title: 'Logout Successful',
+      description: 'You have been logged out.',
+    });
   };
 
   return (

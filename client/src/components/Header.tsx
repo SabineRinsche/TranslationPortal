@@ -19,8 +19,9 @@ import { LayoutDashboard, User, HelpCircle, LogIn, FileCode } from "lucide-react
 import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { NotificationsDropdown } from "@/components/NotificationsDropdown";
-import { HelpButton } from "@/components/HelpButton";
+// Temporarily comment out problematic components
+// import { NotificationsDropdown } from "@/components/NotificationsDropdown";
+// import { HelpButton } from "@/components/HelpButton";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
