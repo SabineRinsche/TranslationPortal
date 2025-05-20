@@ -27,9 +27,9 @@ const Header = () => {
         <Link href="/">
           <div className="flex items-center space-x-2 cursor-pointer">
             <img 
-              src="/images/alpha_logo.svg" 
+              src="/images/alpha_logo.png" 
               alt="Alpha Logo" 
-              className="h-12 w-12"
+              className="h-12 w-auto"
             />
           </div>
         </Link>
