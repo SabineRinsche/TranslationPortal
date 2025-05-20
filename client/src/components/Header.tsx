@@ -70,7 +70,7 @@ const Header = () => {
           <div className="relative">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center space-x-2 text-sm focus:outline-none">
+                <button className="flex items-center space-x-2 text-sm focus:outline-none user-menu-button">
                   <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
                     {userData && userData.profileImageUrl ? (
                       <AvatarImage 

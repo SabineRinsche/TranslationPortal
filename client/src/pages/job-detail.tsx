@@ -54,7 +54,8 @@ import {
   MessageCircle,
   AlertCircle,
   UserCircle,
-  Briefcase
+  Briefcase,
+  Download
 } from 'lucide-react';
 
 // Define job status badges
@@ -273,6 +274,16 @@ export default function JobDetail() {
         </div>
         <div className="flex space-x-2">
           <Button onClick={() => setLocation('/dashboard')} variant="outline">Back to Dashboard</Button>
+          {job.status === 'complete' && (
+            <Button 
+              onClick={() => alert('Downloading translated files...')} 
+              variant="default"
+              className="download-button"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download translated files
+            </Button>
+          )}
         </div>
       </div>
       
@@ -417,7 +428,7 @@ export default function JobDetail() {
         <TabsContent value="updates">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="md:col-span-2">
-              <Card className="h-full">
+              <Card className="h-full job-updates">
                 <CardHeader>
                   <CardTitle>Job Updates</CardTitle>
                   <CardDescription>Status updates and notes</CardDescription>
