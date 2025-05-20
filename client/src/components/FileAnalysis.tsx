@@ -206,7 +206,9 @@ const FileAnalysis = () => {
       
       // We don't need to explicitly add userId as the server will add it from the authenticated user
       // But for TypeScript, we need to cast it to satisfy the type check
-      const translationRequest = {
+      // We'll create a partial object and cast to the type to avoid TypeScript errors
+      // The server will handle adding any missing required fields like userId
+      const translationRequest: Partial<InsertTranslationRequest> = {
         fileName: fileAnalysis.fileName,
         fileFormat: fileAnalysis.fileFormat,
         fileSize: fileAnalysis.fileSize,
@@ -219,7 +221,7 @@ const FileAnalysis = () => {
         workflow: selectedWorkflow,
         creditsRequired: calculationSummary.creditsRequired,
         totalCost: calculationSummary.totalCost,
-      } as InsertTranslationRequest;
+      };
       
       return await apiRequest('POST', '/api/translation-requests', translationRequest);
     },
