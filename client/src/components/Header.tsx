@@ -67,9 +67,7 @@ const Header = () => {
               
               <ThemeToggle />
               
-              <HelpButton />
-
-              <NotificationsDropdown />
+              {/* Temporarily disabled components causing issues */}
 
               <div className="relative">
                 <DropdownMenu>
