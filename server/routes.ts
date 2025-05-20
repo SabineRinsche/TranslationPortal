@@ -13,6 +13,7 @@ import multer from 'multer';
 import AdmZip from 'adm-zip';
 import { z } from "zod";
 import apiRouter from "./api-v1";
+import { loginHandler, logoutHandler, getCurrentUser, roleMiddleware } from "./auth";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -99,16 +100,16 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Register the API v1 router for advanced API access
-  app.use('/api/v1', apiRouter);
+  // Authentication routes
+  app.post('/api/login', loginHandler);
+  app.post('/api/logout', logoutHandler);
+  app.get('/api/auth/user', getCurrentUser);
+  
   // Serve static files from the public directory
   app.use(express.static(path.join(process.cwd(), 'public')));
   
-  // Apply auth middleware to all API routes
-  app.use('/api', authMiddleware);
-  
-  // Register the versioned API routes
-  app.use('/api/v1', apiRouter);
+  // Register the API v1 router for advanced API access - only admin users can access
+  app.use('/api/v1', roleMiddleware(['admin']), apiRouter);
   
   // User profile routes
   app.get("/api/user/profile", (req, res) => {
