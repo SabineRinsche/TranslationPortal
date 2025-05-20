@@ -4,7 +4,7 @@ import {
   translationRequests, type TranslationRequest, type InsertTranslationRequest 
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -119,15 +119,13 @@ export class DatabaseStorage implements IStorage {
       return []; // Return empty array if no users found
     }
     
-    // Create a condition for each userId using 'in' operator
     return await db
       .select()
       .from(translationRequests)
       .where(
-        // Use 'in' operator to match any userId in the array
         userIds.length === 1 
           ? eq(translationRequests.userId, userIds[0])
-          : translationRequests.userId.in(userIds)
+          : inArray(translationRequests.userId, userIds)
       );
   }
 

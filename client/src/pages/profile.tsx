@@ -14,13 +14,36 @@ import { Loader2 } from "lucide-react";
 export default function ProfilePage() {
   const { toast } = useToast();
   
+  // Define types for API responses
+  interface UserData {
+    id: number;
+    accountId: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+    role: string;
+    jobTitle?: string;
+    phoneNumber?: string;
+  }
+  
+  interface AccountData {
+    id: number;
+    name: string;
+    credits: number;
+    subscriptionPlan?: string;
+    subscriptionStatus?: string;
+    subscriptionRenewal?: string;
+    users?: UserData[];
+  }
+  
   // Fetch user data
-  const { data: userData, isLoading: isLoadingUser } = useQuery({
+  const { data: userData, isLoading: isLoadingUser } = useQuery<UserData>({
     queryKey: ['/api/user/profile'],
   });
   
   // Fetch account data
-  const { data: accountData, isLoading: isLoadingAccount } = useQuery({
+  const { data: accountData, isLoading: isLoadingAccount } = useQuery<AccountData>({
     queryKey: ['/api/account'],
   });
 
@@ -35,7 +58,7 @@ export default function ProfilePage() {
   });
 
   // Update form data when user data is loaded
-  useState(() => {
+  React.useEffect(() => {
     if (userData) {
       setFormData({
         firstName: userData.firstName || '',
@@ -47,7 +70,7 @@ export default function ProfilePage() {
         confirmPassword: '',
       });
     }
-  });
+  }, [userData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
