@@ -264,7 +264,7 @@ export default function JobDetail() {
   
   return (
     <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6 job-details-header">
         <div>
           <h1 className="text-2xl font-bold">
             {job.projectName || job.fileName}
@@ -294,7 +294,7 @@ export default function JobDetail() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
+                  <div className="job-status">
                     <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
                     <div className="mt-1">
                       <Badge 
