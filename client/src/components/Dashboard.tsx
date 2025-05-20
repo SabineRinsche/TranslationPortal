@@ -133,7 +133,7 @@ const Dashboard = ({ initialTab }: DashboardProps = {}) => {
     <div className="container mx-auto py-6">
       <h1 className="text-2xl font-bold mb-6">Translation Dashboard</h1>
       
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs defaultValue={initialTab || "overview"} className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="requests">Translation Requests</TabsTrigger>
