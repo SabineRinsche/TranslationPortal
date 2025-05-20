@@ -297,6 +297,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get a single translation request with its project updates
+  app.get("/api/translation-requests/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid request ID" });
+      }
+      
+      const request = await storage.getTranslationRequest(id);
+      if (!request) {
+        return res.status(404).json({ message: "Translation request not found" });
+      }
+      
+      // Get project updates for this request
+      const updates = await storage.getProjectUpdates(id);
+      
+      res.json({
+        ...request,
+        updates
+      });
+    } catch (error) {
+      console.error("Error fetching translation request details:", error);
+      res.status(500).json({ message: "Failed to fetch translation request details" });
+    }
+  });
+  
+  // Update a translation request (project tracking fields)
+  app.patch("/api/translation-requests/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid request ID" });
+      }
+      
+      const request = await storage.getTranslationRequest(id);
+      if (!request) {
+        return res.status(404).json({ message: "Translation request not found" });
+      }
+      
+      // Update the request with new data
+      const updatedRequest = await storage.updateTranslationRequest(id, req.body);
+      res.json(updatedRequest);
+    } catch (error) {
+      console.error("Error updating translation request:", error);
+      res.status(500).json({ message: "Failed to update translation request" });
+    }
+  });
+  
+  // Add a project update/note to a translation request
+  app.post("/api/translation-requests/:id/updates", async (req, res) => {
+    try {
+      const requestId = parseInt(req.params.id);
+      if (isNaN(requestId)) {
+        return res.status(400).json({ message: "Invalid request ID" });
+      }
+      
+      // Check if the request exists
+      const request = await storage.getTranslationRequest(requestId);
+      if (!request) {
+        return res.status(404).json({ message: "Translation request not found" });
+      }
+      
+      // Create the project update
+      const newUpdate = await storage.createProjectUpdate({
+        requestId,
+        userId: req.user.id,
+        updateText: req.body.updateText,
+        updateType: req.body.updateType || 'note',
+        newStatus: req.body.newStatus
+      });
+      
+      res.status(201).json(newUpdate);
+    } catch (error) {
+      console.error("Error adding project update:", error);
+      res.status(500).json({ message: "Failed to add project update" });
+    }
+  });
+  
   app.get("/api/translation-requests", async (req, res) => {
     try {
       const translationRequests = await storage.getAllTranslationRequests();
