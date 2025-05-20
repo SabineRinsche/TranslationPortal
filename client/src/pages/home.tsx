@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import Header from '@/components/Header';
 import ChatBot from '@/components/ChatBot';
 import FileUpload from '@/components/FileUpload';
 import FileAnalysis from '@/components/FileAnalysis';
@@ -21,8 +20,6 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <Header />
-      
       <main className="container mx-auto px-4 py-6 flex-1">
         <div className="mb-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500 dark:from-primary dark:to-blue-300 mb-2">Alpha's AI Translation Service</h2>
