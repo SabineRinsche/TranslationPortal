@@ -91,10 +91,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
         
+        // Count valid files in the ZIP archive
+        const validFileCount = zipEntries.filter(entry => {
+          if (entry.isDirectory || entry.entryName.startsWith('__MACOSX') || entry.entryName.startsWith('.')) {
+            return false;
+          }
+          const entryExt = entry.name.split('.').pop()?.toLowerCase() || '';
+          return supportedExtensions.includes(entryExt);
+        }).length;
+        
         // Use the first valid file from the ZIP for analysis
         const fileAnalysis = {
-          fileName: `${req.file.originalname} (contains ${fileToAnalyze.name})`,
-          fileFormat: "ZIP",
+          fileName: `${req.file.originalname} (analyzing ${fileToAnalyze.name})`,
+          fileFormat: `ZIP (${validFileCount} file${validFileCount !== 1 ? 's' : ''})`,
           fileSize: req.file.size,
           wordCount: Math.floor(fileToAnalyze.getData().length / 10), // Simplified estimate
           charCount: Math.floor(fileToAnalyze.getData().length / 2),  // Simplified estimate
