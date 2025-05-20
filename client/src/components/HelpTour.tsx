@@ -32,14 +32,14 @@ export function HelpTour({ isOpen, onClose }: HelpTourProps) {
       setSteps([
         {
           title: 'Welcome to Alpha Translation',
-          description: 'This dashboard gives you an overview of your translation projects and activities.',
+          description: 'This is your central hub for all translation activities.',
           target: '.page-header',
           position: 'bottom'
         },
         {
-          title: 'Job Management',
-          description: 'View and manage all your translation jobs from this panel. Click on a job to view details.',
-          target: '.jobs-list',
+          title: 'AI Assistant',
+          description: 'Our intelligent assistant helps guide you through the translation process and answers your questions.',
+          target: '.chatbot-container',
           position: 'right'
         },
         {
@@ -47,12 +47,6 @@ export function HelpTour({ isOpen, onClose }: HelpTourProps) {
           description: 'Click here to upload new files for translation or submit API requests.',
           target: '.upload-button',
           position: 'bottom'
-        },
-        {
-          title: 'Translation Analytics',
-          description: 'Track your translation activity, credits usage, and trends over time.',
-          target: '.dashboard-analytics',
-          position: 'left'
         },
         {
           title: 'Your Profile',
@@ -88,10 +82,37 @@ export function HelpTour({ isOpen, onClose }: HelpTourProps) {
           position: 'left'
         },
       ]);
+    } else if (location === '/dashboard') {
+      setSteps([
+        {
+          title: 'Overview',
+          description: 'Get a quick snapshot of all your translation activities and performance metrics.',
+          target: 'button[value="overview"]',
+          position: 'bottom'
+        },
+        {
+          title: 'Jobs',
+          description: 'View and manage all your translation jobs in one centralized location.',
+          target: 'button[value="jobs"]',
+          position: 'bottom'
+        },
+        {
+          title: 'Translation Assets',
+          description: 'Access supporting materials such as glossaries, style guides, and reference materials.',
+          target: 'button[value="assets"]',
+          position: 'bottom'
+        },
+        {
+          title: 'Credit Usage',
+          description: 'Monitor your credit consumption and subscription details to manage your budget effectively.',
+          target: 'button[value="usage"]',
+          position: 'bottom'
+        }
+      ]);
     } else if (location === '/profile') {
       setSteps([
         {
-          title: 'User Profile',
+          title: 'Your Profile',
           description: 'View and edit your personal information and preferences.',
           target: '.profile-header',
           position: 'bottom'
