@@ -482,7 +482,7 @@ const Dashboard = ({ initialTab }: DashboardProps = {}) => {
               <CardContent>
                 <div className="text-2xl font-bold">
                   {requests && requests.length > 0 
-                    ? Math.round(requests.reduce((sum, req) => sum + req.charCount, 0) / requests.length).toLocaleString() 
+                    ? Math.round(requests.reduce((sum, req) => sum + req.characterCount, 0) / requests.length).toLocaleString() 
                     : '0'}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">

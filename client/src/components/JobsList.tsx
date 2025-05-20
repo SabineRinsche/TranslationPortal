@@ -341,7 +341,7 @@ export default function JobsList() {
                     </TableRow>
                     <TableRow>
                       <TableCell className="text-muted-foreground">Characters</TableCell>
-                      <TableCell>{selectedJob.charCount?.toLocaleString() || 'N/A'}</TableCell>
+                      <TableCell>{selectedJob.characterCount?.toLocaleString() || 'N/A'}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>

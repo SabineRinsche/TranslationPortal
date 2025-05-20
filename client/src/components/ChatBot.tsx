@@ -250,7 +250,7 @@ const ChatBot = () => {
       addMessage("bot", 
         `Based on your selections, here's the translation summary:\n\n` +
         `Target Languages: ${selectedLanguages.join(", ")}\n` +
-        `Characters per Language: ${fileAnalysis.charCount.toLocaleString()}\n` +
+        `Characters per Language: ${fileAnalysis.characterCount.toLocaleString()}\n` +
         `Total Characters: ${calculationSummary.totalChars.toLocaleString()}\n` +
         `Workflow: ${workflowName}\n` +
         `Credits Required: ${calculationSummary.creditsRequired.toLocaleString()} (${creditsPerChar} credit${creditsPerChar !== "1" ? "s" : ""} per character)\n` +

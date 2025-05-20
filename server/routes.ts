@@ -425,7 +425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             fileFormat: fileNames[i].split('.').pop()?.toUpperCase() || 'DOCX',
             fileSize: chars * 2,
             wordCount: Math.floor(chars / 5),
-            charCount: chars,
+            characterCount: chars,
             imagesWithText: Math.floor(Math.random() * 3),
             subjectMatter: i % 2 === 0 ? 'Marketing' : 'Technical',
             sourceLanguage: 'English',
