@@ -265,8 +265,8 @@ export default function ProfilePage() {
   const isLoading = isLoadingUser || isLoadingAccount;
 
   return (
-    <div className="container py-10 px-4">
-      <h1 className="text-4xl font-bold mb-8 ml-4 md:ml-12">Your Profile</h1>
+    <div className="container mx-auto py-6">
+      <h1 className="text-2xl font-bold mb-6">Your Profile</h1>
       
       {isLoading ? (
         <div className="flex items-center justify-center p-12">
