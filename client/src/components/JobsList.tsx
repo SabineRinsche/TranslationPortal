@@ -204,7 +204,7 @@ export default function JobsList() {
               {sortedJobs.map((job) => (
                 <div
                   key={job.id}
-                  className="border rounded-lg p-4 hover:bg-accent/50 transition-colors cursor-pointer"
+                  className="border rounded-lg p-4 hover:bg-[#93a898] transition-colors cursor-pointer"
                   onClick={() => setLocation(`/jobs/${job.id}`)}
                 >
                   <div className="flex flex-col md:flex-row md:items-start justify-between">
