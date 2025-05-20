@@ -71,16 +71,16 @@ const TranslationRequestTable = ({ requests }: { requests: TranslationRequest[] 
 };
 
 const Dashboard = () => {
-  const { data: requests, isLoading } = useQuery({
+  const { data: requests, isLoading } = useQuery<TranslationRequest[]>({
     queryKey: ['/api/translation-requests'],
     staleTime: 60000, // 1 minute
   });
 
   // Prepare data for credit usage chart (by month)
-  const creditUsageData = requests ? prepareMonthlyData(requests) : [];
+  const creditUsageData = requests && requests.length > 0 ? prepareMonthlyData(requests) : [];
   
   // Prepare data for language popularity
-  const languagePopularityData = requests ? prepareLanguageData(requests) : [];
+  const languagePopularityData = requests && requests.length > 0 ? prepareLanguageData(requests) : [];
 
   return (
     <div className="container mx-auto py-6">
@@ -101,7 +101,7 @@ const Dashboard = () => {
                 <CardDescription>All time translation requests</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold">{requests?.length || 0}</div>
+                <div className="text-3xl font-bold">{requests?.length ?? 0}</div>
               </CardContent>
             </Card>
             
@@ -112,7 +112,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold">
-                  {requests?.reduce((total, req) => total + req.creditsRequired, 0).toLocaleString() || 0}
+                  {requests ? requests.reduce((total, req) => total + req.creditsRequired, 0).toLocaleString() : '0'}
                 </div>
               </CardContent>
             </Card>
@@ -124,10 +124,10 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold">
-                  £{(requests?.reduce((total, req) => {
+                  £{requests ? (requests.reduce((total, req) => {
                     const cost = parseFloat(req.totalCost.replace('£', ''));
                     return total + cost;
-                  }, 0) || 0).toFixed(2)}
+                  }, 0)).toFixed(2) : '0.00'}
                 </div>
               </CardContent>
             </Card>
