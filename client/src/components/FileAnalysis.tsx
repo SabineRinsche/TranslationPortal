@@ -15,19 +15,96 @@ interface LanguageOption {
   label: string;
 }
 
+// Full list of memoQ supported languages
 const languages: LanguageOption[] = [
-  { value: 'French', label: 'French' },
-  { value: 'German', label: 'German' },
-  { value: 'Spanish', label: 'Spanish' },
-  { value: 'Italian', label: 'Italian' },
-  { value: 'Portuguese', label: 'Portuguese' },
-  { value: 'Dutch', label: 'Dutch' },
-  { value: 'Chinese', label: 'Chinese' },
-  { value: 'Japanese', label: 'Japanese' },
-  { value: 'Korean', label: 'Korean' },
-  { value: 'Russian', label: 'Russian' },
+  { value: 'Albanian', label: 'Albanian' },
   { value: 'Arabic', label: 'Arabic' },
+  { value: 'Armenian', label: 'Armenian' },
+  { value: 'Azerbaijani', label: 'Azerbaijani' },
+  { value: 'Basque', label: 'Basque' },
+  { value: 'Belarusian', label: 'Belarusian' },
+  { value: 'Bengali', label: 'Bengali' },
+  { value: 'Bosnian', label: 'Bosnian' },
+  { value: 'Bulgarian', label: 'Bulgarian' },
+  { value: 'Catalan', label: 'Catalan' },
+  { value: 'Chinese', label: 'Chinese' },
+  { value: 'Croatian', label: 'Croatian' },
+  { value: 'Czech', label: 'Czech' },
+  { value: 'Danish', label: 'Danish' },
+  { value: 'Dutch', label: 'Dutch' },
+  { value: 'English', label: 'English' },
+  { value: 'Estonian', label: 'Estonian' },
+  { value: 'Finnish', label: 'Finnish' },
+  { value: 'French', label: 'French' },
+  { value: 'Galician', label: 'Galician' },
+  { value: 'Georgian', label: 'Georgian' },
+  { value: 'German', label: 'German' },
+  { value: 'Greek', label: 'Greek' },
+  { value: 'Hebrew', label: 'Hebrew' },
   { value: 'Hindi', label: 'Hindi' },
+  { value: 'Hungarian', label: 'Hungarian' },
+  { value: 'Icelandic', label: 'Icelandic' },
+  { value: 'Indonesian', label: 'Indonesian' },
+  { value: 'Irish', label: 'Irish' },
+  { value: 'Italian', label: 'Italian' },
+  { value: 'Japanese', label: 'Japanese' },
+  { value: 'Kazakh', label: 'Kazakh' },
+  { value: 'Korean', label: 'Korean' },
+  { value: 'Latvian', label: 'Latvian' },
+  { value: 'Lithuanian', label: 'Lithuanian' },
+  { value: 'Macedonian', label: 'Macedonian' },
+  { value: 'Malay', label: 'Malay' },
+  { value: 'Maltese', label: 'Maltese' },
+  { value: 'Norwegian', label: 'Norwegian' },
+  { value: 'Persian', label: 'Persian' },
+  { value: 'Polish', label: 'Polish' },
+  { value: 'Portuguese', label: 'Portuguese' },
+  { value: 'Romanian', label: 'Romanian' },
+  { value: 'Russian', label: 'Russian' },
+  { value: 'Serbian', label: 'Serbian' },
+  { value: 'Slovak', label: 'Slovak' },
+  { value: 'Slovenian', label: 'Slovenian' },
+  { value: 'Spanish', label: 'Spanish' },
+  { value: 'Swedish', label: 'Swedish' },
+  { value: 'Thai', label: 'Thai' },
+  { value: 'Turkish', label: 'Turkish' },
+  { value: 'Ukrainian', label: 'Ukrainian' },
+  { value: 'Urdu', label: 'Urdu' },
+  { value: 'Vietnamese', label: 'Vietnamese' },
+  { value: 'Welsh', label: 'Welsh' },
+];
+
+// Define language groups for quick selection
+interface LanguageGroup {
+  name: string;
+  languages: string[];
+}
+
+const languageGroups: LanguageGroup[] = [
+  { 
+    name: 'FIGS', 
+    languages: ['French', 'Italian', 'German', 'Spanish'] 
+  },
+  { 
+    name: 'EFIGS', 
+    languages: ['English', 'French', 'Italian', 'German', 'Spanish'] 
+  },
+  { 
+    name: 'Western European', 
+    languages: ['Dutch', 'English', 'French', 'German', 'Italian', 'Portuguese', 'Spanish'] 
+  },
+  { 
+    name: 'Eastern European', 
+    languages: ['Bulgarian', 'Czech', 'Hungarian', 'Polish', 'Romanian', 'Russian', 'Slovak', 'Ukrainian'] 
+  },
+  { 
+    name: 'Asian Languages', 
+    languages: ['Chinese', 'Japanese', 'Korean', 'Thai', 'Vietnamese'] 
+  },
+  { 
+    name: 'Nordic', 
+    languages: ['Danish', 'Finnish', 'Icelandic', 'Norwegian', 'Swedish'] 
+  },
 ];
 
 const FileAnalysis = () => {
@@ -123,6 +200,33 @@ const FileAnalysis = () => {
       setSelectedLanguages((prev: string[]) => prev.filter((lang: string) => lang !== language));
     }
   };
+  
+  // Add function to handle language group selection
+  const handleLanguageGroupSelection = (group: LanguageGroup) => {
+    // Get list of currently selected languages
+    const currentlySelected = [...selectedLanguages];
+    
+    // Check if all languages in the group are already selected
+    const allSelected = group.languages.every(lang => currentlySelected.includes(lang));
+    
+    if (allSelected) {
+      // If all are selected, deselect the entire group
+      setSelectedLanguages((prev: string[]) => 
+        prev.filter(lang => !group.languages.includes(lang))
+      );
+    } else {
+      // Otherwise, add any missing languages from the group
+      const newSelection = [...currentlySelected];
+      
+      group.languages.forEach(lang => {
+        if (!newSelection.includes(lang)) {
+          newSelection.push(lang);
+        }
+      });
+      
+      setSelectedLanguages(newSelection);
+    }
+  };
 
   if (!fileAnalysis) return null;
 
@@ -190,7 +294,37 @@ const FileAnalysis = () => {
       
       <div>
         <h3 className="text-sm font-medium text-card-foreground mb-3">Select Target Languages</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+        
+        {/* Language Groups Section */}
+        <div className="mb-4">
+          <h4 className="text-sm font-medium text-muted-foreground mb-2">Language Groups</h4>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {languageGroups.map((group) => {
+              const allSelected = group.languages.every(lang => selectedLanguages.includes(lang));
+              const someSelected = group.languages.some(lang => selectedLanguages.includes(lang));
+              
+              return (
+                <button
+                  key={group.name}
+                  onClick={() => handleLanguageGroupSelection(group)}
+                  className={`px-3 py-1.5 text-xs rounded-full transition-colors ${
+                    allSelected 
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                      : someSelected
+                        ? 'bg-primary/20 text-primary hover:bg-primary/30 border border-primary/30'
+                        : 'bg-muted hover:bg-muted/80 text-muted-foreground border border-border'
+                  }`}
+                >
+                  {group.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        
+        {/* Individual Languages Section */}
+        <h4 className="text-sm font-medium text-muted-foreground mb-2">Individual Languages</h4>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4 max-h-60 overflow-y-auto pr-1">
           {languages.map((language) => (
             <label 
               key={language.value}
