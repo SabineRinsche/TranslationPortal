@@ -242,7 +242,11 @@ function prepareMonthlyData(requests: TranslationRequest[]) {
   const monthlyData: Record<string, { credits: number; cost: number }> = {};
   
   requests.forEach(request => {
-    const date = new Date(request.createdAt);
+    // Ensure we can handle both string dates and Date objects
+    const date = request.createdAt instanceof Date 
+      ? request.createdAt 
+      : new Date(request.createdAt as unknown as string);
+      
     const monthYear = format(date, 'MMM yyyy');
     const cost = parseFloat(request.totalCost.replace('£', ''));
     
@@ -263,9 +267,19 @@ function prepareMonthlyData(requests: TranslationRequest[]) {
     }))
     .sort((a, b) => {
       // Sort by date (convert month strings back to date objects for comparison)
-      const dateA = new Date(a.month);
-      const dateB = new Date(b.month);
-      return dateA.getTime() - dateB.getTime();
+      const monthAStr = a.month.split(' ')[0]; // Get month abbreviation
+      const monthBStr = b.month.split(' ')[0]; 
+      const yearA = parseInt(a.month.split(' ')[1]);
+      const yearB = parseInt(b.month.split(' ')[1]);
+      
+      // First compare years
+      if (yearA !== yearB) {
+        return yearA - yearB;
+      }
+      
+      // Then compare months
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return months.indexOf(monthAStr) - months.indexOf(monthBStr);
     });
 }
 

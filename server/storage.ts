@@ -47,12 +47,15 @@ export class DatabaseStorage implements IStorage {
     return request || undefined;
   }
 
-  async createTranslationRequest(insertTranslationRequest: InsertTranslationRequest): Promise<TranslationRequest> {
+  async createTranslationRequest(insertTranslationRequest: InsertTranslationRequest & { createdAt?: Date }): Promise<TranslationRequest> {
+    const { createdAt, ...rest } = insertTranslationRequest;
+    
     const [translationRequest] = await db
       .insert(translationRequests)
       .values({
-        ...insertTranslationRequest,
-        status: "pending"
+        ...rest,
+        status: "pending",
+        ...(createdAt && { createdAt })
       })
       .returning();
     return translationRequest;

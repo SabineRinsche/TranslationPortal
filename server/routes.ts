@@ -35,8 +35,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/translation-requests", async (req, res) => {
     try {
       const translationRequests = await storage.getAllTranslationRequests();
+      
+      // Add some demo data if no requests exist (for dashboard visualization)
+      if (translationRequests.length === 0) {
+        // Create some sample dates for the past few months
+        const now = new Date();
+        const sampleDates = [
+          new Date(now.getFullYear(), now.getMonth() - 2, 15),
+          new Date(now.getFullYear(), now.getMonth() - 1, 5),
+          new Date(now.getFullYear(), now.getMonth() - 1, 20),
+          new Date(now.getFullYear(), now.getMonth(), 3),
+          new Date(now.getFullYear(), now.getMonth(), 10),
+        ];
+        
+        // Sample languages to use
+        const languageSets = [
+          ['French', 'German', 'Spanish', 'Italian'],
+          ['Japanese', 'Chinese', 'Korean'],
+          ['Russian', 'Polish', 'Czech'],
+          ['French', 'German'],
+          ['Spanish', 'Portuguese', 'Italian'],
+        ];
+        
+        // Sample file names
+        const fileNames = [
+          'Marketing Brochure.docx',
+          'Technical Manual.pdf',
+          'Website Content.html',
+          'Product Catalog.xlsx',
+          'Legal Agreement.docx',
+        ];
+        
+        // Generate 5 sample translation requests
+        for (let i = 0; i < 5; i++) {
+          const chars = Math.floor(Math.random() * 5000) + 1000;
+          const credits = chars;
+          const cost = (credits * 0.01).toFixed(2);
+          
+          await storage.createTranslationRequest({
+            fileName: fileNames[i],
+            fileFormat: fileNames[i].split('.').pop()?.toUpperCase() || 'DOCX',
+            fileSize: chars * 2,
+            wordCount: Math.floor(chars / 5),
+            charCount: chars,
+            imagesWithText: Math.floor(Math.random() * 3),
+            subjectMatter: i % 2 === 0 ? 'Marketing' : 'Technical',
+            sourceLanguage: 'English',
+            targetLanguages: languageSets[i],
+            creditsRequired: credits,
+            totalCost: `£${cost}`,
+            createdAt: sampleDates[i],
+          });
+        }
+        
+        // Fetch the newly created requests
+        const updatedRequests = await storage.getAllTranslationRequests();
+        return res.json(updatedRequests);
+      }
+      
       res.json(translationRequests);
     } catch (error) {
+      console.error("Error fetching translation requests:", error);
       res.status(500).json({ message: "Failed to fetch translation requests" });
     }
   });
