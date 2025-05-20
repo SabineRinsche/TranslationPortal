@@ -35,7 +35,7 @@ export default function DashboardPage() {
   
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <h1 className="text-2xl font-bold">Translation Dashboard</h1>
+      <h1 className="text-2xl font-bold page-header">Translation Dashboard</h1>
       
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList>

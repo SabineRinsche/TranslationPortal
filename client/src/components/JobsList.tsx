@@ -138,7 +138,7 @@ export default function JobsList() {
   
   return (
     <>
-      <Card>
+      <Card className="jobs-list">
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center justify-between space-y-2 md:space-y-0">
             <div>
