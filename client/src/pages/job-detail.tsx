@@ -152,7 +152,7 @@ export default function JobDetail() {
       editForm.reset({
         projectName: job.projectName || job.fileName,
         priority: ((job.priority || 'medium') as 'low' | 'medium' | 'high' | 'urgent'),
-        status: (job.status as 'pending' | 'translation-in-progress' | 'lqa-in-progress' | 
+        status: ((job.status || 'pending') as 'pending' | 'translation-in-progress' | 'lqa-in-progress' | 
                 'human-reviewer-assigned' | 'human-review-in-progress' | 'complete'),
         dueDate: job.dueDate ? new Date(job.dueDate) : undefined,
         assignedTo: job.assignedTo || '',
@@ -198,11 +198,11 @@ export default function JobDetail() {
       });
       
       // Check if the job was marked as complete and send notification
-      if (variables.status === 'complete') {
+      if (variables && variables.status === 'complete') {
         // Send notification for job completion
         addNotification({
           title: "Job Completed",
-          message: `Translation job "${variables.projectName}" has been completed`,
+          message: `Translation job "${variables.projectName || 'Translation'}" has been completed`,
           type: "job_complete",
           jobId: Number(jobId)
         });
