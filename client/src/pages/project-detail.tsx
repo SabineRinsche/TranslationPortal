@@ -55,13 +55,14 @@ import {
   UserCircle
 } from 'lucide-react';
 
-// Define project status badges
+// Define job status badges
 const statusColors = {
   'pending': 'bg-amber-100 text-amber-800 hover:bg-amber-200',
-  'in-progress': 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-  'review': 'bg-purple-100 text-purple-800 hover:bg-purple-200',
-  'completed': 'bg-green-100 text-green-800 hover:bg-green-200',
-  'on-hold': 'bg-red-100 text-red-800 hover:bg-red-200'
+  'translation-in-progress': 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+  'lqa-in-progress': 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200',
+  'human-reviewer-assigned': 'bg-violet-100 text-violet-800 hover:bg-violet-200',
+  'human-review-in-progress': 'bg-purple-100 text-purple-800 hover:bg-purple-200',
+  'complete': 'bg-green-100 text-green-800 hover:bg-green-200'
 };
 
 // Define priority badges
@@ -80,48 +81,49 @@ const updateTypeIcons = {
   'issue': <AlertCircle className="h-4 w-4 mr-1" />
 };
 
-// Schema for project update form
-const projectUpdateSchema = z.object({
+// Schema for job update form
+const jobUpdateSchema = z.object({
   updateText: z.string().min(3, { message: "Update text is required" }),
   updateType: z.enum(['note', 'status_change', 'milestone', 'issue']),
   newStatus: z.string().optional(),
 });
 
-// Schema for project edit form
-const projectEditSchema = z.object({
-  projectName: z.string().min(3, { message: "Project name is required" }),
+// Schema for job edit form
+const jobEditSchema = z.object({
+  projectName: z.string().min(3, { message: "Job name is required" }),
   priority: z.enum(['low', 'medium', 'high', 'urgent']),
-  status: z.enum(['pending', 'in-progress', 'review', 'completed', 'on-hold']),
+  status: z.enum(['pending', 'translation-in-progress', 'lqa-in-progress', 
+                  'human-reviewer-assigned', 'human-review-in-progress', 'complete']),
   dueDate: z.date().optional(),
   assignedTo: z.string().optional(),
   completionPercentage: z.number().min(0).max(100).optional(),
 });
 
-export default function ProjectDetail() {
+export default function JobDetail() {
   const [, setLocation] = useLocation();
   const params = useParams();
-  const projectId = parseInt(params.id);
+  const jobId = parseInt(params.id);
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('details');
   
-  // Define the extended project type with updates
-  interface ProjectWithUpdates extends TranslationRequest {
+  // Define the extended job type with updates
+  interface JobWithUpdates extends TranslationRequest {
     updates?: ProjectUpdate[];
   }
   
-  // Fetch project details
+  // Fetch job details
   const { 
-    data: project, 
+    data: job, 
     isLoading, 
     error 
-  } = useQuery<ProjectWithUpdates>({
-    queryKey: ['/api/translation-requests', projectId],
-    enabled: !isNaN(projectId),
+  } = useQuery<JobWithUpdates>({
+    queryKey: ['/api/translation-requests', jobId],
+    enabled: !isNaN(jobId),
   });
   
-  // Form for adding project updates
+  // Form for adding job updates
   const updateForm = useForm({
-    resolver: zodResolver(projectUpdateSchema),
+    resolver: zodResolver(jobUpdateSchema),
     defaultValues: {
       updateText: '',
       updateType: 'note' as const,
@@ -129,9 +131,9 @@ export default function ProjectDetail() {
     },
   });
   
-  // Form for editing project details
+  // Form for editing job details
   const editForm = useForm({
-    resolver: zodResolver(projectEditSchema),
+    resolver: zodResolver(jobEditSchema),
     defaultValues: {
       projectName: '',
       priority: 'medium' as const,
@@ -142,32 +144,33 @@ export default function ProjectDetail() {
     },
   });
   
-  // Update form values when project data is loaded
+  // Update form values when job data is loaded
   useEffect(() => {
-    if (project) {
+    if (job) {
       editForm.reset({
-        projectName: project.projectName || project.fileName,
-        priority: ((project.priority || 'medium') as 'low' | 'medium' | 'high' | 'urgent'),
-        status: (project.status as 'pending' | 'in-progress' | 'review' | 'completed' | 'on-hold'),
-        dueDate: project.dueDate ? new Date(project.dueDate) : undefined,
-        assignedTo: project.assignedTo || '',
-        completionPercentage: project.completionPercentage || 0,
+        projectName: job.projectName || job.fileName,
+        priority: ((job.priority || 'medium') as 'low' | 'medium' | 'high' | 'urgent'),
+        status: (job.status as 'pending' | 'translation-in-progress' | 'lqa-in-progress' | 
+                'human-reviewer-assigned' | 'human-review-in-progress' | 'complete'),
+        dueDate: job.dueDate ? new Date(job.dueDate) : undefined,
+        assignedTo: job.assignedTo || '',
+        completionPercentage: job.completionPercentage || 0,
       });
     }
-  }, [project, editForm]);
+  }, [job, editForm]);
   
-  // Add project update mutation
+  // Add job update mutation
   const addUpdateMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof projectUpdateSchema>) => {
-      return apiRequest('POST', `/api/translation-requests/${projectId}/updates`, data);
+    mutationFn: async (data: z.infer<typeof jobUpdateSchema>) => {
+      return apiRequest('POST', `/api/translation-requests/${jobId}/updates`, data);
     },
     onSuccess: () => {
       toast({
         title: "Update added",
-        description: "Project update has been added successfully",
+        description: "Job update has been added successfully",
       });
       updateForm.reset();
-      queryClient.invalidateQueries({ queryKey: ['/api/translation-requests', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/translation-requests', jobId] });
     },
     onError: (error) => {
       toast({
@@ -178,33 +181,33 @@ export default function ProjectDetail() {
     },
   });
   
-  // Update project details mutation
-  const updateProjectMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof projectEditSchema>) => {
-      return apiRequest('PATCH', `/api/translation-requests/${projectId}`, data);
+  // Update job details mutation
+  const updateJobMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof jobEditSchema>) => {
+      return apiRequest('PATCH', `/api/translation-requests/${jobId}`, data);
     },
     onSuccess: () => {
       toast({
-        title: "Project updated",
-        description: "Project details have been updated successfully",
+        title: "Job updated",
+        description: "Job details have been updated successfully",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/translation-requests', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/translation-requests', jobId] });
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to update project details",
+        description: "Failed to update job details",
         variant: "destructive",
       });
     },
   });
   
-  const onUpdateSubmit = (values: z.infer<typeof projectUpdateSchema>) => {
+  const onUpdateSubmit = (values: z.infer<typeof jobUpdateSchema>) => {
     addUpdateMutation.mutate(values);
   };
   
-  const onEditSubmit = (values: z.infer<typeof projectEditSchema>) => {
-    updateProjectMutation.mutate(values);
+  const onEditSubmit = (values: z.infer<typeof jobEditSchema>) => {
+    updateJobMutation.mutate(values);
   };
   
   // Format date for display
@@ -224,16 +227,16 @@ export default function ProjectDetail() {
     );
   }
   
-  if (error || !project) {
+  if (error || !job) {
     return (
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
             <CardTitle>Error</CardTitle>
-            <CardDescription>Failed to load project details</CardDescription>
+            <CardDescription>Failed to load job details</CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Could not load project details. The project may not exist or there was an error fetching the data.</p>
+            <p>Could not load job details. The job may not exist or there was an error fetching the data.</p>
             <Button onClick={() => setLocation('/dashboard')} className="mt-4">Back to Dashboard</Button>
           </CardContent>
         </Card>
