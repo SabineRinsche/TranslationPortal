@@ -204,10 +204,15 @@ const ChatBot = () => {
               label: "Upload a translation file instead",
               icon: <Upload className="h-4 w-4 mr-2" />,
               action: () => {
-                setShowFileUpload(true);
-                setShowApiDocs(false);
                 addMessage("user", "I'd like to upload a file for translation instead.");
-                setUploadOption("translation");
+                
+                // Update the store directly
+                useTranslationStore.setState({
+                  showFileUpload: true,
+                  showApiDocs: false,
+                  uploadOption: "translation"
+                });
+                
                 setHasShownUploadMessage(false);
               }
             }
@@ -358,10 +363,14 @@ const ChatBot = () => {
             label: "Upload a file for translation",
             icon: <Upload className="h-4 w-4 mr-2" />,
             action: () => {
-              setShowFileUpload(true);
-              setShowApiDocs(false);
               addMessage("user", "I'd like to upload a file for translation.");
-              setUploadOption("translation");
+              
+              // Update the store directly
+              useTranslationStore.setState({
+                showFileUpload: true,
+                showApiDocs: false,
+                uploadOption: "translation"
+              });
             }
           }
         ]
