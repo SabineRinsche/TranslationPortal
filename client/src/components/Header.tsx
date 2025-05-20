@@ -93,11 +93,6 @@ const Header = () => {
                     Profile
                   </DropdownMenuItem>
                 </Link>
-                <Link href="/dashboard">
-                  <DropdownMenuItem>
-                    My Translations
-                  </DropdownMenuItem>
-                </Link>
                 <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>Logout</DropdownMenuItem>
