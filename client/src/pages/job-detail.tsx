@@ -288,10 +288,9 @@ export default function JobDetail() {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-3 sm:grid-cols-4 md:w-[400px]">
+        <TabsList className="grid grid-cols-3 md:w-[300px]">
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="updates">Updates</TabsTrigger>
-          <TabsTrigger value="edit">Edit</TabsTrigger>
           <TabsTrigger value="translation">Translation</TabsTrigger>
         </TabsList>
         
@@ -439,36 +438,34 @@ export default function JobDetail() {
                 </CardHeader>
                 <CardContent>
                   {job.updates && job.updates.length > 0 ? (
-                    <div className="space-y-4">
-                      {job.updates.map((update: any) => (
-                        <div key={update.id} className="border rounded-md p-4">
-                          <div className="flex justify-between items-start">
-                            <div className="flex items-center">
-                              {updateTypeIcons[update.updateType as keyof typeof updateTypeIcons] || updateTypeIcons.note}
-                              <span className="font-medium ml-1">
-                                {update.updateType.replace('_', ' ').charAt(0).toUpperCase() + update.updateType.replace('_', ' ').slice(1)}
-                              </span>
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                      {[...job.updates]
+                        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                        .map((update) => (
+                          <div key={update.id} className="p-3 bg-card border rounded-lg">
+                            <div className="flex justify-between items-start">
+                              <div className="flex items-center">
+                                <Badge className="mr-2">
+                                  {updateTypeIcons[update.type as keyof typeof updateTypeIcons]}
+                                  {update.type === 'note' ? 'Note' : 
+                                    update.type === 'status_change' ? 'Status Change' : 
+                                    update.type === 'milestone' ? 'Milestone' : 'Issue'}
+                                </Badge>
+                                <p className="text-sm text-muted-foreground">
+                                  {formatDate(update.createdAt)}
+                                </p>
+                              </div>
+                              <p className="text-sm">{update.userId}</p>
                             </div>
-                            <span className="text-xs text-muted-foreground">
-                              {formatDate(update.createdAt)}
-                            </span>
-                          </div>
-                          <p className="mt-2">{update.updateText}</p>
-                          {update.updateType === 'status_change' && update.newStatus && (
                             <div className="mt-2">
-                              <Badge className={statusColors[update.newStatus as keyof typeof statusColors] || statusColors.pending}>
-                                Status changed to: {update.newStatus.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                              </Badge>
+                              <p>{update.content}</p>
                             </div>
-                          )}
-                        </div>
-                      ))}
+                          </div>
+                        ))}
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <FileEdit className="h-10 w-10 mx-auto text-muted-foreground" />
-                      <p className="mt-2 text-muted-foreground">No updates yet</p>
-                      <p className="mt-1 text-sm text-muted-foreground">Add an update using the form</p>
+                      <p className="text-muted-foreground">No updates yet</p>
                     </div>
                   )}
                 </CardContent>
@@ -547,7 +544,7 @@ export default function JobDetail() {
                         name="updateText"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Update Text</FormLabel>
+                            <FormLabel>Update Details</FormLabel>
                             <FormControl>
                               <Textarea
                                 placeholder="Enter update details..."
@@ -571,191 +568,76 @@ export default function JobDetail() {
           </div>
         </TabsContent>
         
-        {/* Edit Job Tab */}
-        <TabsContent value="edit">
-          <Card>
-            <CardHeader>
-              <CardTitle>Edit Job Details</CardTitle>
-              <CardDescription>Update job information and settings</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...editForm}>
-                <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
-                  <FormField
-                    control={editForm.control}
-                    name="projectName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Job Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter job name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={editForm.control}
-                      name="status"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Status</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="translation-in-progress">Translation in Progress</SelectItem>
-                              <SelectItem value="lqa-in-progress">LQA in Progress</SelectItem>
-                              <SelectItem value="human-reviewer-assigned">Reviewer Assigned</SelectItem>
-                              <SelectItem value="human-review-in-progress">Human Review in Progress</SelectItem>
-                              <SelectItem value="complete">Complete</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={editForm.control}
-                      name="priority"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Priority</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select priority" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="low">Low</SelectItem>
-                              <SelectItem value="medium">Medium</SelectItem>
-                              <SelectItem value="high">High</SelectItem>
-                              <SelectItem value="urgent">Urgent</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={editForm.control}
-                      name="dueDate"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Due Date</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={
-                                    "w-full pl-3 text-left font-normal " +
-                                    (!field.value && "text-muted-foreground")
-                                  }
-                                >
-                                  {field.value ? (
-                                    formatDate(field.value)
-                                  ) : (
-                                    <span>Pick a date</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) =>
-                                  date < new Date("1900-01-01")
-                                }
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={editForm.control}
-                      name="assignedTo"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Assigned To</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter assignee name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <FormField
-                    control={editForm.control}
-                    name="completionPercentage"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Completion Percentage</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
-                            max="100"
-                            placeholder="Enter completion percentage"
-                            {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <Button type="submit" disabled={updateJobMutation.isPending}>
-                    {updateJobMutation.isPending ? "Updating..." : "Update Job"}
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
         {/* Translation Tab */}
         <TabsContent value="translation">
-          <Card>
-            <CardHeader>
-              <CardTitle>Translation</CardTitle>
-              <CardDescription>View and manage translation content</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Briefcase className="h-10 w-10 mx-auto text-muted-foreground" />
-                <p className="mt-2 text-muted-foreground">Translation management coming soon</p>
-                <p className="mt-1 text-sm text-muted-foreground">This feature is under development</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Translation Analysis</CardTitle>
+                <CardDescription>Text metrics and analysis</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">Word Count</h3>
+                    <p className="text-2xl font-bold mt-1">{job.wordCount || 0}</p>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">Character Count</h3>
+                    <p className="text-2xl font-bold mt-1">{job.characterCount || 0}</p>
+                  </div>
+                </div>
+                
+                {job.imagesWithText > 0 && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">Images with Text</h3>
+                    <p className="mt-1">{job.imagesWithText}</p>
+                  </div>
+                )}
+                
+                {job.subjectMatter && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">Subject Matter</h3>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {job.subjectMatter.split(',').map((subject, index) => (
+                        <Badge key={index} variant="secondary">{subject.trim()}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Translation Preview</CardTitle>
+                <CardDescription>Preview of the translated content</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {job.status === 'complete' ? (
+                  <div>
+                    <p>Your translation is ready for download.</p>
+                    <Button 
+                      onClick={() => alert('Downloading translated files...')} 
+                      className="mt-4 download-button"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Download translated files
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="mb-4 text-muted-foreground">
+                      Translation in progress
+                    </div>
+                    <Progress value={job.completionPercentage || 0} className="h-2 w-[200px] mx-auto" />
+                    <p className="text-xs mt-2">{job.completionPercentage || 0}% Complete</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
