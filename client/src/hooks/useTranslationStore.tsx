@@ -17,6 +17,7 @@ interface TranslationStore {
   fileAnalysis: FileAnalysis | null;
   selectedLanguages: string[];
   calculationSummary: CalculationSummary | null;
+  showCalculationMessage: boolean;
   
   // Actions
   setShowFileUpload: (show: boolean) => void;
@@ -25,6 +26,7 @@ interface TranslationStore {
   setFileAnalysis: (analysis: FileAnalysis) => void;
   setSelectedLanguages: (languages: string[] | ((prev: string[]) => string[])) => void;
   setCalculationSummary: (summary: CalculationSummary | null) => void;
+  setShowCalculationMessage: (show: boolean) => void;
   reset: () => void;
 }
 
@@ -38,6 +40,7 @@ export const useTranslationStore = create<TranslationStore>((set) => ({
   fileAnalysis: null,
   selectedLanguages: [],
   calculationSummary: null,
+  showCalculationMessage: false,
   
   // Actions
   setShowFileUpload: (show) => set({ showFileUpload: show }),
@@ -50,6 +53,7 @@ export const useTranslationStore = create<TranslationStore>((set) => ({
       : languages 
   })),
   setCalculationSummary: (summary) => set({ calculationSummary: summary }),
+  setShowCalculationMessage: (show) => set({ showCalculationMessage: show }),
   reset: () => set({
     showFileUpload: false,
     showFileAnalysis: false,
