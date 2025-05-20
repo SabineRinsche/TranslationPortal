@@ -107,19 +107,11 @@ const ChatBot = () => {
     }
   }, [uploadOption, hasShownUploadMessage, showFileUpload]);
 
-  // Add new file analysis message when analysis is completed
+  // Analysis completed message without redundant details
   useEffect(() => {
     if (fileAnalysis && showFileAnalysis) {
       addMessage("bot", 
-        `I've analyzed your file. Here's what I found:\n\n` +
-        `File Format: ${fileAnalysis.fileFormat}\n` +
-        `File Size: ${formatFileSize(fileAnalysis.fileSize)}\n` +
-        `Word Count: ${fileAnalysis.wordCount.toLocaleString()} words\n` +
-        `Character Count: ${fileAnalysis.charCount.toLocaleString()} characters\n` +
-        `Images with Text: ${fileAnalysis.imagesWithText} detected\n` +
-        `Source Language: ${fileAnalysis.sourceLanguage}\n` +
-        `Subject Matter: ${fileAnalysis.subjectMatter}\n\n` +
-        `Please select your target languages in the panel, then click "Complete Language Selection" to view your translation summary.`
+        `Your file has been analyzed successfully. Please select your target languages in the panel to continue.`
       );
     }
   }, [fileAnalysis, showFileAnalysis]);
