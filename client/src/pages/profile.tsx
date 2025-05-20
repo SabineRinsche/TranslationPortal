@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { subscriptionPlans } from "@shared/schema";
 import { Separator } from "@/components/ui/separator";
-import { Loader2 } from "lucide-react";
+import { Loader2, UploadCloud, Camera } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function ProfilePage() {
   const { toast } = useToast();
@@ -25,6 +26,7 @@ export default function ProfilePage() {
     role: string;
     jobTitle?: string;
     phoneNumber?: string;
+    profileImageUrl?: string | null;
   }
   
   interface AccountData {
@@ -56,6 +58,11 @@ export default function ProfilePage() {
     password: '',
     confirmPassword: '',
   });
+  
+  // File upload state
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Update form data when user data is loaded
   React.useEffect(() => {
@@ -95,6 +102,47 @@ export default function ProfilePage() {
       toast({
         title: "Update Failed",
         description: "There was a problem updating your profile. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Profile picture upload mutation
+  const uploadProfilePictureMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('profilePicture', file);
+      
+      const response = await fetch('/api/user/profile-picture', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to upload profile picture');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Refetch user data to update profile image
+      queryClient.invalidateQueries({ queryKey: ['/api/user/profile'] });
+      
+      toast({
+        title: "Profile Picture Updated",
+        description: "Your profile picture has been updated successfully.",
+      });
+      
+      // Reset file input
+      setSelectedFile(null);
+      setUploading(false);
+    },
+    onError: (error: any) => {
+      setUploading(false);
+      toast({
+        title: "Upload Failed",
+        description: error.message || "There was a problem uploading your profile picture. Please try again.",
         variant: "destructive",
       });
     }
@@ -165,6 +213,28 @@ export default function ProfilePage() {
     }
   });
 
+  // Handle file input change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+  
+  // Handle file upload
+  const handleFileUpload = () => {
+    if (selectedFile) {
+      setUploading(true);
+      uploadProfilePictureMutation.mutate(selectedFile);
+    }
+  };
+  
+  // Trigger file input click
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+  
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const { password, confirmPassword, ...profileData } = formData;
@@ -220,6 +290,54 @@ export default function ProfilePage() {
                 </CardHeader>
                 <form onSubmit={handleProfileSubmit}>
                   <CardContent className="space-y-4">
+                    {/* Profile Picture */}
+                    <div className="flex flex-col items-center space-y-4 mb-6">
+                      {/* Hidden file input */}
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                      
+                      {/* Avatar display */}
+                      <div className="relative">
+                        <Avatar className="h-24 w-24 cursor-pointer" onClick={triggerFileInput}>
+                          {userData?.profileImageUrl ? (
+                            <AvatarImage src={userData.profileImageUrl} alt={`${userData.firstName} ${userData.lastName}`} />
+                          ) : (
+                            <AvatarFallback className="text-xl bg-primary text-primary-foreground">
+                              {userData ? `${userData.firstName.charAt(0)}${userData.lastName.charAt(0)}` : "JD"}
+                            </AvatarFallback>
+                          )}
+                          <div className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-1 rounded-full">
+                            <Camera className="h-4 w-4" />
+                          </div>
+                        </Avatar>
+                      </div>
+                      
+                      {/* File name and upload button */}
+                      {selectedFile && (
+                        <div className="flex flex-col items-center space-y-2">
+                          <div className="text-sm text-muted-foreground flex items-center">
+                            <UploadCloud className="h-4 w-4 mr-1" />
+                            {selectedFile.name}
+                          </div>
+                          <Button 
+                            type="button" 
+                            size="sm" 
+                            onClick={handleFileUpload}
+                            disabled={uploading || uploadProfilePictureMutation.isPending}
+                          >
+                            {(uploading || uploadProfilePictureMutation.isPending) && (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            )}
+                            Upload Photo
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First Name</Label>

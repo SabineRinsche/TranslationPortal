@@ -21,6 +21,14 @@ const upload = multer({
   },
 });
 
+// Create a folder for profile pictures if it doesn't exist
+import fs from 'fs';
+import path from 'path';
+const profilePicsDir = path.join(process.cwd(), 'public', 'profile-pics');
+if (!fs.existsSync(profilePicsDir)) {
+  fs.mkdirSync(profilePicsDir, { recursive: true });
+}
+
 // Mock authenticated user and account for demo purposes
 let currentUser = {
   id: 1,
@@ -33,6 +41,7 @@ let currentUser = {
   role: "admin",
   jobTitle: "Localization Manager",
   phoneNumber: "+44 1234 567890",
+  profileImageUrl: null, // Will store the URL to the profile image
   createdAt: new Date(),
   updatedAt: new Date()
 };
@@ -112,6 +121,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ message: "Failed to update profile" });
       }
+    }
+  });
+  
+  // Profile picture upload endpoint
+  app.post("/api/user/profile-picture", upload.single("profilePicture"), (req: Request & { file?: Express.Multer.File }, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    
+    try {
+      // Check file type
+      const fileType = req.file.mimetype;
+      if (!fileType.startsWith('image/')) {
+        return res.status(400).json({ message: "Uploaded file must be an image" });
+      }
+      
+      // Generate a unique filename
+      const fileExtension = fileType.split('/')[1];
+      const fileName = `profile-${currentUser.id}-${Date.now()}.${fileExtension}`;
+      const filePath = path.join(profilePicsDir, fileName);
+      
+      // Write the file to disk
+      fs.writeFileSync(filePath, req.file.buffer);
+      
+      // Update the user's profile image URL
+      const profileImageUrl = `/profile-pics/${fileName}`;
+      currentUser = {
+        ...currentUser,
+        profileImageUrl,
+        updatedAt: new Date()
+      };
+      
+      res.json({ 
+        message: "Profile picture updated successfully", 
+        profileImageUrl 
+      });
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+      res.status(500).json({ message: "Failed to upload profile picture" });
     }
   });
   
