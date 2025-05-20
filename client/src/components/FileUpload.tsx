@@ -6,10 +6,12 @@ import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { FileAnalysis } from '@shared/schema';
 import { Cloud, FileText, File } from 'lucide-react';
+import TranslationLoader from '@/components/TranslationLoader';
 
 const FileUpload = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const { setFileAnalysis, setShowFileAnalysis } = useTranslationStore();
   const { toast } = useToast();
@@ -51,14 +53,22 @@ const FileUpload = () => {
       clearInterval(progressInterval);
       setUploadProgress(100);
 
-      // Set the file analysis in the store
-      setFileAnalysis(fileAnalysis);
-      setShowFileAnalysis(true);
-
-      toast({
-        title: "File Upload Complete",
-        description: "Your file has been analyzed successfully.",
-      });
+      // Once upload is done, show analyzing state with animation
+      setIsUploading(false);
+      setIsAnalyzing(true);
+      
+      // Simulate file analysis time to show the animation
+      setTimeout(() => {
+        // Set the file analysis in the store
+        setFileAnalysis(fileAnalysis);
+        setShowFileAnalysis(true);
+        setIsAnalyzing(false);
+        
+        toast({
+          title: "File Analysis Complete",
+          description: "Your file has been analyzed successfully.",
+        });
+      }, 2500); // Show analysis animation for 2.5 seconds
     } catch (error) {
       clearInterval(progressInterval);
       setUploadProgress(0);
@@ -70,9 +80,11 @@ const FileUpload = () => {
         variant: "destructive",
       });
     } finally {
-      setTimeout(() => {
-        setIsUploading(false);
-      }, 500);
+      if (!isAnalyzing) {
+        setTimeout(() => {
+          setIsUploading(false);
+        }, 500);
+      }
     }
   }, [setFileAnalysis, setShowFileAnalysis, toast]);
 
@@ -97,35 +109,46 @@ const FileUpload = () => {
       <h2 className="text-lg font-semibold text-card-foreground mb-2">Upload Your Document</h2>
       <p className="text-sm text-muted-foreground mb-4">Drag and drop your file or click to browse. We support multiple formats and can analyze text in images.</p>
       
-      <div 
-        {...getRootProps()} 
-        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-          isDragActive 
-            ? 'border-primary bg-primary/10 dark:bg-primary/20' 
-            : 'border-muted hover:border-primary hover:bg-muted/50'
-        }`}
-      >
-        <input {...getInputProps()} />
-        {isDragActive ? (
-          <Cloud className="h-12 w-12 mx-auto text-primary" />
-        ) : (
-          <FileText className="h-12 w-12 mx-auto text-muted-foreground" />
-        )}
-        <p className="mt-2 text-sm text-muted-foreground">
-          Drag your file here, or <span className="text-primary font-medium">browse</span>
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground/70">
-          Supported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML, ZIP
-        </p>
-      </div>
-      
-      {isUploading && (
+      {isUploading ? (
         <div className="mt-4">
+          <TranslationLoader 
+            type="upload" 
+            text={`Uploading ${fileName}...`}
+          />
           <div className="flex justify-between text-sm mb-1">
             <span className="font-medium text-card-foreground">{fileName}</span>
             <span className="text-primary">{Math.round(uploadProgress)}%</span>
           </div>
           <Progress value={uploadProgress} className="h-2" />
+        </div>
+      ) : isAnalyzing ? (
+        <div className="mt-4">
+          <TranslationLoader 
+            type="analysis" 
+            text="Analyzing document content and structure..."
+          />
+        </div>
+      ) : (
+        <div 
+          {...getRootProps()} 
+          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+            isDragActive 
+              ? 'border-primary bg-primary/10 dark:bg-primary/20' 
+              : 'border-muted hover:border-primary hover:bg-muted/50'
+          }`}
+        >
+          <input {...getInputProps()} />
+          {isDragActive ? (
+            <Cloud className="h-12 w-12 mx-auto text-primary" />
+          ) : (
+            <FileText className="h-12 w-12 mx-auto text-muted-foreground" />
+          )}
+          <p className="mt-2 text-sm text-muted-foreground">
+            Drag your file here, or <span className="text-primary font-medium">browse</span>
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground/70">
+            Supported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML, ZIP
+          </p>
         </div>
       )}
     </div>
