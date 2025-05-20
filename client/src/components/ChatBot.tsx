@@ -51,6 +51,16 @@ const ChatBot = () => {
             }
           },
           { 
+            value: "assets", 
+            label: "Submit translation assets", 
+            action: () => {
+              setShowFileUpload(true);
+              setShowApiDocs(false);
+              addMessage("user", "I'd like to submit translation assets.");
+              setUploadOption("assets");
+            }
+          },
+          { 
             value: "api", 
             label: "Access API documentation", 
             action: () => {
@@ -71,12 +81,23 @@ const ChatBot = () => {
     }
   }, [messages]);
 
+  // Function to track which upload option was selected
+  const [uploadOption, setUploadOption] = useState<string>("");
+  
   // Add new file upload instructions when file upload is shown
   useEffect(() => {
     if (showFileUpload) {
-      addMessage("bot", "Great! Please upload your file using the panel on the right. I'll analyze it and help you select target languages.\n\nSupported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML");
+      const lastUserMessage = messages.filter(m => m.type === "user").pop()?.text || "";
+      
+      if (lastUserMessage.includes("submit translation assets")) {
+        setUploadOption("assets");
+        addMessage("bot", "Please upload your translation assets using the panel on the right. You can upload glossaries, reference materials, style guides, or any other supporting documents that will help with your translation.\n\nSupported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML, ZIP");
+      } else {
+        setUploadOption("translation");
+        addMessage("bot", "Great! Please upload your file using the panel on the right. I'll analyze it and help you select target languages.\n\nSupported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML");
+      }
     }
-  }, [showFileUpload]);
+  }, [showFileUpload, messages]);
 
   // Add new file analysis message when analysis is completed
   useEffect(() => {
