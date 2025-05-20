@@ -433,6 +433,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`File ${index + 1}: ${file.name}`);
         });
         
+        // Basic language detection function for server-side processing
+        const detectLanguage = (text: string): string => {
+          // Language patterns
+          const patterns = [
+            { lang: 'English', regex: /\b(the|and|or|if|in|on|at|to|for|with|by|about|is|are)\b/gi, threshold: 0.04 },
+            { lang: 'Spanish', regex: /\b(el|la|los|las|y|o|si|en|con|por|para|es|son|está)\b/gi, threshold: 0.03 },
+            { lang: 'French', regex: /\b(le|la|les|et|ou|si|dans|sur|avec|par|pour|est|sont)\b/gi, threshold: 0.03 },
+            { lang: 'German', regex: /\b(der|die|das|und|oder|wenn|in|auf|mit|durch|für|ist|sind)\b/gi, threshold: 0.03 },
+            { lang: 'Italian', regex: /\b(il|la|i|gli|le|e|o|se|in|su|con|per|è|sono)\b/gi, threshold: 0.03 },
+          ];
+          
+          // Convert binary data to text (simplified)
+          const sampleText = text.toString().replace(/[^\x20-\x7E]/g, ''); // Keep only ASCII printable characters
+          
+          if (!sampleText || sampleText.trim().length < 50) {
+            return 'Unknown (insufficient text)';
+          }
+          
+          const wordCount = sampleText.split(/\s+/).length;
+          
+          // Check each language pattern
+          for (const pattern of patterns) {
+            const matches = (sampleText.match(pattern.regex) || []).length;
+            const matchRatio = matches / wordCount;
+            
+            if (matchRatio > pattern.threshold) {
+              return pattern.lang;
+            }
+          }
+          
+          return 'English (default)';
+        };
+        
+        // Get text sample from the file
+        const fileData = fileToAnalyze.getData();
+        const fileText = fileData.toString().substring(0, 5000); // Use first 5000 chars for detection
+        
+        // Detect language from the file content
+        const detectedLanguage = detectLanguage(fileText);
+        
         // Use the first valid file from the ZIP for analysis
         const fileAnalysis = {
           fileName: `${req.file.originalname} (analyzing ${fileToAnalyze.name})`,
@@ -442,12 +482,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
           charCount: Math.floor(fileToAnalyze.getData().length / 2),  // Simplified estimate
           imagesWithText: Math.floor(Math.random() * 3), // Simplified detection
           subjectMatter: "Auto-detected content",
-          sourceLanguage: "Auto-detected language",
+          sourceLanguage: detectedLanguage,
         };
         
         return res.status(200).json(fileAnalysis);
       }
       
+      // Basic language detection function for non-ZIP files
+      const detectLanguage = (text: string): string => {
+        // Language patterns
+        const patterns = [
+          { lang: 'English', regex: /\b(the|and|or|if|in|on|at|to|for|with|by|about|is|are)\b/gi, threshold: 0.04 },
+          { lang: 'Spanish', regex: /\b(el|la|los|las|y|o|si|en|con|por|para|es|son|está)\b/gi, threshold: 0.03 },
+          { lang: 'French', regex: /\b(le|la|les|et|ou|si|dans|sur|avec|par|pour|est|sont)\b/gi, threshold: 0.03 },
+          { lang: 'German', regex: /\b(der|die|das|und|oder|wenn|in|auf|mit|durch|für|ist|sind)\b/gi, threshold: 0.03 },
+          { lang: 'Italian', regex: /\b(il|la|i|gli|le|e|o|se|in|su|con|per|è|sono)\b/gi, threshold: 0.03 },
+        ];
+        
+        // Convert binary data to text (simplified)
+        const sampleText = text.toString().replace(/[^\x20-\x7E]/g, ''); // Keep only ASCII printable characters
+        
+        if (!sampleText || sampleText.trim().length < 50) {
+          return 'Unknown (insufficient text)';
+        }
+        
+        const wordCount = sampleText.split(/\s+/).length;
+        
+        // Check each language pattern
+        for (const pattern of patterns) {
+          const matches = (sampleText.match(pattern.regex) || []).length;
+          const matchRatio = matches / wordCount;
+          
+          if (matchRatio > pattern.threshold) {
+            return pattern.lang;
+          }
+        }
+        
+        return 'English (default)';
+      };
+      
+      // Get text sample for language detection
+      const fileText = req.file.buffer.toString().substring(0, 5000); // Take first 5000 chars
+      const detectedLanguage = detectLanguage(fileText);
+
       // Standard file upload analysis (non-ZIP)
       const fileAnalysis = {
         fileName: req.file.originalname,
@@ -457,7 +534,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         charCount: Math.floor(req.file.size / 2), // Simplified estimate
         imagesWithText: Math.floor(Math.random() * 3), // Simplified detection
         subjectMatter: "Auto-detected content",
-        sourceLanguage: "Auto-detected language",
+        sourceLanguage: detectedLanguage,
       };
 
       res.status(200).json(fileAnalysis);
