@@ -100,7 +100,7 @@ const ChatBot = () => {
       setHasShownUploadMessage(true);
       
       if (uploadOption === "assets") {
-        addMessage("bot", "Please upload your translation assets using the panel on the right. You can upload glossaries, reference materials, style guides, or any other supporting documents that will help with your translation.\n\nSupported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML, ZIP");
+        addMessage("bot", "Please upload your translation assets using the panel on the right. You can upload translation memories, bilingual files, glossaries, reference materials, style guides, or any other supporting documents that will help with your translation. Our AI Translation team will then contact you to decide how to best leverage your assets to improve your translation output.\n\nSupported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML, ZIP");
       } else if (uploadOption === "translation") {
         addMessage("bot", "Great! Please upload your file using the panel on the right. I'll analyze it and help you select target languages.\n\nSupported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML");
       }
