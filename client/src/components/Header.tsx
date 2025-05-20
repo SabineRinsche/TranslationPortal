@@ -15,11 +15,12 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
-import { HelpCircle, LayoutDashboard, User } from "lucide-react";
+import { LayoutDashboard, User, HelpCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
+import { HelpButton } from "@/components/HelpButton";
 
 const Header = () => {
   
@@ -62,18 +63,7 @@ const Header = () => {
           
           <ThemeToggle />
           
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button className="text-muted-foreground hover:text-primary">
-                  <HelpCircle className="h-6 w-6" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Help & FAQ</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <HelpButton />
 
           <NotificationsDropdown />
 

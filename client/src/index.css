@@ -140,4 +140,55 @@
   input:focus, select:focus, textarea:focus {
     @apply ring-2 ring-accent ring-offset-1 ring-offset-background;
   }
+  
+  /* Help tour styles */
+  .help-highlight {
+    @apply relative z-40;
+    box-shadow: 0 0 0 4px rgba(238, 54, 103, 0.5);
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .help-arrow-top::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid var(--card);
+  }
+  
+  .help-arrow-right::before {
+    content: '';
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid var(--card);
+  }
+  
+  .help-arrow-bottom::before {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid var(--card);
+  }
+  
+  .help-arrow-left::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid var(--card);
+  }
 }
