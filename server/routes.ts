@@ -68,6 +68,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase() || "unknown";
       
+      // Add logging to debug ZIP file handling
+      console.log(`Processing file: ${req.file.originalname}, extension: ${fileExtension}`);
+      
       // Check if the file is a ZIP file
       if (fileExtension === 'zip') {
         const zip = new AdmZip(req.file.buffer);
@@ -92,13 +95,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Count valid files in the ZIP archive
-        const validFileCount = zipEntries.filter(entry => {
+        const validFiles = zipEntries.filter(entry => {
           if (entry.isDirectory || entry.entryName.startsWith('__MACOSX') || entry.entryName.startsWith('.')) {
             return false;
           }
           const entryExt = entry.name.split('.').pop()?.toLowerCase() || '';
           return supportedExtensions.includes(entryExt);
-        }).length;
+        });
+        
+        const validFileCount = validFiles.length;
+        console.log(`ZIP contents: Found ${validFileCount} valid files in archive`);
+        console.log(`First file to analyze: ${fileToAnalyze.name}`);
+        validFiles.forEach((file, index) => {
+          console.log(`File ${index + 1}: ${file.name}`);
+        });
         
         // Use the first valid file from the ZIP for analysis
         const fileAnalysis = {
