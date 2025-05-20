@@ -455,7 +455,7 @@ const ChatBot = () => {
   };
 
   return (
-    <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden flex flex-col h-[calc(100vh-5rem)]">
+    <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden flex flex-col h-[calc(100vh-5rem)] chatbot-container">
       <div className="p-4 border-b border-border bg-muted">
         <h2 className="text-lg font-semibold text-foreground">Alpha's AI Assistant</h2>
         <p className="text-sm text-muted-foreground">I'll guide you through your translation request and help optimize your workflow</p>
