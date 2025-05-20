@@ -637,7 +637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fileFormat: `ZIP (${validFileCount} file${validFileCount !== 1 ? 's' : ''})`,
           fileSize: req.file.size,
           wordCount: Math.floor(fileToAnalyze.getData().length / 10), // Simplified estimate
-          charCount: Math.floor(fileToAnalyze.getData().length / 2),  // Simplified estimate
+          characterCount: Math.floor(fileToAnalyze.getData().length / 2),  // Simplified estimate - renamed to match frontend
           imagesWithText: Math.floor(Math.random() * 3), // Simplified detection
           subjectMatter: detectedSubjectMatter,
           sourceLanguage: detectedLanguage,
