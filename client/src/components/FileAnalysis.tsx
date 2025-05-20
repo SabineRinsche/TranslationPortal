@@ -36,7 +36,8 @@ const FileAnalysis = () => {
     selectedLanguages, 
     setSelectedLanguages,
     calculationSummary,
-    setCalculationSummary
+    setCalculationSummary,
+    setShowCalculationMessage
   } = useTranslationStore();
   const { toast } = useToast();
 
@@ -63,7 +64,8 @@ const FileAnalysis = () => {
       calculateTranslation();
       setShowCalculation(true);
       
-      // The calculation will be shown automatically in the UI
+      // Trigger the chat message
+      setShowCalculationMessage(true);
     } else {
       toast({
         title: "Selection required",

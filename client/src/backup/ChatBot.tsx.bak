@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslationStore } from "@/hooks/useTranslationStore";
-import { Send, FileText } from "lucide-react";
+import { Send, Upload, FileText } from "lucide-react";
 
 interface Message {
   id: string;
@@ -26,9 +26,7 @@ const ChatBot = () => {
     setShowFileUpload, 
     setShowApiDocs,
     selectedLanguages,
-    calculationSummary,
-    showCalculationMessage,
-    setShowCalculationMessage
+    calculationSummary
   } = useTranslationStore();
   
   const chatMessagesRef = useRef<HTMLDivElement>(null);
@@ -95,9 +93,12 @@ const ChatBot = () => {
     }
   }, [fileAnalysis, showFileAnalysis]);
 
-  // Add calculation summary message when showCalculationMessage is true
-  useEffect(() => {
-    if (showCalculationMessage && calculationSummary && selectedLanguages.length > 0 && fileAnalysis) {
+  // Add calculation message when the user clicks the "Complete Language Selection" button
+  // Instead of doing this on calculationSummary change, 
+  // we'll have FileAnalysis.tsx call this function directly when needed
+  
+  const addCalculationMessage = () => {
+    if (calculationSummary && selectedLanguages.length > 0 && fileAnalysis) {
       addMessage("bot", 
         `Based on your selections, here's the translation summary:\n\n` +
         `Target Languages: ${selectedLanguages.join(", ")}\n` +
@@ -106,10 +107,8 @@ const ChatBot = () => {
         `Credits Required: ${calculationSummary.creditsRequired.toLocaleString()} (1 credit per character)\n` +
         `Total Cost: ${calculationSummary.totalCost}\n`
       );
-      // Reset the flag after showing the message
-      setShowCalculationMessage(false);
     }
-  }, [showCalculationMessage, calculationSummary, selectedLanguages, fileAnalysis]);
+  };
 
   // Add API docs message when API is selected
   useEffect(() => {

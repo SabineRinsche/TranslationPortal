@@ -61,5 +61,6 @@ export const useTranslationStore = create<TranslationStore>((set) => ({
     fileAnalysis: null,
     selectedLanguages: [],
     calculationSummary: null,
+    showCalculationMessage: false,
   }),
 }));
