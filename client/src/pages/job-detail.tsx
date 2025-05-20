@@ -183,16 +183,31 @@ export default function JobDetail() {
     },
   });
   
+  // Get the notifications API
+  const { addNotification } = useNotifications();
+
   // Update job details mutation
   const updateJobMutation = useMutation({
     mutationFn: async (data: z.infer<typeof jobEditSchema>) => {
       return apiRequest('PATCH', `/api/translation-requests/${jobId}`, data);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       toast({
         title: "Job updated",
         description: "Job details have been updated successfully",
       });
+      
+      // Check if the job was marked as complete and send notification
+      if (variables.status === 'complete') {
+        // Send notification for job completion
+        addNotification({
+          title: "Job Completed",
+          message: `Translation job "${variables.projectName}" has been completed`,
+          type: "job_complete",
+          jobId: Number(jobId)
+        });
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['/api/translation-requests', jobId] });
     },
     onError: (error) => {
