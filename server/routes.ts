@@ -362,7 +362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create the project update
       const newUpdate = await storage.createProjectUpdate({
         requestId,
-        userId: req.user.id,
+        userId: req.user?.id || 1, // Default to user 1 if not authenticated
         updateText: req.body.updateText,
         updateType: req.body.updateType || 'note',
         newStatus: req.body.newStatus

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useParams } from 'wouter';
+import { TranslationRequest, ProjectUpdate } from '@shared/schema';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import { 
@@ -103,12 +104,17 @@ export default function ProjectDetail() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('details');
   
+  // Define the extended project type with updates
+  interface ProjectWithUpdates extends TranslationRequest {
+    updates?: ProjectUpdate[];
+  }
+  
   // Fetch project details
   const { 
     data: project, 
     isLoading, 
     error 
-  } = useQuery({
+  } = useQuery<ProjectWithUpdates>({
     queryKey: ['/api/translation-requests', projectId],
     enabled: !isNaN(projectId),
   });
@@ -141,9 +147,9 @@ export default function ProjectDetail() {
     if (project) {
       editForm.reset({
         projectName: project.projectName || project.fileName,
-        priority: (project.priority || 'medium') as any,
-        status: project.status as any,
-        dueDate: project.dueDate ? parseISO(project.dueDate) : undefined,
+        priority: ((project.priority || 'medium') as 'low' | 'medium' | 'high' | 'urgent'),
+        status: (project.status as 'pending' | 'in-progress' | 'review' | 'completed' | 'on-hold'),
+        dueDate: project.dueDate ? new Date(project.dueDate) : undefined,
         assignedTo: project.assignedTo || '',
         completionPercentage: project.completionPercentage || 0,
       });

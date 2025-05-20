@@ -1,5 +1,26 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Dashboard from '@/components/Dashboard';
+import ProjectsList from '@/components/ProjectsList';
 
 export default function DashboardPage() {
-  return <Dashboard />;
+  return (
+    <div className="container mx-auto py-6 space-y-6">
+      <h1 className="text-2xl font-bold">Translation Dashboard</h1>
+      
+      <Tabs defaultValue="analytics" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="projects">Projects</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="analytics">
+          <Dashboard />
+        </TabsContent>
+        
+        <TabsContent value="projects">
+          <ProjectsList />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 }
