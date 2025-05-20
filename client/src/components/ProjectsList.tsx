@@ -7,16 +7,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
-import { Search, Filter, ArrowUpDown, Clock, Calendar, FileText } from 'lucide-react';
+import { Search, Filter, ArrowUpDown, Clock, Calendar, FileText, Briefcase } from 'lucide-react';
 import { TranslationRequest } from '@shared/schema';
 
 // Define status colors
 const statusColors = {
   'pending': 'bg-amber-100 text-amber-800 hover:bg-amber-200',
-  'in-progress': 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-  'review': 'bg-purple-100 text-purple-800 hover:bg-purple-200',
-  'completed': 'bg-green-100 text-green-800 hover:bg-green-200',
-  'on-hold': 'bg-red-100 text-red-800 hover:bg-red-200'
+  'translation-in-progress': 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+  'lqa-in-progress': 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200',
+  'human-reviewer-assigned': 'bg-violet-100 text-violet-800 hover:bg-violet-200',
+  'human-review-in-progress': 'bg-purple-100 text-purple-800 hover:bg-purple-200',
+  'complete': 'bg-green-100 text-green-800 hover:bg-green-200'
 };
 
 // Define priority colors
@@ -27,33 +28,33 @@ const priorityColors = {
   'urgent': 'bg-red-100 text-red-800 hover:bg-red-200'
 };
 
-export default function ProjectsList() {
+export default function JobsList() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   
   // Fetch all translation requests
-  const { data: projects, isLoading } = useQuery<TranslationRequest[]>({
+  const { data: jobs, isLoading } = useQuery<TranslationRequest[]>({
     queryKey: ['/api/translation-requests'],
   });
   
-  // Filter and sort projects
-  const filteredProjects = projects?.filter(project => {
+  // Filter and sort jobs
+  const filteredJobs = jobs?.filter(job => {
     // Apply search filter
     const matchesSearch = !searchTerm || 
-      project.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (project.projectName && project.projectName.toLowerCase().includes(searchTerm.toLowerCase()));
+      job.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (job.projectName && job.projectName.toLowerCase().includes(searchTerm.toLowerCase()));
       
     // Apply status filter
     const matchesStatus = !statusFilter || statusFilter === 'all' || 
-      project.status === statusFilter;
+      job.status === statusFilter;
       
     return matchesSearch && matchesStatus;
   }) || [];
   
-  // Sort projects
-  const sortedProjects = [...filteredProjects].sort((a, b) => {
+  // Sort jobs
+  const sortedJobs = [...filteredJobs].sort((a, b) => {
     const dateA = new Date(a.createdAt);
     const dateB = new Date(b.createdAt);
     
@@ -99,8 +100,8 @@ export default function ProjectsList() {
       <CardHeader>
         <div className="flex flex-col md:flex-row md:items-center justify-between space-y-2 md:space-y-0">
           <div>
-            <CardTitle>Projects and Translation Requests</CardTitle>
-            <CardDescription>Manage your translation projects and track their status</CardDescription>
+            <CardTitle>Translation Jobs</CardTitle>
+            <CardDescription>Manage your translation jobs and track their status</CardDescription>
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -118,7 +119,7 @@ export default function ProjectsList() {
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search projects..."
+              placeholder="Search jobs..."
               className="pl-8"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -138,52 +139,53 @@ export default function ProjectsList() {
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="review">Review</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="on-hold">On Hold</SelectItem>
+                <SelectItem value="translation-in-progress">Translation in Progress</SelectItem>
+                <SelectItem value="lqa-in-progress">LQA in Progress</SelectItem>
+                <SelectItem value="human-reviewer-assigned">Reviewer Assigned</SelectItem>
+                <SelectItem value="human-review-in-progress">Human Review in Progress</SelectItem>
+                <SelectItem value="complete">Complete</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         
-        {sortedProjects.length === 0 ? (
+        {sortedJobs.length === 0 ? (
           <div className="text-center py-8">
-            <FileText className="h-10 w-10 mx-auto text-muted-foreground" />
-            <p className="mt-2 text-muted-foreground">No projects found</p>
+            <Briefcase className="h-10 w-10 mx-auto text-muted-foreground" />
+            <p className="mt-2 text-muted-foreground">No translation jobs found</p>
             {searchTerm || statusFilter ? (
               <p className="mt-1 text-sm text-muted-foreground">Try adjusting your filters</p>
             ) : null}
           </div>
         ) : (
           <div className="grid gap-4">
-            {sortedProjects.map((project) => (
+            {sortedJobs.map((job) => (
               <div
-                key={project.id}
+                key={job.id}
                 className="border rounded-lg p-4 hover:bg-accent/50 transition-colors cursor-pointer"
-                onClick={() => setLocation(`/projects/${project.id}`)}
+                onClick={() => setLocation(`/jobs/${job.id}`)}
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between">
                   <div className="space-y-1.5">
-                    <h3 className="font-medium">{project.projectName || project.fileName}</h3>
+                    <h3 className="font-medium">{job.projectName || job.fileName}</h3>
                     <div className="flex items-center space-x-2">
                       <Badge 
-                        className={statusColors[project.status as keyof typeof statusColors] || statusColors.pending}
+                        className={statusColors[job.status as keyof typeof statusColors] || statusColors.pending}
                       >
-                        {project.status.charAt(0).toUpperCase() + project.status.slice(1).replace('-', ' ')}
+                        {job.status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                       </Badge>
                       
-                      {project.priority && (
+                      {job.priority && (
                         <Badge 
-                          className={priorityColors[project.priority as keyof typeof priorityColors] || priorityColors.medium}
+                          className={priorityColors[job.priority as keyof typeof priorityColors] || priorityColors.medium}
                           variant="outline"
                         >
-                          {project.priority.charAt(0).toUpperCase() + project.priority.slice(1)} Priority
+                          {job.priority.charAt(0).toUpperCase() + job.priority.slice(1)} Priority
                         </Badge>
                       )}
                       
                       <div className="text-xs text-muted-foreground">
-                        {getWorkflowName(project.workflow)}
+                        {getWorkflowName(job.workflow)}
                       </div>
                     </div>
                   </div>
@@ -191,13 +193,13 @@ export default function ProjectsList() {
                   <div className="flex items-center space-x-4 mt-2 md:mt-0">
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4 mr-1" />
-                      {formatDate(project.createdAt)}
+                      {formatDate(job.createdAt)}
                     </div>
                     
-                    {project.dueDate && (
+                    {job.dueDate && (
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Clock className="h-4 w-4 mr-1" />
-                        Due: {formatDate(project.dueDate)}
+                        Due: {formatDate(job.dueDate)}
                       </div>
                     )}
                     
@@ -206,7 +208,7 @@ export default function ProjectsList() {
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setLocation(`/projects/${project.id}`);
+                        setLocation(`/jobs/${job.id}`);
                       }}
                     >
                       View Details
@@ -215,17 +217,17 @@ export default function ProjectsList() {
                 </div>
                 
                 {/* Progress bar for completion percentage */}
-                {project.completionPercentage !== undefined && project.completionPercentage !== null && project.completionPercentage > 0 && (
+                {job.completionPercentage !== undefined && job.completionPercentage !== null && job.completionPercentage > 0 && (
                   <div className="mt-3">
                     <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-primary" 
-                        style={{ width: `${project.completionPercentage}%` }}
+                        style={{ width: `${job.completionPercentage}%` }}
                       />
                     </div>
                     <div className="flex justify-between mt-1">
                       <span className="text-xs text-muted-foreground">Progress</span>
-                      <span className="text-xs text-muted-foreground">{project.completionPercentage}%</span>
+                      <span className="text-xs text-muted-foreground">{job.completionPercentage}%</span>
                     </div>
                   </div>
                 )}
