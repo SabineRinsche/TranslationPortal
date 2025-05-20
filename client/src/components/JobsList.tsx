@@ -388,7 +388,7 @@ export default function JobsList() {
                   onClick={() => downloadFile(selectedJob.id)}
                 >
                   <Download className="h-4 w-4" />
-                  Download File
+                  Download Translated Files
                 </Button>
               </div>
             </DialogFooter>
