@@ -90,10 +90,15 @@ const ChatBot = () => {
             label: "Upload a file for translation",
             icon: <Upload className="h-4 w-4 mr-2" />,
             action: () => {
-              setShowFileUpload(true);
-              setShowApiDocs(false);
+              // First record the user's message
               addMessage("user", "I'd like to upload a file for translation.");
-              setUploadOption("translation");
+              
+              // Then update the states
+              useTranslationStore.setState({
+                showFileUpload: true,
+                showApiDocs: false,
+                uploadOption: "translation"
+              });
             }
           },
           { 
@@ -101,10 +106,15 @@ const ChatBot = () => {
             label: "Submit translation assets",
             icon: <FileText className="h-4 w-4 mr-2" />,
             action: () => {
-              setShowFileUpload(true);
-              setShowApiDocs(false);
+              // First record the user's message
               addMessage("user", "I'd like to submit translation assets.");
-              setUploadOption("assets");
+              
+              // Then update the states
+              useTranslationStore.setState({
+                showFileUpload: true,
+                showApiDocs: false,
+                uploadOption: "assets"
+              });
             }
           },
           { 
@@ -112,9 +122,14 @@ const ChatBot = () => {
             label: "Access API documentation",
             icon: <Globe className="h-4 w-4 mr-2" />,
             action: () => {
-              setShowApiDocs(true);
-              setShowFileUpload(false);
+              // First record the user's message
               addMessage("user", "I'd like to access the API documentation.");
+              
+              // Then update the states
+              useTranslationStore.setState({
+                showApiDocs: true,
+                showFileUpload: false
+              });
             }
           },
           {
@@ -138,8 +153,8 @@ const ChatBot = () => {
     }
   }, [messages]);
 
-  // Function to track which upload option was selected
-  const [uploadOption, setUploadOption] = useState<string>("");
+  // Track when to show specialized upload messages
+  const uploadOption = useTranslationStore(state => state.uploadOption);
   const [hasShownUploadMessage, setHasShownUploadMessage] = useState(false);
   
   // Track when file upload panel is shown

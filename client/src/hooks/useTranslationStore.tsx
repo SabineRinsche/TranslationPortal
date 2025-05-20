@@ -76,5 +76,6 @@ export const useTranslationStore = create<TranslationStore>((set) => ({
     showWorkflowSelection: false,
     calculationSummary: null,
     showCalculationMessage: false,
+    uploadOption: null,
   }),
 }));

@@ -50,28 +50,56 @@ const FileUpload = () => {
         throw new Error(`Upload failed: ${response.statusText}`);
       }
 
-      const fileAnalysis: FileAnalysis = await response.json();
-      
       // Complete the progress animation
       clearInterval(progressInterval);
       setUploadProgress(100);
-
-      // Once upload is done, show analyzing state with animation
-      setIsUploading(false);
-      setIsAnalyzing(true);
       
-      // Simulate file analysis time to show the animation
-      setTimeout(() => {
-        // Set the file analysis in the store
-        setFileAnalysis(fileAnalysis);
-        setShowFileAnalysis(true);
-        setIsAnalyzing(false);
+      // Handle different upload types differently
+      if (uploadOption === 'assets') {
+        // For translation assets, don't analyze - just acknowledge the upload
+        setTimeout(() => {
+          // Create a simple file analysis object with minimal info
+          const assetInfo: FileAnalysis = {
+            fileName: file.name,
+            fileFormat: file.name.split('.').pop() || 'unknown',
+            fileSize: file.size,
+            wordCount: 0,
+            charCount: 0,
+            imagesWithText: 0,
+            subjectMatter: 'Translation Assets',
+            sourceLanguage: 'N/A',
+          };
+          
+          // Set minimal file analysis info just to trigger the completion flow
+          setFileAnalysis(assetInfo);
+          setIsUploading(false);
+          
+          toast({
+            title: "Assets Uploaded",
+            description: "Your translation assets have been uploaded successfully.",
+          });
+        }, 1000);
+      } else {
+        // For translation files, proceed with analysis
+        const fileAnalysis: FileAnalysis = await response.json();
         
-        toast({
-          title: "File Analysis Complete",
-          description: "Your file has been analyzed successfully.",
-        });
-      }, 2500); // Show analysis animation for 2.5 seconds
+        // Once upload is done, show analyzing state with animation
+        setIsUploading(false);
+        setIsAnalyzing(true);
+        
+        // Simulate file analysis time to show the animation
+        setTimeout(() => {
+          // Set the file analysis in the store
+          setFileAnalysis(fileAnalysis);
+          setShowFileAnalysis(true);
+          setIsAnalyzing(false);
+          
+          toast({
+            title: "File Analysis Complete",
+            description: "Your file has been analyzed successfully.",
+          });
+        }, 2500); // Show analysis animation for 2.5 seconds
+      }
     } catch (error) {
       clearInterval(progressInterval);
       setUploadProgress(0);
@@ -89,7 +117,7 @@ const FileUpload = () => {
         }, 500);
       }
     }
-  }, [setFileAnalysis, setShowFileAnalysis, toast]);
+  }, [uploadOption, setFileAnalysis, setShowFileAnalysis, toast]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
