@@ -52,7 +52,8 @@ import {
   FileEdit,
   MessageCircle,
   AlertCircle,
-  UserCircle
+  UserCircle,
+  Briefcase
 } from 'lucide-react';
 
 // Define job status badges
@@ -102,7 +103,7 @@ const jobEditSchema = z.object({
 export default function JobDetail() {
   const [, setLocation] = useLocation();
   const params = useParams();
-  const jobId = parseInt(params.id);
+  const jobId = parseInt(params.id || "0");
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('details');
   
@@ -211,9 +212,10 @@ export default function JobDetail() {
   };
   
   // Format date for display
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date) => {
     try {
-      return format(new Date(dateString), 'PPP');
+      const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+      return format(date, 'PPP');
     } catch (e) {
       return 'Invalid date';
     }
@@ -266,13 +268,13 @@ export default function JobDetail() {
           <TabsTrigger value="translation">Translation</TabsTrigger>
         </TabsList>
         
-        {/* Project Details Tab */}
+        {/* Job Details Tab */}
         <TabsContent value="details">
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Project Information</CardTitle>
-                <CardDescription>Overview of the translation project</CardDescription>
+                <CardTitle>Job Information</CardTitle>
+                <CardDescription>Overview of the translation job</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -280,9 +282,9 @@ export default function JobDetail() {
                     <h3 className="text-sm font-medium text-muted-foreground">Status</h3>
                     <div className="mt-1">
                       <Badge 
-                        className={statusColors[project.status as keyof typeof statusColors] || statusColors.pending}
+                        className={statusColors[job.status as keyof typeof statusColors] || statusColors.pending}
                       >
-                        {project.status.charAt(0).toUpperCase() + project.status.slice(1).replace('-', ' ')}
+                        {job.status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                       </Badge>
                     </div>
                   </div>
@@ -291,9 +293,9 @@ export default function JobDetail() {
                     <h3 className="text-sm font-medium text-muted-foreground">Priority</h3>
                     <div className="mt-1">
                       <Badge 
-                        className={priorityColors[project.priority as keyof typeof priorityColors] || priorityColors.medium}
+                        className={priorityColors[job.priority as keyof typeof priorityColors] || priorityColors.medium}
                       >
-                        {project.priority.charAt(0).toUpperCase() + project.priority.slice(1)}
+                        {job.priority?.charAt(0).toUpperCase() + job.priority?.slice(1)}
                       </Badge>
                     </div>
                   </div>
@@ -303,10 +305,10 @@ export default function JobDetail() {
                   <h3 className="text-sm font-medium text-muted-foreground">Completion</h3>
                   <div className="mt-1">
                     <Progress 
-                      value={project.completionPercentage || 0} 
+                      value={job.completionPercentage || 0} 
                       className="h-2" 
                     />
-                    <p className="text-xs text-right mt-1">{project.completionPercentage || 0}% Complete</p>
+                    <p className="text-xs text-right mt-1">{job.completionPercentage || 0}% Complete</p>
                   </div>
                 </div>
                 
@@ -315,27 +317,27 @@ export default function JobDetail() {
                     <h3 className="text-sm font-medium text-muted-foreground">Created</h3>
                     <p className="mt-1 flex items-center text-sm">
                       <CalendarIcon className="h-4 w-4 mr-1 text-muted-foreground" />
-                      {formatDate(project.createdAt)}
+                      {formatDate(job.createdAt)}
                     </p>
                   </div>
                   
-                  {project.dueDate && (
+                  {job.dueDate && (
                     <div>
                       <h3 className="text-sm font-medium text-muted-foreground">Due Date</h3>
                       <p className="mt-1 flex items-center text-sm">
                         <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-                        {formatDate(project.dueDate)}
+                        {formatDate(job.dueDate)}
                       </p>
                     </div>
                   )}
                 </div>
                 
-                {project.assignedTo && (
+                {job.assignedTo && (
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Assigned To</h3>
                     <p className="mt-1 flex items-center text-sm">
                       <UserCircle className="h-4 w-4 mr-1 text-muted-foreground" />
-                      {project.assignedTo}
+                      {job.assignedTo}
                     </p>
                   </div>
                 )}
@@ -350,28 +352,28 @@ export default function JobDetail() {
               <CardContent className="space-y-4">
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">File</h3>
-                  <p className="mt-1">{project.fileName}</p>
+                  <p className="mt-1">{job.fileName}</p>
                 </div>
                 
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Format</h3>
-                  <p className="mt-1">{project.fileFormat}</p>
+                  <p className="mt-1">{job.fileFormat}</p>
                 </div>
                 
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Size</h3>
-                  <p className="mt-1">{(project.fileSize / 1024).toFixed(2)} KB</p>
+                  <p className="mt-1">{(job.fileSize / 1024).toFixed(2)} KB</p>
                 </div>
                 
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Source Language</h3>
-                  <p className="mt-1">{project.sourceLanguage}</p>
+                  <p className="mt-1">{job.sourceLanguage}</p>
                 </div>
                 
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Target Languages</h3>
                   <div className="mt-1 flex flex-wrap gap-1">
-                    {project.targetLanguages.map((lang: string) => (
+                    {job.targetLanguages.map((lang: string) => (
                       <Badge key={lang} variant="outline">{lang}</Badge>
                     ))}
                   </div>
@@ -380,9 +382,9 @@ export default function JobDetail() {
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Translation Type</h3>
                   <p className="mt-1">{
-                    project.workflow === 'ai-translation-qc' 
+                    job.workflow === 'ai-translation-qc' 
                       ? 'AI Translation with Quality Assurance'
-                      : project.workflow === 'ai-translation-human'
+                      : job.workflow === 'ai-translation-human'
                         ? 'AI Translation with Expert Review'
                         : 'AI Neural Translation'
                   }</p>
@@ -392,19 +394,19 @@ export default function JobDetail() {
           </div>
         </TabsContent>
         
-        {/* Project Updates Tab */}
+        {/* Job Updates Tab */}
         <TabsContent value="updates">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="md:col-span-2">
               <Card className="h-full">
                 <CardHeader>
-                  <CardTitle>Project Updates</CardTitle>
+                  <CardTitle>Job Updates</CardTitle>
                   <CardDescription>Status updates and notes</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {project.updates && project.updates.length > 0 ? (
+                  {job.updates && job.updates.length > 0 ? (
                     <div className="space-y-4">
-                      {project.updates.map((update: any) => (
+                      {job.updates.map((update: any) => (
                         <div key={update.id} className="border rounded-md p-4">
                           <div className="flex justify-between items-start">
                             <div className="flex items-center">
@@ -421,7 +423,7 @@ export default function JobDetail() {
                           {update.updateType === 'status_change' && update.newStatus && (
                             <div className="mt-2">
                               <Badge className={statusColors[update.newStatus as keyof typeof statusColors] || statusColors.pending}>
-                                Status changed to: {update.newStatus.charAt(0).toUpperCase() + update.newStatus.slice(1).replace('-', ' ')}
+                                Status changed to: {update.newStatus.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                               </Badge>
                             </div>
                           )}
@@ -429,7 +431,11 @@ export default function JobDetail() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-muted-foreground">No updates yet.</p>
+                    <div className="text-center py-8">
+                      <FileEdit className="h-10 w-10 mx-auto text-muted-foreground" />
+                      <p className="mt-2 text-muted-foreground">No updates yet</p>
+                      <p className="mt-1 text-sm text-muted-foreground">Add an update using the form</p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -446,28 +452,11 @@ export default function JobDetail() {
                     <form onSubmit={updateForm.handleSubmit(onUpdateSubmit)} className="space-y-4">
                       <FormField
                         control={updateForm.control}
-                        name="updateText"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Update Message</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Enter update details..."
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={updateForm.control}
                         name="updateType"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Update Type</FormLabel>
-                            <Select 
+                            <Select
                               onValueChange={field.onChange}
                               defaultValue={field.value}
                             >
@@ -495,7 +484,7 @@ export default function JobDetail() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>New Status</FormLabel>
-                              <Select 
+                              <Select
                                 onValueChange={field.onChange}
                                 defaultValue={field.value}
                               >
@@ -506,10 +495,11 @@ export default function JobDetail() {
                                 </FormControl>
                                 <SelectContent>
                                   <SelectItem value="pending">Pending</SelectItem>
-                                  <SelectItem value="in-progress">In Progress</SelectItem>
-                                  <SelectItem value="review">Review</SelectItem>
-                                  <SelectItem value="completed">Completed</SelectItem>
-                                  <SelectItem value="on-hold">On Hold</SelectItem>
+                                  <SelectItem value="translation-in-progress">Translation in Progress</SelectItem>
+                                  <SelectItem value="lqa-in-progress">LQA in Progress</SelectItem>
+                                  <SelectItem value="human-reviewer-assigned">Reviewer Assigned</SelectItem>
+                                  <SelectItem value="human-review-in-progress">Human Review in Progress</SelectItem>
+                                  <SelectItem value="complete">Complete</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -518,11 +508,25 @@ export default function JobDetail() {
                         />
                       )}
                       
-                      <Button 
-                        type="submit" 
-                        className="w-full"
-                        disabled={addUpdateMutation.isPending}
-                      >
+                      <FormField
+                        control={updateForm.control}
+                        name="updateText"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Update Text</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Enter update details..."
+                                className="resize-none"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Button type="submit" disabled={addUpdateMutation.isPending}>
                         {addUpdateMutation.isPending ? "Adding..." : "Add Update"}
                       </Button>
                     </form>
@@ -533,26 +537,55 @@ export default function JobDetail() {
           </div>
         </TabsContent>
         
-        {/* Edit Project Tab */}
+        {/* Edit Job Tab */}
         <TabsContent value="edit">
           <Card>
             <CardHeader>
-              <CardTitle>Edit Project</CardTitle>
-              <CardDescription>Update project details and status</CardDescription>
+              <CardTitle>Edit Job Details</CardTitle>
+              <CardDescription>Update job information and settings</CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...editForm}>
                 <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="projectName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Job Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter job name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={editForm.control}
-                      name="projectName"
+                      name="status"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Project Name</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
+                          <FormLabel>Status</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="translation-in-progress">Translation in Progress</SelectItem>
+                              <SelectItem value="lqa-in-progress">LQA in Progress</SelectItem>
+                              <SelectItem value="human-reviewer-assigned">Reviewer Assigned</SelectItem>
+                              <SelectItem value="human-review-in-progress">Human Review in Progress</SelectItem>
+                              <SelectItem value="complete">Complete</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -560,27 +593,11 @@ export default function JobDetail() {
                     
                     <FormField
                       control={editForm.control}
-                      name="assignedTo"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Assigned To</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="Name of assignee" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <FormField
-                      control={editForm.control}
                       name="priority"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Priority</FormLabel>
-                          <Select 
+                          <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
                           >
@@ -600,37 +617,9 @@ export default function JobDetail() {
                         </FormItem>
                       )}
                     />
-                    
-                    <FormField
-                      control={editForm.control}
-                      name="status"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Status</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="in-progress">In Progress</SelectItem>
-                              <SelectItem value="review">Review</SelectItem>
-                              <SelectItem value="completed">Completed</SelectItem>
-                              <SelectItem value="on-hold">On Hold</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </div>
                   
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={editForm.control}
                       name="dueDate"
@@ -640,22 +629,30 @@ export default function JobDetail() {
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
-                                <Button 
-                                  variant="outline" 
-                                  className={`w-full justify-start text-left font-normal ${
-                                    !field.value && "text-muted-foreground"
-                                  }`}
+                                <Button
+                                  variant="outline"
+                                  className={
+                                    "w-full pl-3 text-left font-normal " +
+                                    (!field.value && "text-muted-foreground")
+                                  }
                                 >
-                                  <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {field.value ? format(field.value, "PPP") : "Select due date"}
+                                  {field.value ? (
+                                    formatDate(field.value)
+                                  ) : (
+                                    <span>Pick a date</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
                               </FormControl>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
+                            <PopoverContent className="w-auto p-0" align="start">
                               <Calendar
                                 mode="single"
                                 selected={field.value}
                                 onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date < new Date("1900-01-01")
+                                }
                                 initialFocus
                               />
                             </PopoverContent>
@@ -667,33 +664,42 @@ export default function JobDetail() {
                     
                     <FormField
                       control={editForm.control}
-                      name="completionPercentage"
+                      name="assignedTo"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Completion Percentage</FormLabel>
+                          <FormLabel>Assigned To</FormLabel>
                           <FormControl>
-                            <Input 
-                              type="number" 
-                              min="0" 
-                              max="100" 
-                              {...field}
-                              onChange={e => field.onChange(parseInt(e.target.value))}
-                            />
+                            <Input placeholder="Enter assignee name" {...field} />
                           </FormControl>
-                          <FormDescription>
-                            Current progress: {field.value || 0}%
-                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
                   
-                  <Button 
-                    type="submit" 
-                    disabled={updateProjectMutation.isPending}
-                  >
-                    {updateProjectMutation.isPending ? "Saving..." : "Save Changes"}
+                  <FormField
+                    control={editForm.control}
+                    name="completionPercentage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Completion Percentage</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="100"
+                            placeholder="Enter completion percentage"
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <Button type="submit" disabled={updateJobMutation.isPending}>
+                    {updateJobMutation.isPending ? "Updating..." : "Update Job"}
                   </Button>
                 </form>
               </Form>
@@ -705,103 +711,16 @@ export default function JobDetail() {
         <TabsContent value="translation">
           <Card>
             <CardHeader>
-              <CardTitle>Translation Details</CardTitle>
-              <CardDescription>View translation details and progress</CardDescription>
+              <CardTitle>Translation</CardTitle>
+              <CardDescription>View and manage translation content</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-medium">Source</h3>
-                  <p className="mt-1">{project.sourceLanguage}</p>
-                </div>
-                
-                <div>
-                  <h3 className="text-sm font-medium">Target Languages</h3>
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {project.targetLanguages.map((lang: string) => (
-                      <Badge key={lang} variant="outline">{lang}</Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium">Content Statistics</h3>
-                <div className="grid md:grid-cols-3 gap-4 mt-2">
-                  <div className="bg-muted rounded-md p-3">
-                    <p className="text-xs text-muted-foreground">Word Count</p>
-                    <p className="text-xl font-bold">{project.wordCount.toLocaleString()}</p>
-                  </div>
-                  
-                  <div className="bg-muted rounded-md p-3">
-                    <p className="text-xs text-muted-foreground">Character Count</p>
-                    <p className="text-xl font-bold">{project.charCount.toLocaleString()}</p>
-                  </div>
-                  
-                  <div className="bg-muted rounded-md p-3">
-                    <p className="text-xs text-muted-foreground">Images with Text</p>
-                    <p className="text-xl font-bold">{project.imagesWithText}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium">Translation Flow</h3>
-                <div className="mt-2 p-4 bg-muted rounded-md">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm">1</div>
-                    <div className="h-1 flex-1 bg-primary mx-2"></div>
-                    <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm">2</div>
-                    <div className="h-1 flex-1 bg-primary/20 mx-2"></div>
-                    <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm">3</div>
-                  </div>
-                  <div className="flex justify-between mt-2 text-xs">
-                    <div className="text-center w-1/3">
-                      <p className="font-medium">File Analysis</p>
-                      <p className="text-muted-foreground">Completed</p>
-                    </div>
-                    <div className="text-center w-1/3">
-                      <p className="font-medium">Translation</p>
-                      <p className="text-muted-foreground">
-                        {project.status === 'in-progress' ? 'In Progress' : 
-                         project.status === 'completed' ? 'Completed' : 'Pending'}
-                      </p>
-                    </div>
-                    <div className="text-center w-1/3">
-                      <p className="font-medium">Delivery</p>
-                      <p className="text-muted-foreground">
-                        {project.status === 'completed' ? 'Completed' : 'Pending'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium">Translation Process</h3>
-                <p className="mt-1">
-                  {project.workflow === 'ai-translation-qc' 
-                    ? 'AI Translation with Quality Assurance - Machine translation with automatic quality control checks.'
-                    : project.workflow === 'ai-translation-human'
-                      ? 'AI Translation with Expert Review - Machine translation followed by human expert review and editing.'
-                      : 'AI Neural Translation - High-quality neural machine translation.'}
-                </p>
+            <CardContent>
+              <div className="text-center py-8">
+                <Briefcase className="h-10 w-10 mx-auto text-muted-foreground" />
+                <p className="mt-2 text-muted-foreground">Translation management coming soon</p>
+                <p className="mt-1 text-sm text-muted-foreground">This feature is under development</p>
               </div>
             </CardContent>
-            <CardFooter>
-              <Button 
-                variant="outline" 
-                disabled={project.status !== 'completed'}
-                onClick={() => {
-                  toast({
-                    title: "Translation downloaded",
-                    description: "The translation files have been downloaded.",
-                  });
-                }}
-              >
-                Download Translation
-              </Button>
-            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>
