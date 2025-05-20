@@ -274,15 +274,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Unauthorized" });
       }
       
-      const validatedData = insertTranslationRequestSchema.parse(req.body);
-      
-      // Add the current user's ID to the request
-      const translationRequestWithUser = {
-        ...validatedData,
+      // First add the userId to the request body
+      const requestWithUserId = {
+        ...req.body,
         userId: req.user.id
       };
       
-      const translationRequest = await storage.createTranslationRequest(translationRequestWithUser);
+      // Then validate the complete data with userId included
+      const validatedData = insertTranslationRequestSchema.parse(requestWithUserId);
+      
+      const translationRequest = await storage.createTranslationRequest(validatedData);
       res.status(201).json(translationRequest);
     } catch (error) {
       if (error instanceof ZodError) {
