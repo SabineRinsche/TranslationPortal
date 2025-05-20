@@ -2,9 +2,40 @@ import { FileAnalysis } from '@shared/schema';
 
 const languageDetector = {
   detect: async (text: string): Promise<string> => {
-    // In a real implementation, this would use a language detection API
-    // For now, we'll just return English as a default
-    return 'English';
+    // Common language patterns for basic detection
+    // This is a simplified implementation - in production, we'd use a proper language detection API
+    
+    // Sample patterns for common languages
+    const patterns = [
+      { lang: 'English', regex: /\b(the|and|or|if|in|on|at|to|for|with|by|about|is|are)\b/gi, threshold: 0.1 },
+      { lang: 'Spanish', regex: /\b(el|la|los|las|y|o|si|en|con|por|para|es|son|está)\b/gi, threshold: 0.08 },
+      { lang: 'French', regex: /\b(le|la|les|et|ou|si|dans|sur|avec|par|pour|est|sont)\b/gi, threshold: 0.08 },
+      { lang: 'German', regex: /\b(der|die|das|und|oder|wenn|in|auf|mit|durch|für|ist|sind)\b/gi, threshold: 0.08 },
+      { lang: 'Italian', regex: /\b(il|la|i|gli|le|e|o|se|in|su|con|per|è|sono)\b/gi, threshold: 0.08 },
+    ];
+    
+    if (!text || text.trim().length === 0) {
+      return 'Auto-detection failed (insufficient text)';
+    }
+    
+    // Check each language pattern
+    const matches = patterns.map(pattern => {
+      const matches = text.match(pattern.regex) || [];
+      const wordCount = text.split(/\s+/).length;
+      const matchRatio = matches.length / wordCount;
+      return { 
+        lang: pattern.lang, 
+        matchRatio,
+        isMatch: matchRatio > pattern.threshold
+      };
+    });
+    
+    // Find the language with the highest match ratio above its threshold
+    const detectedLang = matches
+      .filter(m => m.isMatch)
+      .sort((a, b) => b.matchRatio - a.matchRatio)[0];
+      
+    return detectedLang ? detectedLang.lang : 'Auto-detection failed';
   }
 };
 

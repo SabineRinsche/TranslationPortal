@@ -284,7 +284,12 @@ const FileAnalysis = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Source Language:</span>
-              <span className="font-medium text-card-foreground">{fileAnalysis.sourceLanguage}</span>
+              <span className="font-medium text-card-foreground">
+                {fileAnalysis.sourceLanguage}
+                <Badge variant="outline" className="ml-2 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 text-xs">
+                  Auto-detected
+                </Badge>
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Subject Matter:</span>
