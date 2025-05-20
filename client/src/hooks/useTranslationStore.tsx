@@ -16,6 +16,8 @@ interface TranslationStore {
   // Data
   fileAnalysis: FileAnalysis | null;
   selectedLanguages: string[];
+  selectedWorkflow: string | null;
+  showWorkflowSelection: boolean;
   calculationSummary: CalculationSummary | null;
   showCalculationMessage: boolean;
   
@@ -25,6 +27,8 @@ interface TranslationStore {
   setShowApiDocs: (show: boolean) => void;
   setFileAnalysis: (analysis: FileAnalysis) => void;
   setSelectedLanguages: (languages: string[] | ((prev: string[]) => string[])) => void;
+  setSelectedWorkflow: (workflow: string | null) => void;
+  setShowWorkflowSelection: (show: boolean) => void;
   setCalculationSummary: (summary: CalculationSummary | null) => void;
   setShowCalculationMessage: (show: boolean) => void;
   reset: () => void;
@@ -39,6 +43,8 @@ export const useTranslationStore = create<TranslationStore>((set) => ({
   // Initial data
   fileAnalysis: null,
   selectedLanguages: [],
+  selectedWorkflow: null,
+  showWorkflowSelection: false,
   calculationSummary: null,
   showCalculationMessage: false,
   
@@ -52,6 +58,8 @@ export const useTranslationStore = create<TranslationStore>((set) => ({
       ? languages(state.selectedLanguages) 
       : languages 
   })),
+  setSelectedWorkflow: (workflow) => set({ selectedWorkflow: workflow }),
+  setShowWorkflowSelection: (show) => set({ showWorkflowSelection: show }),
   setCalculationSummary: (summary) => set({ calculationSummary: summary }),
   setShowCalculationMessage: (show) => set({ showCalculationMessage: show }),
   reset: () => set({
@@ -60,6 +68,8 @@ export const useTranslationStore = create<TranslationStore>((set) => ({
     showApiDocs: false,
     fileAnalysis: null,
     selectedLanguages: [],
+    selectedWorkflow: null,
+    showWorkflowSelection: false,
     calculationSummary: null,
     showCalculationMessage: false,
   }),
