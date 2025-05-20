@@ -2,14 +2,34 @@ import { pgTable, text, serial, integer, boolean, jsonb, timestamp } from "drizz
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const accounts = pgTable("accounts", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  credits: integer("credits").notNull().default(0),
+  subscriptionPlan: text("subscription_plan"),
+  subscriptionStatus: text("subscription_status"),
+  subscriptionRenewal: timestamp("subscription_renewal"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
+  accountId: integer("account_id").notNull().references(() => accounts.id),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull().unique(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  role: text("role").notNull().default("user"), // 'user', 'admin'
+  jobTitle: text("job_title"),
+  phoneNumber: text("phone_number"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const translationRequests = pgTable("translation_requests", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
   fileName: text("file_name").notNull(),
   fileFormat: text("file_format").notNull(),
   fileSize: integer("file_size").notNull(),
@@ -25,15 +45,78 @@ export const translationRequests = pgTable("translation_requests", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+// Subscription plans configuration
+export const subscriptionPlans = [
+  {
+    id: 'free',
+    name: 'Free',
+    price: 0,
+    credits: 5000,
+    features: [
+      'Translate up to 5,000 characters per month',
+      'Simple file analysis',
+      'Email support'
+    ]
+  },
+  {
+    id: 'standard',
+    name: 'Standard',
+    price: 19.99,
+    credits: 100000,
+    features: [
+      'Translate up to 100,000 characters per month',
+      'Advanced file analysis',
+      'Priority email support',
+      'API access'
+    ]
+  },
+  {
+    id: 'pro',
+    name: 'Professional',
+    price: 49.99,
+    credits: 500000,
+    features: [
+      'Translate up to 500,000 characters per month',
+      'Advanced file analysis',
+      'Priority phone & email support',
+      'Full API access',
+      'Team collaboration tools'
+    ]
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: 199.99,
+    credits: 2500000,
+    features: [
+      'Translate up to 2,500,000 characters per month',
+      'Advanced file analysis with AI insights',
+      'Dedicated account manager',
+      'Full API access with higher rate limits',
+      'Team collaboration with admin controls',
+      'Custom glossaries and translation memory'
+    ]
+  }
+];
+
+export const insertAccountSchema = createInsertSchema(accounts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertTranslationRequestSchema = createInsertSchema(translationRequests).omit({
   id: true,
   status: true,
 });
+
+export type InsertAccount = z.infer<typeof insertAccountSchema>;
+export type Account = typeof accounts.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;

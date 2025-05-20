@@ -1,0 +1,452 @@
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { subscriptionPlans } from "@shared/schema";
+import { Separator } from "@/components/ui/separator";
+import { Loader2 } from "lucide-react";
+
+export default function ProfilePage() {
+  const { toast } = useToast();
+  
+  // Fetch user data
+  const { data: userData, isLoading: isLoadingUser } = useQuery({
+    queryKey: ['/api/user/profile'],
+  });
+  
+  // Fetch account data
+  const { data: accountData, isLoading: isLoadingAccount } = useQuery({
+    queryKey: ['/api/account'],
+  });
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    jobTitle: '',
+    password: '',
+    confirmPassword: '',
+  });
+
+  // Update form data when user data is loaded
+  useState(() => {
+    if (userData) {
+      setFormData({
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        email: userData.email || '',
+        phoneNumber: userData.phoneNumber || '',
+        jobTitle: userData.jobTitle || '',
+        password: '',
+        confirmPassword: '',
+      });
+    }
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Update user profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest('PATCH', '/api/user/profile', data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Profile Updated",
+        description: "Your profile information has been updated successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Update Failed",
+        description: "There was a problem updating your profile. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Update password mutation
+  const updatePasswordMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest('PATCH', '/api/user/password', data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Password Updated",
+        description: "Your password has been updated successfully.",
+      });
+      setFormData(prev => ({
+        ...prev,
+        password: '',
+        confirmPassword: '',
+      }));
+    },
+    onError: (error) => {
+      toast({
+        title: "Update Failed",
+        description: "There was a problem updating your password. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Purchase credits mutation
+  const purchaseCreditsMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest('POST', '/api/account/credits/purchase', data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Credits Purchased",
+        description: "Your credits have been added to your account.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Purchase Failed",
+        description: "There was a problem purchasing credits. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Update subscription mutation
+  const updateSubscriptionMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest('POST', '/api/account/subscription', data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Subscription Updated",
+        description: "Your subscription has been updated successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Update Failed",
+        description: "There was a problem updating your subscription. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleProfileSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const { password, confirmPassword, ...profileData } = formData;
+    updateProfileMutation.mutate(profileData);
+  };
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Passwords Don't Match",
+        description: "Please make sure your passwords match.",
+        variant: "destructive",
+      });
+      return;
+    }
+    updatePasswordMutation.mutate({ password: formData.password });
+  };
+
+  const handleCreditPurchase = (amount: number) => {
+    purchaseCreditsMutation.mutate({ credits: amount });
+  };
+
+  const handleSubscriptionChange = (planId: string) => {
+    updateSubscriptionMutation.mutate({ planId });
+  };
+
+  const isLoading = isLoadingUser || isLoadingAccount;
+
+  return (
+    <div className="container py-10">
+      <h1 className="text-4xl font-bold mb-8">Your Profile</h1>
+      
+      {isLoading ? (
+        <div className="flex items-center justify-center p-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <Tabs defaultValue="details" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="details">My Details</TabsTrigger>
+            <TabsTrigger value="account">My Account</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="details">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Personal Information</CardTitle>
+                  <CardDescription>
+                    Update your personal details
+                  </CardDescription>
+                </CardHeader>
+                <form onSubmit={handleProfileSubmit}>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">First Name</Label>
+                        <Input 
+                          id="firstName" 
+                          name="firstName"
+                          value={formData.firstName}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Last Name</Label>
+                        <Input 
+                          id="lastName" 
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input 
+                        id="email" 
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="phoneNumber">Phone Number</Label>
+                      <Input 
+                        id="phoneNumber" 
+                        name="phoneNumber"
+                        value={formData.phoneNumber || ''}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="jobTitle">Job Title</Label>
+                      <Input 
+                        id="jobTitle" 
+                        name="jobTitle"
+                        value={formData.jobTitle || ''}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button 
+                      type="submit" 
+                      disabled={updateProfileMutation.isPending}
+                    >
+                      {updateProfileMutation.isPending && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Save Changes
+                    </Button>
+                  </CardFooter>
+                </form>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Password</CardTitle>
+                  <CardDescription>
+                    Change your password
+                  </CardDescription>
+                </CardHeader>
+                <form onSubmit={handlePasswordSubmit}>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="password">New Password</Label>
+                      <Input 
+                        id="password" 
+                        name="password"
+                        type="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <Input 
+                        id="confirmPassword" 
+                        name="confirmPassword"
+                        type="password"
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button 
+                      type="submit" 
+                      disabled={updatePasswordMutation.isPending}
+                    >
+                      {updatePasswordMutation.isPending && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Update Password
+                    </Button>
+                  </CardFooter>
+                </form>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="account">
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Account Information</CardTitle>
+                  <CardDescription>
+                    {accountData?.name} - {accountData?.users?.length || 0} users
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-medium">Available Credits</h3>
+                        <p className="text-muted-foreground">Current balance of translation credits</p>
+                      </div>
+                      <div className="text-3xl font-bold">{accountData?.credits?.toLocaleString() || 0}</div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-medium">Current Plan</h3>
+                        <p className="text-muted-foreground">Your subscription tier</p>
+                      </div>
+                      <div className="font-semibold">
+                        {accountData?.subscriptionPlan ? 
+                          subscriptionPlans.find(p => p.id === accountData.subscriptionPlan)?.name || accountData?.subscriptionPlan
+                          : 'No Plan'
+                        }
+                      </div>
+                    </div>
+                    
+                    {accountData?.subscriptionRenewal && (
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-medium">Next Renewal</h3>
+                          <p className="text-muted-foreground">Your subscription renewal date</p>
+                        </div>
+                        <div className="font-semibold">
+                          {new Date(accountData.subscriptionRenewal).toLocaleDateString()}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Purchase Credits</CardTitle>
+                  <CardDescription>
+                    Add more translation credits to your account
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 gap-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleCreditPurchase(10000)}
+                      disabled={purchaseCreditsMutation.isPending}
+                    >
+                      10,000 Credits
+                      <span className="block text-sm text-muted-foreground mt-1">£100</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleCreditPurchase(25000)}
+                      disabled={purchaseCreditsMutation.isPending}
+                    >
+                      25,000 Credits
+                      <span className="block text-sm text-muted-foreground mt-1">£225</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleCreditPurchase(50000)}
+                      disabled={purchaseCreditsMutation.isPending}
+                    >
+                      50,000 Credits
+                      <span className="block text-sm text-muted-foreground mt-1">£400</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Subscription Plans</CardTitle>
+                  <CardDescription>
+                    Choose a plan that works for your needs
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {subscriptionPlans.map((plan) => (
+                      <Card key={plan.id} className={`hover:border-primary transition-colors ${accountData?.subscriptionPlan === plan.id ? 'border-primary' : ''}`}>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-lg">{plan.name}</CardTitle>
+                          <div className="flex items-end gap-1">
+                            <span className="text-2xl font-bold">£{plan.price}</span>
+                            <span className="text-muted-foreground">/month</span>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pb-2">
+                          <p className="text-sm font-medium mb-2">{plan.credits.toLocaleString()} credits/month</p>
+                          <ul className="space-y-1 text-sm">
+                            {plan.features.map((feature, i) => (
+                              <li key={i} className="flex items-start">
+                                <span className="mr-2">✓</span>
+                                <span>{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                        <CardFooter>
+                          <Button 
+                            className="w-full" 
+                            variant={accountData?.subscriptionPlan === plan.id ? "secondary" : "default"}
+                            onClick={() => handleSubscriptionChange(plan.id)}
+                            disabled={updateSubscriptionMutation.isPending || accountData?.subscriptionPlan === plan.id}
+                          >
+                            {accountData?.subscriptionPlan === plan.id ? 'Current Plan' : 'Select Plan'}
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      )}
+    </div>
+  );
+}
