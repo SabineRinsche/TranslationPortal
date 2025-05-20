@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 export default function ApiDocumentation() {
   return (
     <div className="container mx-auto py-6">
-      <h1 className="text-3xl font-bold mb-6">Alpha Translation API Documentation</h1>
+      <h1 className="text-3xl font-bold mb-6">Alpha's AI Translation Portal API Documentation</h1>
       
       <div className="mb-6">
         <p className="mb-4">

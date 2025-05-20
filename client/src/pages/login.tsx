@@ -51,7 +51,7 @@ export default function Login() {
       <div className="max-w-md w-full p-4">
         <Card className="shadow-lg border-t-4 border-t-primary">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Alpha AI Translation</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Alpha's AI Translation Portal</CardTitle>
             <CardDescription className="text-center">Enter your credentials to sign in to your account</CardDescription>
           </CardHeader>
           <CardContent>
