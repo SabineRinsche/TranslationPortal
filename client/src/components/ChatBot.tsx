@@ -396,7 +396,7 @@ const ChatBot = () => {
   const showCapabilities = () => {
     addMessage(
       "bot",
-      "I can help you with many translation-related tasks! Here are some things you can ask me about:",
+      "I can help you with many translation-related tasks through our portal! Here are some things you can ask me about:",
       [
         {
           value: "languages",
