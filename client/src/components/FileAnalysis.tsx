@@ -158,7 +158,9 @@ const FileAnalysis = () => {
         throw new Error("Missing file analysis or calculation");
       }
       
-      const translationRequest: InsertTranslationRequest = {
+      // We don't need to explicitly add userId as the server will add it from the authenticated user
+      // But for TypeScript, we need to cast it to satisfy the type check
+      const translationRequest = {
         fileName: fileAnalysis.fileName,
         fileFormat: fileAnalysis.fileFormat,
         fileSize: fileAnalysis.fileSize,
@@ -170,7 +172,7 @@ const FileAnalysis = () => {
         targetLanguages: selectedLanguages,
         creditsRequired: calculationSummary.creditsRequired,
         totalCost: calculationSummary.totalCost,
-      };
+      } as InsertTranslationRequest;
       
       return await apiRequest('POST', '/api/translation-requests', translationRequest);
     },

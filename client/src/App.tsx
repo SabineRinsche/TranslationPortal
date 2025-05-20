@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import DashboardPage from "@/pages/dashboard";
+import ProfilePage from "@/pages/profile";
 
 function Router() {
   return (
