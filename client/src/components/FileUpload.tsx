@@ -85,6 +85,8 @@ const FileUpload = () => {
       'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
       'text/plain': ['.txt'],
       'text/html': ['.html'],
+      'application/zip': ['.zip'],
+      'application/x-zip-compressed': ['.zip'],
     },
     maxFiles: 1,
     multiple: false,
@@ -113,7 +115,7 @@ const FileUpload = () => {
           Drag your file here, or <span className="text-primary font-medium">browse</span>
         </p>
         <p className="mt-1 text-xs text-muted-foreground/70">
-          Supported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML
+          Supported formats: PDF, DOCX, XLSX, PPTX, TXT, HTML, ZIP
         </p>
       </div>
       

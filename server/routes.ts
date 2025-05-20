@@ -5,6 +5,7 @@ import { insertTranslationRequestSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import multer from 'multer';
+import AdmZip from 'adm-zip';
 
 // Configure multer for file uploads
 const upload = multer({
@@ -64,20 +65,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    // This is where we'd normally process the file
-    // For now, we'll just return a mock analysis based on the file metadata
-    const fileAnalysis = {
-      fileName: req.file.originalname,
-      fileFormat: req.file.originalname.split('.').pop() || "unknown",
-      fileSize: req.file.size,
-      wordCount: Math.floor(req.file.size / 10), // Simplified estimate
-      charCount: Math.floor(req.file.size / 2), // Simplified estimate
-      imagesWithText: Math.floor(Math.random() * 3), // Simplified detection
-      subjectMatter: "Auto-detected content",
-      sourceLanguage: "Auto-detected language",
-    };
+    try {
+      const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase() || "unknown";
+      
+      // Check if the file is a ZIP file
+      if (fileExtension === 'zip') {
+        const zip = new AdmZip(req.file.buffer);
+        const zipEntries = zip.getEntries();
+        
+        // Find the first document in the zip that we can analyze
+        const supportedExtensions = ['pdf', 'docx', 'xlsx', 'pptx', 'txt', 'html'];
+        const fileToAnalyze = zipEntries.find(entry => {
+          // Skip directories and hidden files
+          if (entry.isDirectory || entry.entryName.startsWith('__MACOSX') || entry.entryName.startsWith('.')) {
+            return false;
+          }
+          
+          const entryExt = entry.name.split('.').pop()?.toLowerCase() || '';
+          return supportedExtensions.includes(entryExt);
+        });
+        
+        if (!fileToAnalyze) {
+          return res.status(400).json({ 
+            message: "No analyzable files found in the ZIP archive. Please include PDF, DOCX, XLSX, PPTX, TXT, or HTML files." 
+          });
+        }
+        
+        // Use the first valid file from the ZIP for analysis
+        const fileAnalysis = {
+          fileName: `${req.file.originalname} (contains ${fileToAnalyze.name})`,
+          fileFormat: "ZIP",
+          fileSize: req.file.size,
+          wordCount: Math.floor(fileToAnalyze.getData().length / 10), // Simplified estimate
+          charCount: Math.floor(fileToAnalyze.getData().length / 2),  // Simplified estimate
+          imagesWithText: Math.floor(Math.random() * 3), // Simplified detection
+          subjectMatter: "Auto-detected content",
+          sourceLanguage: "Auto-detected language",
+        };
+        
+        return res.status(200).json(fileAnalysis);
+      }
+      
+      // Standard file upload analysis (non-ZIP)
+      const fileAnalysis = {
+        fileName: req.file.originalname,
+        fileFormat: fileExtension.toUpperCase(),
+        fileSize: req.file.size,
+        wordCount: Math.floor(req.file.size / 10), // Simplified estimate
+        charCount: Math.floor(req.file.size / 2), // Simplified estimate
+        imagesWithText: Math.floor(Math.random() * 3), // Simplified detection
+        subjectMatter: "Auto-detected content",
+        sourceLanguage: "Auto-detected language",
+      };
 
-    res.status(200).json(fileAnalysis);
+      res.status(200).json(fileAnalysis);
+    } catch (error) {
+      console.error('Error processing file:', error);
+      res.status(500).json({ message: "Error processing uploaded file" });
+    }
   });
 
   const httpServer = createServer(app);
