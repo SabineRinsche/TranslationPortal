@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Dashboard from '@/components/Dashboard';
-import ProjectsList from '@/components/ProjectsList';
+import JobsList from '@/components/ProjectsList';
 
 export default function DashboardPage() {
   return (
@@ -10,7 +10,7 @@ export default function DashboardPage() {
       <Tabs defaultValue="analytics" className="space-y-4">
         <TabsList>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="projects">Projects</TabsTrigger>
+          <TabsTrigger value="projects">Jobs</TabsTrigger>
         </TabsList>
         
         <TabsContent value="analytics">
@@ -18,7 +18,7 @@ export default function DashboardPage() {
         </TabsContent>
         
         <TabsContent value="projects">
-          <ProjectsList />
+          <JobsList />
         </TabsContent>
       </Tabs>
     </div>
