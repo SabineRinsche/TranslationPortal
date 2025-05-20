@@ -22,10 +22,7 @@ const Home = () => {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <main className="container mx-auto px-4 py-6 flex-1">
         <div className="mb-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500 dark:from-primary dark:to-blue-300 mb-2">Alpha's AI Translation Service</h2>
-          <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
-            Our powerful AI-driven translation platform translates documents into multiple languages with precision and speed. We can advise you on the best workflows to use and how to leverage your existing translation assets.
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500 dark:from-primary dark:to-blue-300">Alpha's AI Translation Service</h2>
         </div>
         
         <div className="flex flex-col md:flex-row gap-6">
