@@ -93,7 +93,11 @@ const TranslationRequestTable = ({ requests }: { requests: TranslationRequest[] 
   );
 };
 
-const Dashboard = () => {
+interface DashboardProps {
+  initialTab?: string;
+}
+
+const Dashboard = ({ initialTab }: DashboardProps = {}) => {
   const { data: requests, isLoading } = useQuery<TranslationRequest[]>({
     queryKey: ['/api/translation-requests'],
     staleTime: 60000, // 1 minute

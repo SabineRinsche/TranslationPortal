@@ -123,6 +123,11 @@ const Header = () => {
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuItem>Settings</DropdownMenuItem>
+                <Link href="/dashboard?tab=usage">
+                  <DropdownMenuItem>
+                    Credit Usage
+                  </DropdownMenuItem>
+                </Link>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>Logout</DropdownMenuItem>
               </DropdownMenuContent>
