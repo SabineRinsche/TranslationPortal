@@ -403,9 +403,13 @@ export default function JobDetail() {
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground">Target Languages</h3>
                   <div className="mt-1 flex flex-wrap gap-1">
-                    {job.targetLanguages.map((lang: string) => (
-                      <Badge key={lang} variant="outline">{lang}</Badge>
-                    ))}
+                    {job.targetLanguages && job.targetLanguages.length > 0 ? (
+                      job.targetLanguages.map((lang: string) => (
+                        <Badge key={lang} variant="outline">{lang}</Badge>
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground text-sm">No target languages specified</span>
+                    )}
                   </div>
                 </div>
                 
