@@ -158,10 +158,6 @@ const FileAnalysis = () => {
                 }
               </span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Subject Matter:</span>
-              <span className="font-medium text-card-foreground">{fileAnalysis.subjectMatter}</span>
-            </div>
           </div>
         </div>
         
@@ -183,6 +179,10 @@ const FileAnalysis = () => {
             <div className="flex justify-between">
               <span className="text-muted-foreground">Source Language:</span>
               <span className="font-medium text-card-foreground">{fileAnalysis.sourceLanguage}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Subject Matter:</span>
+              <span className="font-medium text-card-foreground">{fileAnalysis.subjectMatter}</span>
             </div>
           </div>
         </div>
