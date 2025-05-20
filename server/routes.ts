@@ -1,4 +1,4 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
@@ -24,7 +24,11 @@ const upload = multer({
 // Create a folder for profile pictures if it doesn't exist
 import fs from 'fs';
 import path from 'path';
-const profilePicsDir = path.join(process.cwd(), 'public', 'profile-pics');
+const publicDir = path.join(process.cwd(), 'public');
+const profilePicsDir = path.join(publicDir, 'profile-pics');
+if (!fs.existsSync(publicDir)) {
+  fs.mkdirSync(publicDir, { recursive: true });
+}
 if (!fs.existsSync(profilePicsDir)) {
   fs.mkdirSync(profilePicsDir, { recursive: true });
 }
@@ -94,6 +98,9 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve static files from the public directory
+  app.use(express.static(path.join(process.cwd(), 'public')));
+  
   // Apply auth middleware to all API routes
   app.use('/api', authMiddleware);
   
@@ -147,11 +154,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update the user's profile image URL
       const profileImageUrl = `/profile-pics/${fileName}`;
-      currentUser = {
+      
+      // Type assertion to handle the profileImageUrl property
+      const updatedUser = {
         ...currentUser,
         profileImageUrl,
         updatedAt: new Date()
       };
+      
+      currentUser = updatedUser;
       
       res.json({ 
         message: "Profile picture updated successfully", 

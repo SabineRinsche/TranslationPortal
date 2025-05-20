@@ -23,8 +23,20 @@ import { Button } from "@/components/ui/button";
 const Header = () => {
   const [notificationsCount, setNotificationsCount] = useState(0);
   
+  // Define UserData type to match API response
+  interface UserData {
+    id: number;
+    accountId: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+    role: string;
+    profileImageUrl: string | null;
+  }
+  
   // Fetch user data for avatar
-  const { data: userData } = useQuery({
+  const { data: userData } = useQuery<UserData>({
     queryKey: ['/api/user/profile'],
   });
 
@@ -86,10 +98,10 @@ const Header = () => {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center space-x-2 text-sm focus:outline-none">
                   <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
-                    {userData?.profileImageUrl ? (
+                    {userData && userData.profileImageUrl ? (
                       <AvatarImage 
                         src={userData.profileImageUrl} 
-                        alt={userData ? `${userData.firstName} ${userData.lastName}` : "User"} 
+                        alt={`${userData.firstName} ${userData.lastName}`} 
                       />
                     ) : (
                       <AvatarFallback>
