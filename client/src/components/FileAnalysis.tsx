@@ -293,7 +293,12 @@ const FileAnalysis = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Subject Matter:</span>
-              <span className="font-medium text-card-foreground">{fileAnalysis.subjectMatter}</span>
+              <span className="font-medium text-card-foreground">
+                {fileAnalysis.subjectMatter}
+                <Badge variant="outline" className="ml-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 text-xs">
+                  Auto-detected
+                </Badge>
+              </span>
             </div>
           </div>
         </div>

@@ -466,12 +466,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return 'English (default)';
         };
         
+        // Subject matter detection function
+        const detectSubjectMatter = (text: string): string => {
+          // Categories with keywords
+          const categories = [
+            { 
+              name: 'Technical/IT', 
+              keywords: ['software', 'hardware', 'code', 'programming', 'algorithm', 'database', 'server', 
+                'computer', 'network', 'interface', 'cloud', 'api', 'application', 'digital', 'developer',
+                'system', 'technology', 'platform', 'framework', 'function', 'module'] 
+            },
+            { 
+              name: 'Medical/Healthcare', 
+              keywords: ['health', 'patient', 'doctor', 'hospital', 'clinical', 'medical', 'treatment', 
+                'disease', 'diagnosis', 'therapy', 'pharmaceutical', 'medicine', 'symptom', 'healthcare',
+                'clinic', 'physician', 'nurse', 'drug', 'prescription', 'vaccine'] 
+            },
+            { 
+              name: 'Legal', 
+              keywords: ['law', 'legal', 'contract', 'agreement', 'court', 'attorney', 'plaintiff', 
+                'defendant', 'clause', 'provision', 'jurisdiction', 'statute', 'regulation', 'compliance',
+                'litigant', 'paragraph', 'judicial', 'lawyer', 'dispute', 'settlement'] 
+            },
+            { 
+              name: 'Financial/Business', 
+              keywords: ['finance', 'business', 'market', 'investment', 'profit', 'revenue', 'strategy', 
+                'commercial', 'economic', 'fiscal', 'budget', 'corporate', 'asset', 'stock', 'management',
+                'accounting', 'capital', 'financial', 'transaction', 'enterprise'] 
+            },
+            { 
+              name: 'Marketing/Advertising', 
+              keywords: ['marketing', 'brand', 'advertising', 'campaign', 'consumer', 'customer', 'product', 
+                'service', 'market', 'sales', 'promotion', 'audience', 'demographic', 'media', 'content',
+                'creative', 'advertisement', 'commercial', 'communication', 'engagement'] 
+            },
+            { 
+              name: 'Academic/Educational', 
+              keywords: ['research', 'study', 'education', 'academic', 'student', 'university', 'school', 
+                'learning', 'teaching', 'theory', 'concept', 'analysis', 'methodology', 'science', 'literature',
+                'experiment', 'hypothesis', 'thesis', 'dissertation', 'curriculum'] 
+            }
+          ];
+          
+          // Convert to lowercase and clean up text
+          const normalizedText = text.toLowerCase();
+          
+          // Count keyword matches for each category
+          const categoryScores = categories.map(category => {
+            let score = 0;
+            category.keywords.forEach(keyword => {
+              // Use word boundary to match whole words only
+              const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+              const matches = (normalizedText.match(regex) || []).length;
+              score += matches;
+            });
+            return { name: category.name, score };
+          });
+          
+          // Sort by score (highest first)
+          categoryScores.sort((a, b) => b.score - a.score);
+          
+          // If highest score is 0 or very low, return generic response
+          if (categoryScores[0].score < 3) {
+            return 'General Content';
+          }
+          
+          return categoryScores[0].name;
+        };
+        
         // Get text sample from the file
         const fileData = fileToAnalyze.getData();
         const fileText = fileData.toString().substring(0, 5000); // Use first 5000 chars for detection
         
         // Detect language from the file content
         const detectedLanguage = detectLanguage(fileText);
+        
+        // Detect subject matter from the file content
+        const detectedSubjectMatter = detectSubjectMatter(fileText);
         
         // Use the first valid file from the ZIP for analysis
         const fileAnalysis = {
@@ -481,7 +552,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           wordCount: Math.floor(fileToAnalyze.getData().length / 10), // Simplified estimate
           charCount: Math.floor(fileToAnalyze.getData().length / 2),  // Simplified estimate
           imagesWithText: Math.floor(Math.random() * 3), // Simplified detection
-          subjectMatter: "Auto-detected content",
+          subjectMatter: detectedSubjectMatter,
           sourceLanguage: detectedLanguage,
         };
         
@@ -521,9 +592,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return 'English (default)';
       };
       
-      // Get text sample for language detection
+      // Get text sample for language and subject matter detection
       const fileText = req.file.buffer.toString().substring(0, 5000); // Take first 5000 chars
       const detectedLanguage = detectLanguage(fileText);
+      
+      // Subject matter detection function
+      const detectSubjectMatter = (text: string): string => {
+        // Categories with keywords
+        const categories = [
+          { 
+            name: 'Technical/IT', 
+            keywords: ['software', 'hardware', 'code', 'programming', 'algorithm', 'database', 'server', 
+              'computer', 'network', 'interface', 'cloud', 'api', 'application', 'digital', 'developer',
+              'system', 'technology', 'platform', 'framework', 'function', 'module'] 
+          },
+          { 
+            name: 'Medical/Healthcare', 
+            keywords: ['health', 'patient', 'doctor', 'hospital', 'clinical', 'medical', 'treatment', 
+              'disease', 'diagnosis', 'therapy', 'pharmaceutical', 'medicine', 'symptom', 'healthcare',
+              'clinic', 'physician', 'nurse', 'drug', 'prescription', 'vaccine'] 
+          },
+          { 
+            name: 'Legal', 
+            keywords: ['law', 'legal', 'contract', 'agreement', 'court', 'attorney', 'plaintiff', 
+              'defendant', 'clause', 'provision', 'jurisdiction', 'statute', 'regulation', 'compliance',
+              'litigant', 'paragraph', 'judicial', 'lawyer', 'dispute', 'settlement'] 
+          },
+          { 
+            name: 'Financial/Business', 
+            keywords: ['finance', 'business', 'market', 'investment', 'profit', 'revenue', 'strategy', 
+              'commercial', 'economic', 'fiscal', 'budget', 'corporate', 'asset', 'stock', 'management',
+              'accounting', 'capital', 'financial', 'transaction', 'enterprise'] 
+          },
+          { 
+            name: 'Marketing/Advertising', 
+            keywords: ['marketing', 'brand', 'advertising', 'campaign', 'consumer', 'customer', 'product', 
+              'service', 'market', 'sales', 'promotion', 'audience', 'demographic', 'media', 'content',
+              'creative', 'advertisement', 'commercial', 'communication', 'engagement'] 
+          },
+          { 
+            name: 'Academic/Educational', 
+            keywords: ['research', 'study', 'education', 'academic', 'student', 'university', 'school', 
+              'learning', 'teaching', 'theory', 'concept', 'analysis', 'methodology', 'science', 'literature',
+              'experiment', 'hypothesis', 'thesis', 'dissertation', 'curriculum'] 
+          }
+        ];
+        
+        // Convert to lowercase and clean up text
+        const normalizedText = text.toLowerCase();
+        
+        // Count keyword matches for each category
+        const categoryScores = categories.map(category => {
+          let score = 0;
+          category.keywords.forEach(keyword => {
+            // Use word boundary to match whole words only
+            const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+            const matches = (normalizedText.match(regex) || []).length;
+            score += matches;
+          });
+          return { name: category.name, score };
+        });
+        
+        // Sort by score (highest first)
+        categoryScores.sort((a, b) => b.score - a.score);
+        
+        // If highest score is 0 or very low, return generic response
+        if (categoryScores[0].score < 3) {
+          return 'General Content';
+        }
+        
+        return categoryScores[0].name;
+      };
+      
+      // Detect subject matter from the text
+      const detectedSubjectMatter = detectSubjectMatter(fileText);
 
       // Standard file upload analysis (non-ZIP)
       const fileAnalysis = {
@@ -533,7 +675,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         wordCount: Math.floor(req.file.size / 10), // Simplified estimate
         charCount: Math.floor(req.file.size / 2), // Simplified estimate
         imagesWithText: Math.floor(Math.random() * 3), // Simplified detection
-        subjectMatter: "Auto-detected content",
+        subjectMatter: detectedSubjectMatter,
         sourceLanguage: detectedLanguage,
       };
 
