@@ -108,6 +108,9 @@ const projectUpdateSchema = z.object({
 // Create API router
 const apiRouter = Router();
 
+// Export the router for use in routes.ts
+export default apiRouter;
+
 // Apply API key validation to all routes
 apiRouter.use(validateApiKey);
 
@@ -923,4 +926,3 @@ declare global {
   }
 }
 
-export default apiRouter;

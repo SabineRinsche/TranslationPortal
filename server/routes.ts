@@ -99,6 +99,8 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Register the API v1 router for advanced API access
+  app.use('/api/v1', apiRouter);
   // Serve static files from the public directory
   app.use(express.static(path.join(process.cwd(), 'public')));
   
