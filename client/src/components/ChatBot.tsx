@@ -103,11 +103,11 @@ const ChatBot = () => {
           },
           { 
             value: "assets", 
-            label: "Submit translation assets",
+            label: "Upload translation assets",
             icon: <FileText className="h-4 w-4 mr-2" />,
             action: () => {
               // First record the user's message
-              addMessage("user", "I'd like to submit translation assets.");
+              addMessage("user", "I'd like to upload translation assets.");
               
               // Then update the states
               useTranslationStore.setState({
@@ -197,7 +197,7 @@ const ChatBot = () => {
         
         // Show thank you message
         addMessage("bot", 
-          "Thank you for submitting your translation assets! Our AI Translation team will be in touch soon to discuss how we can best leverage these assets to enhance your translation workflow.", 
+          "Thank you for uploading your translation assets! Our AI Translation team will be in touch soon to discuss how we can best leverage these assets to enhance your translation workflow.", 
           [
             {
               value: "upload-file",
