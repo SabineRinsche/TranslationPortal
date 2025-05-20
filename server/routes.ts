@@ -45,7 +45,7 @@ let currentUser = {
   role: "admin",
   jobTitle: "Localization Manager",
   phoneNumber: "+44 1234 567890",
-  profileImageUrl: null, // Will store the URL to the profile image
+  profileImageUrl: "" as string | null, // Will store the URL to the profile image
   createdAt: new Date(),
   updatedAt: new Date()
 };
@@ -152,17 +152,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Write the file to disk
       fs.writeFileSync(filePath, req.file.buffer);
       
-      // Update the user's profile image URL
-      const profileImageUrl = `/profile-pics/${fileName}`;
+      // Update the user's profile image URL with full URL
+      // This ensures the image path is properly resolved
+      const profileImageUrl = `${req.protocol}://${req.get('host')}/profile-pics/${fileName}`;
       
-      // Type assertion to handle the profileImageUrl property
-      const updatedUser = {
-        ...currentUser,
-        profileImageUrl,
-        updatedAt: new Date()
-      };
-      
-      currentUser = updatedUser;
+      // Update the currentUser directly to avoid type issues
+      currentUser.profileImageUrl = profileImageUrl;
+      currentUser.updatedAt = new Date();
       
       res.json({ 
         message: "Profile picture updated successfully", 
