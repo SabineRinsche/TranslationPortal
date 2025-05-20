@@ -149,16 +149,16 @@ const FileAnalysis = () => {
     const charsPerLanguage = fileAnalysis.charCount;
     const totalChars = charsPerLanguage * selectedLanguages.length;
     
-    // Apply multiplier based on workflow type
-    let multiplier = 1;
+    // Apply credit requirements based on workflow type
+    let creditsPerChar = 1; // Base rate: 1 credit per character
     if (selectedWorkflow === 'ai-translation-qc') {
-      multiplier = 1.25; // 25% more for automated QC
+      creditsPerChar = 2; // 2 credits per character for Quality Assurance
     } else if (selectedWorkflow === 'ai-translation-human') {
-      multiplier = 2; // Double for human review
+      creditsPerChar = 3; // 3 credits per character for Expert Review
     }
     
-    const creditsRequired = Math.ceil(totalChars * multiplier);
-    const costInPounds = creditsRequired * 0.01; // 1 credit = £0.01
+    const creditsRequired = Math.ceil(totalChars * creditsPerChar);
+    const costInPounds = creditsRequired * 0.001; // 1 credit = £0.001
     
     setCalculationSummary({
       totalChars,
