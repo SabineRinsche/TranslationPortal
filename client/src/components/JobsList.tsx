@@ -166,42 +166,68 @@ export default function JobsList() {
                 className="border rounded-lg p-4 hover:bg-accent/50 transition-colors cursor-pointer"
                 onClick={() => setLocation(`/jobs/${job.id}`)}
               >
-                <div className="flex flex-col md:flex-row md:items-center justify-between">
-                  <div className="space-y-1.5">
-                    <h3 className="font-medium">{job.projectName || job.fileName}</h3>
-                    <div className="flex items-center space-x-2">
+                <div className="flex flex-col md:flex-row md:items-start justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <h3 className="font-medium text-lg">{job.projectName || job.fileName}</h3>
                       <Badge 
-                        className={statusColors[job.status as keyof typeof statusColors] || statusColors.pending}
+                        className={`ml-3 ${statusColors[job.status as keyof typeof statusColors] || statusColors.pending}`}
                       >
                         {job.status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                       </Badge>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-muted-foreground">
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-1.5" />
+                        {formatDate(job.createdAt)}
+                      </div>
                       
-                      {job.priority && (
-                        <Badge 
-                          className={priorityColors[job.priority as keyof typeof priorityColors] || priorityColors.medium}
-                          variant="outline"
-                        >
-                          {job.priority.charAt(0).toUpperCase() + job.priority.slice(1)} Priority
-                        </Badge>
+                      {job.dueDate && (
+                        <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-1.5" />
+                          Due: {formatDate(job.dueDate)}
+                        </div>
                       )}
                       
-                      <div className="text-xs text-muted-foreground">
+                      <div className="flex items-center">
+                        <FileText className="h-4 w-4 mr-1.5" />
                         {getWorkflowName(job.workflow)}
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
+                      <div className="flex items-center">
+                        <span className="text-muted-foreground mr-1">From:</span>
+                        <span className="font-medium">{job.sourceLanguage || "Unknown"}</span>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <span className="text-muted-foreground mr-1">To:</span>
+                        <span className="font-medium">
+                          {job.targetLanguages && job.targetLanguages.length > 0 
+                            ? (job.targetLanguages.length > 3 
+                                ? `${job.targetLanguages.slice(0, 2).join(", ")} +${job.targetLanguages.length - 2} more` 
+                                : job.targetLanguages.join(", "))
+                            : "None"}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <span className="text-muted-foreground mr-1">Credits:</span>
+                        <span className="font-medium">{job.creditsRequired?.toLocaleString() || "0"}</span>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-4 mt-2 md:mt-0">
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      {formatDate(job.createdAt)}
-                    </div>
-                    
-                    {job.dueDate && (
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Clock className="h-4 w-4 mr-1" />
-                        Due: {formatDate(job.dueDate)}
-                      </div>
+                  <div className="flex items-center mt-3 md:mt-0">
+                    {job.priority && (
+                      <Badge 
+                        className={`mr-3 ${priorityColors[job.priority as keyof typeof priorityColors] || priorityColors.medium}`}
+                        variant="outline"
+                      >
+                        {job.priority.charAt(0).toUpperCase() + job.priority.slice(1)} Priority
+                      </Badge>
                     )}
                     
                     <Button
@@ -214,22 +240,6 @@ export default function JobsList() {
                     >
                       View Details
                     </Button>
-                  </div>
-                </div>
-                
-                {/* Additional translation request details */}
-                <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Source Language:</span>{" "}
-                    <span className="font-medium">{job.sourceLanguage || "Unknown"}</span>
-                  </div>
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Target Languages:</span>{" "}
-                    <span className="font-medium">{job.targetLanguages?.join(", ") || "None"}</span>
-                  </div>
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Credits Used:</span>{" "}
-                    <span className="font-medium">{job.creditsRequired?.toLocaleString() || "0"}</span>
                   </div>
                 </div>
                 
