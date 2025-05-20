@@ -43,6 +43,24 @@ export const translationRequests = pgTable("translation_requests", {
   creditsRequired: integer("credits_required").notNull(),
   totalCost: text("total_cost").notNull(),
   status: text("status").notNull().default("pending"),
+  dueDate: timestamp("due_date"),
+  estimatedCompletionDate: timestamp("estimated_completion_date"),
+  priority: text("priority").default("medium"),
+  projectName: text("project_name"),
+  assignedTo: text("assigned_to"),
+  completionPercentage: integer("completion_percentage").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Project status updates/notes for tracking progress
+export const projectUpdates = pgTable("project_updates", {
+  id: serial("id").primaryKey(),
+  requestId: integer("request_id").notNull().references(() => translationRequests.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  updateText: text("update_text").notNull(),
+  updateType: text("update_type").default("note"), // Could be 'note', 'status_change', 'milestone'
+  newStatus: text("new_status"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -115,8 +133,20 @@ export const insertTranslationRequestSchema = createInsertSchema(translationRequ
   id: true,
   status: true,
   createdAt: true,
+  updatedAt: true,
+  completionPercentage: true,
 }).extend({
   workflow: z.string().nullable().optional(),
+  projectName: z.string().optional(),
+  dueDate: z.date().optional(),
+  estimatedCompletionDate: z.date().optional(),
+  priority: z.string().optional(),
+  assignedTo: z.string().optional(),
+});
+
+export const insertProjectUpdateSchema = createInsertSchema(projectUpdates).omit({
+  id: true,
+  createdAt: true,
 });
 
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
@@ -127,6 +157,9 @@ export type User = typeof users.$inferSelect;
 
 export type InsertTranslationRequest = z.infer<typeof insertTranslationRequestSchema>;
 export type TranslationRequest = typeof translationRequests.$inferSelect;
+
+export type InsertProjectUpdate = z.infer<typeof insertProjectUpdateSchema>;
+export type ProjectUpdate = typeof projectUpdates.$inferSelect;
 
 export const fileAnalysisSchema = z.object({
   fileName: z.string(),

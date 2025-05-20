@@ -1,7 +1,8 @@
 import { 
   accounts, type Account, type InsertAccount,
   users, type User, type InsertUser, 
-  translationRequests, type TranslationRequest, type InsertTranslationRequest 
+  translationRequests, type TranslationRequest, type InsertTranslationRequest,
+  projectUpdates, type ProjectUpdate, type InsertProjectUpdate
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, inArray } from "drizzle-orm";
@@ -27,6 +28,11 @@ export interface IStorage {
   getTranslationRequestsByAccountId(accountId: number): Promise<TranslationRequest[]>;
   getTranslationRequest(id: number): Promise<TranslationRequest | undefined>;
   createTranslationRequest(request: InsertTranslationRequest): Promise<TranslationRequest>;
+  updateTranslationRequest(id: number, data: Partial<TranslationRequest>): Promise<TranslationRequest>;
+  
+  // Project tracking operations
+  getProjectUpdates(requestId: number): Promise<ProjectUpdate[]>;
+  createProjectUpdate(update: InsertProjectUpdate): Promise<ProjectUpdate>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -149,6 +155,44 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return translationRequest;
+  }
+  
+  async updateTranslationRequest(id: number, data: Partial<TranslationRequest>): Promise<TranslationRequest> {
+    const [updated] = await db
+      .update(translationRequests)
+      .set({
+        ...data,
+        updatedAt: new Date()
+      })
+      .where(eq(translationRequests.id, id))
+      .returning();
+      
+    return updated;
+  }
+  
+  async getProjectUpdates(requestId: number): Promise<ProjectUpdate[]> {
+    return db
+      .select()
+      .from(projectUpdates)
+      .where(eq(projectUpdates.requestId, requestId))
+      .orderBy(projectUpdates.createdAt);
+  }
+  
+  async createProjectUpdate(insertProjectUpdate: InsertProjectUpdate): Promise<ProjectUpdate> {
+    const [update] = await db
+      .insert(projectUpdates)
+      .values(insertProjectUpdate)
+      .returning();
+      
+    // If this is a status change update, also update the request status
+    if (insertProjectUpdate.updateType === 'status_change' && insertProjectUpdate.newStatus) {
+      await this.updateTranslationRequest(
+        insertProjectUpdate.requestId,
+        { status: insertProjectUpdate.newStatus }
+      );
+    }
+    
+    return update;
   }
 }
 
