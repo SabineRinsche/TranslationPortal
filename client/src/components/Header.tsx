@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useState, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useQuery } from "@tanstack/react-query";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -21,6 +22,11 @@ import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const [notificationsCount, setNotificationsCount] = useState(0);
+  
+  // Fetch user data for avatar
+  const { data: userData } = useQuery({
+    queryKey: ['/api/user/profile'],
+  });
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-10">
@@ -80,9 +86,20 @@ const Header = () => {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center space-x-2 text-sm focus:outline-none">
                   <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
-                    <AvatarFallback>JD</AvatarFallback>
+                    {userData?.profileImageUrl ? (
+                      <AvatarImage 
+                        src={userData.profileImageUrl} 
+                        alt={userData ? `${userData.firstName} ${userData.lastName}` : "User"} 
+                      />
+                    ) : (
+                      <AvatarFallback>
+                        {userData ? `${userData.firstName.charAt(0)}${userData.lastName.charAt(0)}` : "JD"}
+                      </AvatarFallback>
+                    )}
                   </Avatar>
-                  <span className="font-medium text-foreground hidden md:inline-block">John Doe</span>
+                  <span className="font-medium text-foreground hidden md:inline-block">
+                    {userData ? `${userData.firstName} ${userData.lastName}` : "John Doe"}
+                  </span>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
