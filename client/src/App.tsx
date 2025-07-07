@@ -14,6 +14,7 @@ import ProfilePage from "@/pages/profile";
 import JobDetail from "@/pages/job-detail";
 import Login from "@/pages/login";
 import ApiDocsPage from "@/pages/api-docs";
+import StyleGuide from "@/pages/style-guide";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
 // Protected route component that requires authentication
@@ -62,6 +63,9 @@ function Router() {
       </Route>
       <Route path="/api-docs">
         {(params) => <AdminRoute component={ApiDocsPage} params={params} />}
+      </Route>
+      <Route path="/style-guide">
+        {(params) => <AdminRoute component={StyleGuide} params={params} />}
       </Route>
       <Route component={NotFound} />
     </Switch>
