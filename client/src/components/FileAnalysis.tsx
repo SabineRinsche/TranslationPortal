@@ -125,8 +125,8 @@ const FileAnalysis = () => {
     },
     { 
       id: 'ai-translation-human', 
-      name: 'AI Translation with Expert Review', 
-      description: 'Neural translation with professional human post-editing',
+      name: 'Automated AI Translation, LQE and Human review', 
+      description: 'Following automated translation, the automated LQE will decide which segments should be reviewed by a human to improve quality. Human reviews allow the system to learn by enhancing your translation assets, and improve quality further in the future.',
       icon: <Sparkles className="h-5 w-5 text-yellow-500" />
     },
   ];
