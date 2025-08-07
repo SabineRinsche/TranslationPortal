@@ -5,7 +5,8 @@ import {
   insertTranslationRequestSchema, 
   insertUserSchema, 
   insertAccountSchema, 
-  subscriptionPlans 
+  subscriptionPlans,
+  userLanguagePreferencesSchema 
 } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
@@ -207,7 +208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Language preferences endpoint
   app.patch("/api/user/language-preferences", (req, res) => {
     try {
-      const validatedData = languagePreferencesSchema.parse(req.body);
+      const validatedData = userLanguagePreferencesSchema.parse(req.body);
       
       // Update language preferences
       currentUser = {
