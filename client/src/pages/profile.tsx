@@ -323,10 +323,9 @@ export default function ProfilePage() {
         </div>
       ) : (
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="details">My Details</TabsTrigger>
             <TabsTrigger value="account">My Account</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
           
           <TabsContent value="details">
@@ -634,11 +633,8 @@ export default function ProfilePage() {
                   </div>
                 </CardContent>
               </Card>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="settings">
-            <div className="grid gap-6">
+
+              {/* Language Settings Card */}
               <Card>
                 <CardHeader>
                   <CardTitle>Language Settings</CardTitle>
