@@ -70,6 +70,9 @@ export default function ProfilePage() {
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [languageSearch, setLanguageSearch] = useState('');
 
+  // FIGS languages (French, Italian, German, Spanish) as default selection
+  const figsLanguages = ['French', 'Italian', 'German', 'Spanish'];
+
   // Update form data when user data is loaded
   React.useEffect(() => {
     if (userData) {
@@ -82,7 +85,8 @@ export default function ProfilePage() {
         password: '',
         confirmPassword: '',
       });
-      setSelectedLanguages(userData.preferredLanguages || []);
+      // Set FIGS languages as default if user has no preferences
+      setSelectedLanguages(userData.preferredLanguages || figsLanguages);
     }
   }, [userData]);
 

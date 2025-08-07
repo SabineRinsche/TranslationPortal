@@ -23,7 +23,7 @@ export const users = pgTable("users", {
   role: text("role").notNull().default("user"), // 'user', 'admin'
   jobTitle: text("job_title"),
   phoneNumber: text("phone_number"),
-  preferredLanguages: text("preferred_languages").array().default([]).notNull(),
+  preferredLanguages: text("preferred_languages").array().default(['French', 'Italian', 'German', 'Spanish']).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -466,7 +466,7 @@ export const memoQLanguages = [
 ];
 
 export const userLanguagePreferencesSchema = z.object({
-  preferredLanguages: z.array(z.string()).default([]),
+  preferredLanguages: z.array(z.string()).default(['French', 'Italian', 'German', 'Spanish']),
 });
 
 export type UserLanguagePreferences = z.infer<typeof userLanguagePreferencesSchema>;
