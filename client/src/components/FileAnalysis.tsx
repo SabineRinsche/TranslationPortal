@@ -8,7 +8,8 @@ import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { InsertTranslationRequest } from '@shared/schema';
-import { Brain, Cpu, Sparkles } from 'lucide-react';
+import { Brain, Cpu, Sparkles, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 // Remove ChatContext dependency
 
 interface LanguageOption {
@@ -415,27 +416,36 @@ const FileAnalysis = () => {
           ) : showWorkflowStep && !showCalculation ? (
             <>
               <h3 className="text-sm font-medium mb-2">Select Translation Workflow</h3>
-              <div className="space-y-3 mb-4">
-                {workflows.map((workflow) => (
-                  <div 
-                    key={workflow.id}
-                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                      selectedWorkflow === workflow.id 
-                        ? 'border-primary bg-primary/5' 
-                        : 'border-border hover:border-primary/30'
-                    }`}
-                    onClick={() => setSelectedWorkflow(workflow.id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">{workflow.icon}</span>
-                      <div>
-                        <h4 className="font-medium text-sm">{workflow.name}</h4>
-                        <p className="text-xs text-muted-foreground">{workflow.description}</p>
+              <TooltipProvider>
+                <div className="space-y-3 mb-4">
+                  {workflows.map((workflow) => (
+                    <div 
+                      key={workflow.id}
+                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                        selectedWorkflow === workflow.id 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-border hover:border-primary/30'
+                      }`}
+                      onClick={() => setSelectedWorkflow(workflow.id)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">{workflow.icon}</span>
+                        <div className="flex-1">
+                          <h4 className="font-medium text-sm">{workflow.name}</h4>
+                        </div>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <p className="text-sm">{workflow.description}</p>
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </TooltipProvider>
               <div className="flex gap-3">
                 <Button 
                   variant="outline"
