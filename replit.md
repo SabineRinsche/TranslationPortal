@@ -2,9 +2,9 @@
 
 ## Overview
 
-Alpha's AI Translation Portal is a comprehensive web application that provides professional translation services powered by AI. The platform allows users to upload files for translation, submit translation requests through both web interface and API, manage translation projects, and track their progress. The application features an intuitive dashboard, real-time notifications, and a sophisticated AI assistant to guide users through the translation process.
+Alpha's AI Translation Portal is a comprehensive web application that provides professional translation services powered by AI. The platform allows users to upload files for translation, submit translation requests through both web interface and API, manage translation projects, and track their progress. The application features an intuitive dashboard, real-time notifications, a sophisticated AI assistant, and personalized language preferences to guide users through the translation process.
 
-The system is designed to handle multiple file formats, support 100+ languages, and offer different translation workflows including AI-only translation, AI with quality assurance, and AI with human review. Users can manage their accounts, track credit usage, and monitor translation projects through a modern, responsive interface.
+The system is designed to handle multiple file formats, support 100+ languages (with user-customizable language preferences), and offer different translation workflows including AI-only translation, AI with LQE (Language Quality Evaluation), and AI with human review. Users can manage their accounts, configure language preferences, track credit usage, and monitor translation projects through a modern, responsive interface.
 
 ## User Preferences
 
@@ -20,6 +20,7 @@ The client-side application is built using React with TypeScript, utilizing mode
 - File upload and analysis interface with drag-and-drop functionality
 - Real-time dashboard with charts and analytics using Recharts
 - Interactive chatbot for user assistance
+- Language preferences management with searchable interface
 - Responsive design with dark/light theme support
 - Toast notifications and real-time updates
 
@@ -40,9 +41,10 @@ The application uses PostgreSQL as the primary database with Drizzle ORM for typ
 
 **Database Schema:**
 - `accounts` - Organization/company information with subscription and credits
-- `users` - User profiles with role-based permissions
+- `users` - User profiles with role-based permissions and language preferences
 - `translation_requests` - Core translation job data and metadata
 - `project_updates` - Activity tracking and status changes
+- `user_language_preferences` - User-specific language selections for translation filtering
 
 ### Authentication and Authorization
 The system implements a session-based authentication mechanism with role-based access control. Users can have either 'admin' or 'client' roles, with admins having additional privileges for system management.
