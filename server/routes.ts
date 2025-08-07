@@ -48,7 +48,7 @@ let currentUser = {
   jobTitle: "Localization Manager",
   phoneNumber: "+44 1234 567890",
   profileImageUrl: "" as string | null, // Will store the URL to the profile image
-  preferredLanguages: ["English", "French", "German", "Spanish", "Italian"] as string[],
+  preferredLanguages: ["French", "Italian", "German", "Spanish"] as string[],
   createdAt: new Date(),
   updatedAt: new Date()
 };
