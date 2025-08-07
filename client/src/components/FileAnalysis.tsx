@@ -113,8 +113,8 @@ const FileAnalysis = () => {
   const workflows = [
     { 
       id: 'ai-translation', 
-      name: 'AI Neural Translation', 
-      description: 'Advanced neural machine translation without human review',
+      name: 'Automated AI Translation only', 
+      description: 'Automated translation workflow, which leverages your translation assets and cutting edge neural machine translation systems and LLM supported translation processes.',
       icon: <Brain className="h-5 w-5 text-blue-500" />
     },
     { 
