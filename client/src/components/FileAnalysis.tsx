@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useTranslationStore } from '@/hooks/useTranslationStore';
 import { Badge } from '@/components/ui/badge';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { InsertTranslationRequest } from '@shared/schema';
@@ -143,6 +143,25 @@ const FileAnalysis = () => {
     setShowCalculationMessage
   } = useTranslationStore();
   const { toast } = useToast();
+
+  // Get user profile data to filter languages based on preferences
+  const { data: userData } = useQuery({
+    queryKey: ['/api/user/profile'],
+    queryFn: () => fetch('/api/user/profile').then(res => res.json())
+  });
+
+  // Filter languages based on user preferences
+  const availableLanguages = userData?.preferredLanguages 
+    ? languages.filter(lang => userData.preferredLanguages.includes(lang.value))
+    : languages;
+
+  // Filter language groups to only show those with available languages
+  const availableLanguageGroups = languageGroups.map(group => ({
+    ...group,
+    languages: group.languages.filter(lang => 
+      userData?.preferredLanguages ? userData.preferredLanguages.includes(lang) : true
+    )
+  })).filter(group => group.languages.length > 0);
 
   const calculateTranslation = () => {
     if (!fileAnalysis || !selectedWorkflow) return;
@@ -358,11 +377,21 @@ const FileAnalysis = () => {
       <div>
         <h3 className="text-sm font-medium text-card-foreground mb-3">Select Target Languages</h3>
         
+        {/* Show message if no languages are available due to preferences */}
+        {userData?.preferredLanguages && userData.preferredLanguages.length === 0 && (
+          <div className="mb-4 p-4 border border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20 rounded-lg">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              No target languages available. Please configure your language preferences in{' '}
+              <a href="/profile" className="underline font-medium">My account → Settings</a> to enable translation requests.
+            </p>
+          </div>
+        )}
+        
         {/* Language Groups Section */}
         <div className="mb-4">
           <h4 className="text-sm font-medium text-muted-foreground mb-2">Language Groups</h4>
           <div className="flex flex-wrap gap-2 mb-3">
-            {languageGroups.map((group) => {
+            {availableLanguageGroups.map((group) => {
               const allSelected = group.languages.every(lang => selectedLanguages.includes(lang));
               const someSelected = group.languages.some(lang => selectedLanguages.includes(lang));
               
@@ -388,7 +417,7 @@ const FileAnalysis = () => {
         {/* Individual Languages Section */}
         <h4 className="text-sm font-medium text-muted-foreground mb-2">Individual Languages</h4>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4 max-h-60 overflow-y-auto pr-1">
-          {languages.map((language) => (
+          {availableLanguages.map((language) => (
             <label 
               key={language.value}
               className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:bg-muted/70 cursor-pointer"

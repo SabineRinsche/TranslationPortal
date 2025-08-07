@@ -48,6 +48,7 @@ let currentUser = {
   jobTitle: "Localization Manager",
   phoneNumber: "+44 1234 567890",
   profileImageUrl: "" as string | null, // Will store the URL to the profile image
+  preferredLanguages: ["English", "French", "German", "Spanish", "Italian"] as string[],
   createdAt: new Date(),
   updatedAt: new Date()
 };
@@ -72,6 +73,10 @@ const userUpdateSchema = z.object({
 
 const passwordUpdateSchema = z.object({
   password: z.string().min(8),
+});
+
+const languagePreferencesSchema = z.object({
+  preferredLanguages: z.array(z.string()),
 });
 
 const creditPurchaseSchema = z.object({
@@ -195,6 +200,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(400).json({ message: validationError.message });
       } else {
         res.status(500).json({ message: "Failed to update password" });
+      }
+    }
+  });
+  
+  // Language preferences endpoint
+  app.patch("/api/user/language-preferences", (req, res) => {
+    try {
+      const validatedData = languagePreferencesSchema.parse(req.body);
+      
+      // Update language preferences
+      currentUser = {
+        ...currentUser,
+        preferredLanguages: validatedData.preferredLanguages,
+        updatedAt: new Date()
+      };
+      
+      res.json({ 
+        message: "Language preferences updated successfully",
+        preferredLanguages: currentUser.preferredLanguages
+      });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        res.status(400).json({ message: validationError.message });
+      } else {
+        res.status(500).json({ message: "Failed to update language preferences" });
       }
     }
   });
