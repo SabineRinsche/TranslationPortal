@@ -119,8 +119,8 @@ const FileAnalysis = () => {
     },
     { 
       id: 'ai-translation-qc', 
-      name: 'AI Translation with Quality Assurance', 
-      description: 'Neural translation with automated quality verification',
+      name: 'Automated AI Translation, followed by LQE', 
+      description: 'The automated translation workflow is enhanced with an automated LQE (language quality evaluation) step, to provide guidance on quality achieved by the automated translation process. This allows you to decide if the workflow needs further improvement for your content types and language pairs.',
       icon: <Cpu className="h-5 w-5 text-purple-500" />
     },
     { 
