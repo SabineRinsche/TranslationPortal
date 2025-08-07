@@ -107,7 +107,11 @@ const Header = () => {
                         Profile
                       </DropdownMenuItem>
                     </Link>
-                    <DropdownMenuItem>Settings</DropdownMenuItem>
+                    <Link href="/settings">
+                      <DropdownMenuItem>
+                        Settings
+                      </DropdownMenuItem>
+                    </Link>
                     <Link href="/dashboard?tab=usage">
                       <DropdownMenuItem>
                         Credit Usage

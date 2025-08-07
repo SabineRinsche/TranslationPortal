@@ -7,10 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { subscriptionPlans, memoQLanguages } from "@shared/schema";
+import { subscriptionPlans } from "@shared/schema";
 import { Separator } from "@/components/ui/separator";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, UploadCloud, Camera, Search } from "lucide-react";
+import { Loader2, UploadCloud, Camera } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function ProfilePage() {
@@ -66,12 +65,7 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   
-  // Language preferences state
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
-  const [languageSearch, setLanguageSearch] = useState('');
 
-  // FIGS languages (French, Italian, German, Spanish) as default selection
-  const figsLanguages = ['French', 'Italian', 'German', 'Spanish'];
 
   // Update form data when user data is loaded
   React.useEffect(() => {
@@ -85,8 +79,7 @@ export default function ProfilePage() {
         password: '',
         confirmPassword: '',
       });
-      // Set FIGS languages as default if user has no preferences
-      setSelectedLanguages(userData.preferredLanguages || figsLanguages);
+
     }
   }, [userData]);
 
@@ -224,26 +217,7 @@ export default function ProfilePage() {
     }
   });
 
-  // Update language preferences mutation
-  const updateLanguagePreferencesMutation = useMutation({
-    mutationFn: async (preferredLanguages: string[]) => {
-      return await apiRequest('PATCH', '/api/user/language-preferences', { preferredLanguages });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/user/profile'] });
-      toast({
-        title: "Language Preferences Updated",
-        description: "Your language preferences have been saved successfully.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Update Failed",
-        description: "There was a problem updating your language preferences. Please try again.",
-        variant: "destructive",
-      });
-    }
-  });
+
 
   // Handle file input change
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -294,26 +268,7 @@ export default function ProfilePage() {
     updateSubscriptionMutation.mutate({ planId });
   };
 
-  // Language preference handlers
-  const handleLanguageToggle = (languageValue: string) => {
-    setSelectedLanguages(prev => {
-      if (prev.includes(languageValue)) {
-        return prev.filter(lang => lang !== languageValue);
-      } else {
-        return [...prev, languageValue];
-      }
-    });
-  };
 
-  const handleSaveLanguagePreferences = () => {
-    updateLanguagePreferencesMutation.mutate(selectedLanguages);
-  };
-
-  // Filter languages based on search
-  const filteredLanguages = memoQLanguages.filter(lang =>
-    lang.label.toLowerCase().includes(languageSearch.toLowerCase()) ||
-    lang.value.toLowerCase().includes(languageSearch.toLowerCase())
-  );
 
   const isLoading = isLoadingUser || isLoadingAccount;
 
@@ -638,89 +593,7 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
 
-              {/* Settings Section */}
-              <div className="space-y-6">
-                <div className="border-t pt-6">
-                  <h2 className="text-xl font-semibold mb-4">Settings</h2>
-                  
-                  {/* Language Settings Card */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Language Preferences</CardTitle>
-                      <CardDescription>
-                        Select the languages you work with. Only selected languages will appear in the translation request interface.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                        <Input
-                          placeholder="Search languages..."
-                          value={languageSearch}
-                          onChange={(e) => setLanguageSearch(e.target.value)}
-                          className="pl-10"
-                        />
-                      </div>
-                      
-                      <div className="text-sm text-muted-foreground">
-                        {selectedLanguages.length} of {memoQLanguages.length} languages selected
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto border rounded-lg p-4">
-                        {filteredLanguages.map((language) => (
-                          <label 
-                            key={language.value}
-                            className="flex items-center space-x-3 p-2 rounded hover:bg-muted cursor-pointer"
-                          >
-                            <Checkbox 
-                              checked={selectedLanguages.includes(language.value)}
-                              onCheckedChange={() => handleLanguageToggle(language.value)}
-                            />
-                            <div className="flex-1">
-                              <span className="text-sm font-medium">{language.label}</span>
-                              <span className="text-xs text-muted-foreground ml-2">({language.code})</span>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-                      
-                      {filteredLanguages.length === 0 && (
-                        <div className="text-center text-muted-foreground py-8">
-                          No languages found matching your search.
-                        </div>
-                      )}
-                      
-                      <div className="flex justify-between items-center pt-4 border-t">
-                        <div className="space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setSelectedLanguages(memoQLanguages.map(l => l.value))}
-                          >
-                            Select All
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setSelectedLanguages([])}
-                          >
-                            Clear All
-                          </Button>
-                        </div>
-                        <Button 
-                          onClick={handleSaveLanguagePreferences}
-                          disabled={updateLanguagePreferencesMutation.isPending}
-                        >
-                          {updateLanguagePreferencesMutation.isPending && (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          )}
-                          Save Preferences
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
+
             </div>
           </TabsContent>
         </Tabs>

@@ -11,6 +11,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import DashboardPage from "@/pages/dashboard";
 import ProfilePage from "@/pages/profile";
+import SettingsPage from "@/pages/settings";
 import JobDetail from "@/pages/job-detail";
 import Login from "@/pages/login";
 import ApiDocsPage from "@/pages/api-docs";
@@ -57,6 +58,9 @@ function Router() {
       </Route>
       <Route path="/profile">
         {(params) => <ProtectedRoute component={ProfilePage} params={params} />}
+      </Route>
+      <Route path="/settings">
+        {(params) => <ProtectedRoute component={SettingsPage} params={params} />}
       </Route>
       <Route path="/jobs/:id">
         {(params) => <ProtectedRoute component={JobDetail} params={params} />}
