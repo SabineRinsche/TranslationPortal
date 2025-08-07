@@ -634,82 +634,89 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
 
-              {/* Language Settings Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Language Settings</CardTitle>
-                  <CardDescription>
-                    Select the languages you work with. Only selected languages will appear in the translation request interface.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                    <Input
-                      placeholder="Search languages..."
-                      value={languageSearch}
-                      onChange={(e) => setLanguageSearch(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
+              {/* Settings Section */}
+              <div className="space-y-6">
+                <div className="border-t pt-6">
+                  <h2 className="text-xl font-semibold mb-4">Settings</h2>
                   
-                  <div className="text-sm text-muted-foreground">
-                    {selectedLanguages.length} of {memoQLanguages.length} languages selected
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto border rounded-lg p-4">
-                    {filteredLanguages.map((language) => (
-                      <label 
-                        key={language.value}
-                        className="flex items-center space-x-3 p-2 rounded hover:bg-muted cursor-pointer"
-                      >
-                        <Checkbox 
-                          checked={selectedLanguages.includes(language.value)}
-                          onCheckedChange={() => handleLanguageToggle(language.value)}
+                  {/* Language Settings Card */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Language Preferences</CardTitle>
+                      <CardDescription>
+                        Select the languages you work with. Only selected languages will appear in the translation request interface.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                        <Input
+                          placeholder="Search languages..."
+                          value={languageSearch}
+                          onChange={(e) => setLanguageSearch(e.target.value)}
+                          className="pl-10"
                         />
-                        <div className="flex-1">
-                          <span className="text-sm font-medium">{language.label}</span>
-                          <span className="text-xs text-muted-foreground ml-2">({language.code})</span>
+                      </div>
+                      
+                      <div className="text-sm text-muted-foreground">
+                        {selectedLanguages.length} of {memoQLanguages.length} languages selected
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto border rounded-lg p-4">
+                        {filteredLanguages.map((language) => (
+                          <label 
+                            key={language.value}
+                            className="flex items-center space-x-3 p-2 rounded hover:bg-muted cursor-pointer"
+                          >
+                            <Checkbox 
+                              checked={selectedLanguages.includes(language.value)}
+                              onCheckedChange={() => handleLanguageToggle(language.value)}
+                            />
+                            <div className="flex-1">
+                              <span className="text-sm font-medium">{language.label}</span>
+                              <span className="text-xs text-muted-foreground ml-2">({language.code})</span>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                      
+                      {filteredLanguages.length === 0 && (
+                        <div className="text-center text-muted-foreground py-8">
+                          No languages found matching your search.
                         </div>
-                      </label>
-                    ))}
-                  </div>
-                  
-                  {filteredLanguages.length === 0 && (
-                    <div className="text-center text-muted-foreground py-8">
-                      No languages found matching your search.
-                    </div>
-                  )}
-                  
-                  <div className="flex justify-between items-center pt-4 border-t">
-                    <div className="space-x-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setSelectedLanguages(memoQLanguages.map(l => l.value))}
-                      >
-                        Select All
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setSelectedLanguages([])}
-                      >
-                        Clear All
-                      </Button>
-                    </div>
-                    <Button 
-                      onClick={handleSaveLanguagePreferences}
-                      disabled={updateLanguagePreferencesMutation.isPending}
-                    >
-                      {updateLanguagePreferencesMutation.isPending && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       )}
-                      Save Preferences
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                      
+                      <div className="flex justify-between items-center pt-4 border-t">
+                        <div className="space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setSelectedLanguages(memoQLanguages.map(l => l.value))}
+                          >
+                            Select All
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setSelectedLanguages([])}
+                          >
+                            Clear All
+                          </Button>
+                        </div>
+                        <Button 
+                          onClick={handleSaveLanguagePreferences}
+                          disabled={updateLanguagePreferencesMutation.isPending}
+                        >
+                          {updateLanguagePreferencesMutation.isPending && (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          )}
+                          Save Preferences
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
