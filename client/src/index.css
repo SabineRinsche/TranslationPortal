@@ -48,6 +48,7 @@
   /* Focus/interactive */
   --ring: 240 75% 17%; /* #16173f */
   --ring-focus: 346 79% 57%; /* #ee3667 */
+  --hover-primary: 250 34% 50%; /* #5f55a4 - Primary hover color */
   --radius: 0.5rem;
 }
 
@@ -87,6 +88,7 @@
   /* Focus/interactive - dark theme */
   --ring: 240 75% 30%; /* Brighter for dark mode */
   --ring-focus: 346 79% 65%; /* Brighter accent for focus in dark mode */
+  --hover-primary: 250 40% 60%; /* #5f55a4 lightened for dark mode */
   --radius: 0.5rem;
 }
 
@@ -134,6 +136,35 @@
   
   .accessible-table tr:hover {
     @apply dark:bg-muted/50 bg-slate-50;
+  }
+  
+  /* Interactive element hover states */
+  .hover-primary {
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+  
+  .hover-primary:hover {
+    background-color: hsl(var(--hover-primary));
+    color: white;
+  }
+  
+  /* Button hover improvements */
+  button:hover, .btn:hover, [role="button"]:hover {
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+  }
+  
+  /* Link hover effects */
+  a:hover {
+    color: hsl(var(--hover-primary));
+    transition: color 0.2s ease;
+  }
+  
+  /* Card hover effects */
+  .card:hover {
+    border-color: hsl(var(--hover-primary));
+    box-shadow: 0 4px 12px rgba(95, 85, 164, 0.15);
+    transition: all 0.2s ease;
   }
   
   /* Improved form element focus states */
