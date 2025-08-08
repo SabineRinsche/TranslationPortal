@@ -87,10 +87,10 @@ export default function StyleGuide() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <div className="w-full h-20 bg-[#93a898] rounded-lg border"></div>
+                    <div className="w-full h-20 bg-[#5f55a4] rounded-lg border"></div>
                     <div className="text-sm">
                       <p className="font-medium">Hover State</p>
-                      <p className="text-muted-foreground">#93a898</p>
+                      <p className="text-muted-foreground">#5f55a4</p>
                       <p className="text-xs text-muted-foreground">Interactive element hover effects</p>
                     </div>
                   </div>
@@ -421,7 +421,7 @@ export default function StyleGuide() {
                     </CardContent>
                   </Card>
 
-                  <Card className="hover:bg-[#93a898] transition-colors cursor-pointer">
+                  <Card className="hover:bg-[#5f55a4] hover:text-white transition-colors cursor-pointer">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Globe className="h-5 w-5" />
@@ -445,7 +445,7 @@ export default function StyleGuide() {
                 <div className="space-y-2 text-sm">
                   <p><strong>Primary Navigation:</strong> Dark background (#16173f) with white text</p>
                   <p><strong>Active States:</strong> Accent color (#ee3667) for current page</p>
-                  <p><strong>Hover States:</strong> Subtle highlight with custom green (#93a898)</p>
+                  <p><strong>Hover States:</strong> Subtle highlight with custom purple (#5f55a4)</p>
                   <p><strong>Role-based Access:</strong> Admin-only items clearly separated</p>
                 </div>
               </div>
