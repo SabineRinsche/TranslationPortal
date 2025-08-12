@@ -14,8 +14,8 @@ const Home = () => {
     return <Landing />;
   }
 
-  // Redirect authenticated users to dashboard
-  return <Redirect to="/dashboard" />;
+  // Redirect authenticated users to workspace (AI assistant and file upload)
+  return <Redirect to="/workspace" />;
 };
 
 export default Home;

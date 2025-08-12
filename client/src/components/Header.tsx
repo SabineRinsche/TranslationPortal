@@ -15,7 +15,7 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
-import { LayoutDashboard, User, HelpCircle, LogIn, FileCode, Palette, Users } from "lucide-react";
+import { LayoutDashboard, User, HelpCircle, LogIn, FileCode, Palette, Users, Zap } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,12 @@ const Header = () => {
         <div className="flex items-center space-x-4">
           {isAuthenticated ? (
             <>
+              <Link href="/workspace">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Zap className="h-4 w-4" />
+                  <span className="hidden md:inline">Workspace</span>
+                </Button>
+              </Link>
               <Link href="/dashboard">
                 <Button variant="ghost" size="sm" className="gap-2">
                   <LayoutDashboard className="h-4 w-4" />
