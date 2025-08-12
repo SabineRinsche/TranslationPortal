@@ -22,6 +22,7 @@ import StyleGuide from "@/pages/style-guide";
 import UserManagement from "@/pages/user-management";
 import Teams from "@/pages/teams";
 import TeamDetail from "@/pages/team-detail";
+import WorkspaceHome from "@/pages/workspace-home";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
 // Protected route component that requires authentication
@@ -65,6 +66,9 @@ function Router() {
       <Route path="/dashboard">
         {(params) => <ProtectedRoute component={DashboardPage} params={params} />}
       </Route>
+      <Route path="/workspace">
+        {(params) => <ProtectedRoute component={WorkspaceHome} params={params} />}
+      </Route>
       <Route path="/profile">
         {(params) => <ProtectedRoute component={ProfilePage} params={params} />}
       </Route>
@@ -74,7 +78,7 @@ function Router() {
       <Route path="/jobs/:id">
         {(params) => <ProtectedRoute component={JobDetail} params={params} />}
       </Route>
-      <Route path="/teams" exact>
+      <Route path="/teams">
         {(params) => <AdminRoute component={Teams} params={params} />}
       </Route>
       <Route path="/teams/:teamId">
