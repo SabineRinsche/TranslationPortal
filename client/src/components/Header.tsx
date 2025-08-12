@@ -133,13 +133,6 @@ const Header = () => {
           ) : (
             <>
               <ThemeToggle />
-              
-              <Link href="/login">
-                <Button variant="outline" size="sm" className="gap-2">
-                  <LogIn className="h-4 w-4" />
-                  <span>Login</span>
-                </Button>
-              </Link>
             </>
           )}
         </div>
