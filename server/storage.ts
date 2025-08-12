@@ -254,6 +254,10 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(creditTransactions).where(eq(creditTransactions.accountId, accountId));
   }
 
+  async getCreditTransactionsByTeamId(teamId: number): Promise<CreditTransaction[]> {
+    return await db.select().from(creditTransactions).where(eq(creditTransactions.teamId, teamId));
+  }
+
   async addCreditsToAccount(accountId: number, amount: number): Promise<void> {
     // First get current credits
     const [account] = await db.select({ credits: accounts.credits })
@@ -276,6 +280,22 @@ export class DatabaseStorage implements IStorage {
       .values(transaction)
       .returning();
     return creditTransaction;
+  }
+
+  async addCreditsToTeam(teamId: number, amount: number): Promise<void> {
+    // First get current credits for the team
+    const [team] = await db.select({ credits: teams.credits })
+      .from(teams)
+      .where(eq(teams.id, teamId));
+    
+    if (team) {
+      await db.update(teams)
+        .set({ 
+          credits: team.credits + amount,
+          updatedAt: new Date() 
+        })
+        .where(eq(teams.id, teamId));
+    }
   }
 
   // Translation request operations
