@@ -246,6 +246,7 @@ const TeamsPage: React.FC = () => {
       });
       return;
     }
+    console.log('Assigning user:', selectedUser.id, 'to team:', assignToTeamId);
     assignUserMutation.mutate({
       userId: selectedUser.id,
       teamId: parseInt(assignToTeamId),
@@ -428,7 +429,6 @@ const TeamsPage: React.FC = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => openAssignDialog(user)}
-                            disabled={!user.isEmailVerified}
                           >
                             <Plus className="h-4 w-4 mr-1" />
                             Assign to Team
