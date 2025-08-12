@@ -19,6 +19,7 @@ import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
 import ApiDocsPage from "@/pages/api-docs";
 import StyleGuide from "@/pages/style-guide";
+import UserManagement from "@/pages/user-management";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
 // Protected route component that requires authentication
@@ -70,6 +71,9 @@ function Router() {
       </Route>
       <Route path="/jobs/:id">
         {(params) => <ProtectedRoute component={JobDetail} params={params} />}
+      </Route>
+      <Route path="/user-management">
+        {(params) => <AdminRoute component={UserManagement} params={params} />}
       </Route>
       <Route path="/api-docs">
         {(params) => <AdminRoute component={ApiDocsPage} params={params} />}

@@ -16,6 +16,7 @@ import { z } from "zod";
 import apiRouter from "./api-v1";
 import { requireAuth, requireAdmin, getSession } from "./auth";
 import { registerAuthRoutes } from "./authRoutes";
+import adminRoutes from "./adminRoutes";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -109,6 +110,9 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register authentication routes
   registerAuthRoutes(app);
+  
+  // Register admin routes
+  app.use('/api/admin', adminRoutes);
   
   // Serve static files from the public directory
   app.use(express.static(path.join(process.cwd(), 'public')));

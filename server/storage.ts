@@ -34,7 +34,9 @@ export interface IStorage {
   
   // Credit transaction operations
   getCreditTransactions(accountId: number): Promise<CreditTransaction[]>;
+  getCreditTransactionsByAccountId(accountId: number): Promise<CreditTransaction[]>;
   createCreditTransaction(transaction: InsertCreditTransaction): Promise<CreditTransaction>;
+  addCreditsToAccount(accountId: number, amount: number): Promise<void>;
   
   // Translation request operations
   getAllTranslationRequests(): Promise<TranslationRequest[]>;
@@ -111,6 +113,34 @@ export class DatabaseStorage implements IStorage {
       .values(insertUser)
       .returning();
     return user;
+  }
+
+  async getUsersByAccountId(accountId: number): Promise<User[]> {
+    const userList = await db.select().from(users).where(eq(users.accountId, accountId));
+    return userList;
+  }
+
+  async getCreditTransactionsByAccountId(accountId: number): Promise<CreditTransaction[]> {
+    const transactions = await db.select().from(creditTransactions)
+      .where(eq(creditTransactions.accountId, accountId))
+      .orderBy(creditTransactions.createdAt);
+    return transactions;
+  }
+
+  async addCreditsToAccount(accountId: number, amount: number): Promise<void> {
+    // First get current credits
+    const [account] = await db.select({ credits: accounts.credits })
+      .from(accounts)
+      .where(eq(accounts.id, accountId));
+    
+    if (account) {
+      await db.update(accounts)
+        .set({ 
+          credits: account.credits + amount,
+          updatedAt: new Date() 
+        })
+        .where(eq(accounts.id, accountId));
+    }
   }
 
   async updateUser(id: number, userData: Partial<InsertUser>): Promise<User> {
@@ -191,7 +221,19 @@ export class DatabaseStorage implements IStorage {
 
   // Credit transaction operations
   async getCreditTransactions(accountId: number): Promise<CreditTransaction[]> {
+    return this.getCreditTransactionsByAccountId(accountId);
+  }
+
+  async getCreditTransactionsByAccountId(accountId: number): Promise<CreditTransaction[]> {
     return await db.select().from(creditTransactions).where(eq(creditTransactions.accountId, accountId));
+  }
+
+  async createCreditTransaction(transaction: InsertCreditTransaction): Promise<CreditTransaction> {
+    const [newTransaction] = await db
+      .insert(creditTransactions)
+      .values(transaction)
+      .returning();
+    return newTransaction;
   }
 
   async createCreditTransaction(transaction: InsertCreditTransaction): Promise<CreditTransaction> {

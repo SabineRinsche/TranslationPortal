@@ -15,7 +15,7 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
-import { LayoutDashboard, User, HelpCircle, LogIn, FileCode, Palette } from "lucide-react";
+import { LayoutDashboard, User, HelpCircle, LogIn, FileCode, Palette, Users } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
@@ -59,6 +59,12 @@ const Header = () => {
               {/* Admin-only navigation items */}
               {user && user.role === 'admin' && (
                 <>
+                  <Link href="/user-management">
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <Users className="h-4 w-4" />
+                      <span className="hidden md:inline">Users</span>
+                    </Button>
+                  </Link>
                   <Link href="/api-docs">
                     <Button variant="ghost" size="sm" className="gap-2">
                       <FileCode className="h-4 w-4" />
