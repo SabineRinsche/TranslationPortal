@@ -24,6 +24,7 @@ import Teams from "@/pages/teams";
 import TeamDetail from "@/pages/team-detail";
 import WorkspaceHome from "@/pages/workspace-home";
 import UserGuide from "@/pages/user-guide";
+import AdminGuide from "@/pages/admin-guide";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 
 // Protected route component that requires authentication
@@ -96,6 +97,9 @@ function Router() {
       </Route>
       <Route path="/style-guide">
         {(params) => <AdminRoute component={StyleGuide} params={params} />}
+      </Route>
+      <Route path="/admin-guide">
+        {(params) => <AdminRoute component={AdminGuide} params={params} />}
       </Route>
       <Route component={NotFound} />
     </Switch>

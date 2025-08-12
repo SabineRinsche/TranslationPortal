@@ -15,7 +15,7 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
-import { LayoutDashboard, User, HelpCircle, LogIn, FileCode, Palette, Users, Zap, BookOpen } from "lucide-react";
+import { LayoutDashboard, User, HelpCircle, LogIn, FileCode, Palette, Users, Zap, BookOpen, Shield } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
@@ -88,6 +88,12 @@ const Header = () => {
                       <span className="hidden md:inline">Style Guide</span>
                     </Button>
                   </Link>
+                  <Link href="/admin-guide">
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <BookOpen className="h-4 w-4" />
+                      <span className="hidden md:inline">Admin Guide</span>
+                    </Button>
+                  </Link>
                 </>
               )}
               
@@ -129,6 +135,14 @@ const Header = () => {
                         User Guide
                       </DropdownMenuItem>
                     </Link>
+                    {user && user.role === 'admin' && (
+                      <Link href="/admin-guide">
+                        <DropdownMenuItem>
+                          <Shield className="h-4 w-4 mr-2" />
+                          Admin Guide
+                        </DropdownMenuItem>
+                      </Link>
+                    )}
                     <Link href="/dashboard?tab=usage">
                       <DropdownMenuItem>
                         Credit Usage
