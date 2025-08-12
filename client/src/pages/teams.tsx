@@ -64,32 +64,29 @@ const TeamsPage = () => {
   const queryClient = useQueryClient();
 
   // Fetch teams
-  const { data: teams = [], isLoading: teamsLoading } = useQuery({
+  const { data: teams = [], isLoading: teamsLoading } = useQuery<Team[]>({
     queryKey: ["/api/admin/teams"],
   });
 
   // Fetch users
-  const { data: users = [], isLoading: usersLoading } = useQuery({
+  const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
   });
 
   // Fetch account info
-  const { data: account, isLoading: accountLoading } = useQuery({
+  const { data: account, isLoading: accountLoading } = useQuery<Account>({
     queryKey: ["/api/admin/account"],
   });
 
   // Fetch credit transactions
-  const { data: creditTransactions = [], isLoading: creditsLoading } = useQuery({
+  const { data: creditTransactions = [], isLoading: creditsLoading } = useQuery<CreditTransaction[]>({
     queryKey: ["/api/admin/credit-transactions"],
   });
 
   // Create team mutation
   const createTeamMutation = useMutation({
     mutationFn: async (teamData: { name: string; description?: string }) => {
-      return await apiRequest("/api/admin/teams", {
-        method: "POST",
-        body: JSON.stringify(teamData),
-      });
+      return await apiRequest("/api/admin/teams", "POST", teamData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/teams"] });
@@ -112,10 +109,7 @@ const TeamsPage = () => {
   // Update team mutation
   const updateTeamMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: { name?: string; description?: string } }) => {
-      return await apiRequest(`/api/admin/teams/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify(data),
-      });
+      return await apiRequest(`/api/admin/teams/${id}`, "PATCH", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/teams"] });
@@ -139,9 +133,7 @@ const TeamsPage = () => {
   // Delete team mutation
   const deleteTeamMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/admin/teams/${id}`, {
-        method: "DELETE",
-      });
+      return await apiRequest(`/api/admin/teams/${id}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/teams"] });

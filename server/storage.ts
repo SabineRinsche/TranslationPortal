@@ -163,29 +163,6 @@ export class DatabaseStorage implements IStorage {
     await db.delete(teams).where(eq(teams.id, id));
   }
 
-  async getCreditTransactionsByAccountId(accountId: number): Promise<CreditTransaction[]> {
-    const transactions = await db.select().from(creditTransactions)
-      .where(eq(creditTransactions.accountId, accountId))
-      .orderBy(creditTransactions.createdAt);
-    return transactions;
-  }
-
-  async addCreditsToAccount(accountId: number, amount: number): Promise<void> {
-    // First get current credits
-    const [account] = await db.select({ credits: accounts.credits })
-      .from(accounts)
-      .where(eq(accounts.id, accountId));
-    
-    if (account) {
-      await db.update(accounts)
-        .set({ 
-          credits: account.credits + amount,
-          updatedAt: new Date() 
-        })
-        .where(eq(accounts.id, accountId));
-    }
-  }
-
   async updateUser(id: number, userData: Partial<InsertUser>): Promise<User> {
     const [user] = await db
       .update(users)
@@ -271,12 +248,20 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(creditTransactions).where(eq(creditTransactions.accountId, accountId));
   }
 
-  async createCreditTransaction(transaction: InsertCreditTransaction): Promise<CreditTransaction> {
-    const [newTransaction] = await db
-      .insert(creditTransactions)
-      .values(transaction)
-      .returning();
-    return newTransaction;
+  async addCreditsToAccount(accountId: number, amount: number): Promise<void> {
+    // First get current credits
+    const [account] = await db.select({ credits: accounts.credits })
+      .from(accounts)
+      .where(eq(accounts.id, accountId));
+    
+    if (account) {
+      await db.update(accounts)
+        .set({ 
+          credits: account.credits + amount,
+          updatedAt: new Date() 
+        })
+        .where(eq(accounts.id, accountId));
+    }
   }
 
   async createCreditTransaction(transaction: InsertCreditTransaction): Promise<CreditTransaction> {

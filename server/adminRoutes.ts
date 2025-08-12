@@ -205,7 +205,6 @@ router.post('/users', requireAdmin, async (req, res) => {
       ...validatedData,
       accountId: currentUser.accountId,
       password: hashedPassword,
-      isEmailVerified: true, // Admin-created users are automatically verified
       preferredLanguages: ['French', 'Italian', 'German', 'Spanish'],
     });
     
@@ -250,8 +249,14 @@ router.patch('/users/:userId', requireAdmin, async (req, res) => {
       return res.status(403).json({ message: 'Access denied' });
     }
     
+    // Get current user to check role (we need to fetch full user data)
+    const fullCurrentUser = await storage.getUser(currentUser.id);
+    if (!fullCurrentUser) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
     // Prevent admin from changing their own role
-    if (userId === currentUser.id && validatedData.role && validatedData.role !== currentUser.role) {
+    if (userId === currentUser.id && validatedData.role && validatedData.role !== fullCurrentUser.role) {
       return res.status(400).json({ message: 'Cannot change your own role' });
     }
     
