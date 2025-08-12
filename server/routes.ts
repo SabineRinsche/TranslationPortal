@@ -117,7 +117,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static files from the public directory
   app.use(express.static(path.join(process.cwd(), 'public')));
   
-  // Register the API v1 router for advanced API access - only admin users can access
+  // Translation requests endpoint (using session auth for web interface)
+  app.post('/api/translation-requests', requireAuth, async (req, res) => {
+    try {
+      // Schema for translation request body
+      const translationRequestBodySchema = z.object({
+        fileName: z.string().optional(),
+        sourceLanguage: z.string().min(1, 'Source language is required'),
+        targetLanguages: z.array(z.string()).min(1, 'At least one target language is required'),
+        workflow: z.enum(['ai-neural', 'ai-with-lqe', 'ai-with-human-review']),
+        priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
+        dueDate: z.string().optional().transform(val => val ? new Date(val) : undefined),
+      });
+
+      // Validate request body
+      const validatedData = translationRequestBodySchema.parse(req.body);
+      
+      // Calculate credits required
+      const creditsRequired = 5000; // Placeholder
+      
+      // Prepare data for storage
+      const newTranslationRequest = {
+        userId: req.user?.id || 1,
+        fileName: validatedData.fileName || 'Unknown File',
+        fileFormat: validatedData.fileName ? validatedData.fileName.split('.').pop()?.toUpperCase() || 'UNKNOWN' : 'UNKNOWN',
+        fileSize: 256000,
+        wordCount: 5000,
+        characterCount: 25000,
+        imagesWithText: 3,
+        subjectMatter: 'Technical, Marketing',
+        sourceLanguage: validatedData.sourceLanguage,
+        targetLanguages: validatedData.targetLanguages,
+        workflow: validatedData.workflow,
+        priority: validatedData.priority || 'medium',
+        dueDate: validatedData.dueDate,
+        status: 'pending' as const,
+        completionPercentage: 0,
+        creditsRequired,
+        totalCost: `£${(creditsRequired * 0.001).toFixed(2)}`,
+        createdAt: new Date()
+      };
+      
+      // Create translation request in database
+      const translationRequest = await storage.createTranslationRequest(newTranslationRequest);
+      
+      // Log for external workflow trigger
+      console.log(`Translation request ${translationRequest.id} created - ready for external workflow trigger`);
+      
+      res.status(201).json({
+        id: translationRequest.id,
+        status: translationRequest.status,
+        creditsRequired: translationRequest.creditsRequired,
+        totalCost: translationRequest.totalCost,
+        estimatedCompletionTime: new Date(Date.now() + 86400000).toISOString(),
+        webhook_ready: true
+      });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ error: validationError.message });
+      }
+      console.error('Translation request error:', error);
+      res.status(500).json({ error: 'Failed to create translation request' });
+    }
+  });
+
+  // Register the API v1 router for advanced API access (still with API key auth)
   app.use('/api/v1', apiRouter);
   
   // User profile routes
