@@ -26,6 +26,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 
@@ -45,12 +47,12 @@ interface Team {
 interface User {
   id: number;
   accountId: number;
-  teamId: number;
+  teamId: number | null;
   firstName: string;
   lastName: string;
   email: string;
   role: 'admin' | 'client';
-  isActive: boolean;
+  isEmailVerified: boolean;
   createdAt: string;
 }
 
@@ -61,7 +63,10 @@ interface TeamWithUserCount extends Team {
 const TeamsPage: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAssignUserDialogOpen, setIsAssignUserDialogOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [assignToTeamId, setAssignToTeamId] = useState<string>("");
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -80,6 +85,11 @@ const TeamsPage: React.FC = () => {
   // Fetch users for counting team members
   const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
+  });
+
+  // Fetch new registrations (users without teams)
+  const { data: newRegistrations = [], isLoading: newRegsLoading } = useQuery<User[]>({
+    queryKey: ["/api/admin/new-registrations"],
   });
 
   // Create team mutation
@@ -151,6 +161,31 @@ const TeamsPage: React.FC = () => {
     },
   });
 
+  // Assign user to team mutation
+  const assignUserMutation = useMutation({
+    mutationFn: async ({ userId, teamId }: { userId: number; teamId: number }) => {
+      return await apiRequest(`/api/admin/users/${userId}/assign-team`, "PATCH", { teamId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/new-registrations"] });
+      setIsAssignUserDialogOpen(false);
+      setSelectedUser(null);
+      setAssignToTeamId("");
+      toast({
+        title: "Success",
+        description: "User assigned to team successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to assign user to team",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleCreateTeam = () => {
     if (!formData.name.trim()) {
       toast({
@@ -202,6 +237,26 @@ const TeamsPage: React.FC = () => {
     }
   };
 
+  const handleAssignUser = () => {
+    if (!selectedUser || !assignToTeamId) {
+      toast({
+        title: "Error",
+        description: "Please select a team",
+        variant: "destructive",
+      });
+      return;
+    }
+    assignUserMutation.mutate({
+      userId: selectedUser.id,
+      teamId: parseInt(assignToTeamId),
+    });
+  };
+
+  const openAssignDialog = (user: User) => {
+    setSelectedUser(user);
+    setIsAssignUserDialogOpen(true);
+  };
+
   // Get teams with user counts
   const teamsWithCounts: TeamWithUserCount[] = teams.map((team: Team) => ({
     ...team,
@@ -223,7 +278,21 @@ const TeamsPage: React.FC = () => {
         </Button>
       </div>
 
-      <Card>
+      <Tabs defaultValue="teams" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="teams">Client Teams</TabsTrigger>
+          <TabsTrigger value="registrations">
+            New Registrations
+            {newRegistrations.length > 0 && (
+              <Badge variant="destructive" className="ml-2">
+                {newRegistrations.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="teams">
+          <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -309,6 +378,71 @@ const TeamsPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="registrations">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                New User Registrations ({newRegistrations.length})
+              </CardTitle>
+              <CardDescription>
+                Recent user registrations that need to be assigned to teams
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {newRegsLoading ? (
+                <div className="text-center py-8">Loading new registrations...</div>
+              ) : newRegistrations.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No new registrations</p>
+                  <p className="text-sm">All users have been assigned to teams</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {newRegistrations.map((user) => (
+                    <div 
+                      key={user.id} 
+                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1 flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold">{user.firstName} {user.lastName}</h3>
+                            <Badge variant={user.isEmailVerified ? "default" : "secondary"}>
+                              {user.isEmailVerified ? "Verified" : "Pending Verification"}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{user.email}</p>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span>Role: {user.role}</span>
+                            <span>
+                              Registered {format(new Date(user.createdAt), "MMM d, yyyy 'at' HH:mm")}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openAssignDialog(user)}
+                            disabled={!user.isEmailVerified}
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Assign to Team
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Create Team Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -413,6 +547,61 @@ const TeamsPage: React.FC = () => {
               disabled={updateTeamMutation.isPending}
             >
               {updateTeamMutation.isPending ? "Updating..." : "Update Team"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign User to Team Dialog */}
+      <Dialog open={isAssignUserDialogOpen} onOpenChange={setIsAssignUserDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign User to Team</DialogTitle>
+            <DialogDescription>
+              Assign {selectedUser?.firstName} {selectedUser?.lastName} to a client team.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="user-info">User Information</Label>
+              <div className="p-3 bg-muted rounded-md">
+                <p className="font-medium">{selectedUser?.firstName} {selectedUser?.lastName}</p>
+                <p className="text-sm text-muted-foreground">{selectedUser?.email}</p>
+                <p className="text-sm text-muted-foreground">Role: {selectedUser?.role}</p>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="team-select">Select Team</Label>
+              <Select value={assignToTeamId} onValueChange={setAssignToTeamId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a team" />
+                </SelectTrigger>
+                <SelectContent>
+                  {teamsWithCounts.map((team) => (
+                    <SelectItem key={team.id} value={team.id.toString()}>
+                      {team.name} ({team.userCount || 0} users)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsAssignUserDialogOpen(false);
+                setSelectedUser(null);
+                setAssignToTeamId("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleAssignUser} 
+              disabled={assignUserMutation.isPending || !assignToTeamId}
+            >
+              {assignUserMutation.isPending ? "Assigning..." : "Assign User"}
             </Button>
           </DialogFooter>
         </DialogContent>

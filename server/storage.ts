@@ -23,8 +23,10 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUsersByAccountId(accountId: number): Promise<User[]>;
   getUsersByTeamId(teamId: number): Promise<User[]>;
+  getNewRegistrations(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<InsertUser>): Promise<User>;
+  assignUserToTeam(userId: number, teamId: number): Promise<void>;
   
   // Team operations
   getTeam(id: number): Promise<Team | undefined>;
@@ -128,6 +130,21 @@ export class DatabaseStorage implements IStorage {
   async getUsersByTeamId(teamId: number): Promise<User[]> {
     const userList = await db.select().from(users).where(eq(users.teamId, teamId));
     return userList;
+  }
+
+  async getNewRegistrations(): Promise<User[]> {
+    const userList = await db.select().from(users).where(eq(users.teamId, null));
+    return userList;
+  }
+
+  async assignUserToTeam(userId: number, teamId: number): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        teamId: teamId,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
   }
 
   // Team operations

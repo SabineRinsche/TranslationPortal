@@ -32,6 +32,17 @@ router.get('/users', requireAdmin, async (req, res) => {
   }
 });
 
+// Get new user registrations (users without teams)
+router.get('/new-registrations', requireAdmin, async (req, res) => {
+  try {
+    const users = await storage.getNewRegistrations();
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching new registrations:', error);
+    res.status(500).json({ message: 'Failed to fetch new registrations' });
+  }
+});
+
 // Get users by team ID
 router.get('/teams/:teamId/users', requireAdmin, async (req, res) => {
   try {
@@ -372,6 +383,38 @@ router.post('/credits', requireAdmin, async (req, res) => {
       return res.status(400).json({ message: error.errors[0].message });
     }
     res.status(500).json({ message: 'Failed to add credits' });
+  }
+});
+
+// Assign user to team
+router.patch('/users/:userId/assign-team', requireAdmin, async (req, res) => {
+  try {
+    const userId = parseInt(req.params.userId);
+    const { teamId } = req.body;
+
+    if (isNaN(userId) || !teamId) {
+      return res.status(400).json({ message: 'Invalid user ID or team ID' });
+    }
+
+    // Verify team exists
+    const team = await storage.getTeam(teamId);
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+
+    // Verify user exists
+    const user = await storage.getUser(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Assign user to team
+    await storage.assignUserToTeam(userId, teamId);
+    
+    res.json({ message: 'User assigned to team successfully' });
+  } catch (error) {
+    console.error('Error assigning user to team:', error);
+    res.status(500).json({ message: 'Failed to assign user to team' });
   }
 });
 
