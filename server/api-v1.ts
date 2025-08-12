@@ -1,5 +1,6 @@
 import express, { Router, Request, Response, NextFunction } from 'express';
 import { storage } from './storage';
+import { requireAuth } from './auth';
 import multer from 'multer';
 import AdmZip from 'adm-zip';
 import path from 'path';
@@ -111,8 +112,22 @@ const apiRouter = Router();
 // Export the router for use in routes.ts
 export default apiRouter;
 
-// Apply API key validation to all routes
-apiRouter.use(validateApiKey);
+// For web interface requests, use session authentication
+// For external API access, use API key authentication
+const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  // Check if this request has an API key in Authorization header
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    // This is an API request - use API key validation
+    return validateApiKey(req, res, next);
+  }
+  
+  // This is a web interface request - use session authentication
+  return requireAuth(req, res, next);
+};
+
+// Apply authentication middleware to all routes
+apiRouter.use(authMiddleware);
 
 // 1. Translation Requests API Endpoints
 
