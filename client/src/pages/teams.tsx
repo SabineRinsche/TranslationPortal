@@ -1,11 +1,20 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { 
+  Users, 
+  Plus, 
+  Edit2, 
+  Trash2, 
+  CreditCard, 
+  Crown,
+  Mail
+} from "lucide-react";
+import { format } from "date-fns";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Dialog, 
   DialogContent, 
@@ -14,47 +23,44 @@ import {
   DialogHeader, 
   DialogTitle 
 } from "@/components/ui/dialog";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { apiRequest } from "@/lib/queryClient";
-import { 
-  Users, 
-  Plus, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
-  UserPlus, 
-  CreditCard,
-  Building,
-  Calendar,
-  DollarSign 
-} from "lucide-react";
-import { format } from "date-fns";
-import type { Team, User, Account, CreditTransaction } from "@shared/schema";
+
+// Types
+interface Team {
+  id: number;
+  name: string;
+  description?: string;
+  credits: number;
+  subscriptionPlan: string;
+  subscriptionStatus: string;
+  billingEmail?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface User {
+  id: number;
+  accountId: number;
+  teamId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: 'admin' | 'client';
+  isActive: boolean;
+  createdAt: string;
+}
 
 interface TeamWithUserCount extends Team {
   userCount?: number;
 }
 
-const TeamsPage = () => {
-  const [activeTab, setActiveTab] = useState("teams");
-  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+const TeamsPage: React.FC = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -69,19 +75,9 @@ const TeamsPage = () => {
     queryKey: ["/api/admin/teams"],
   });
 
-  // Fetch users
+  // Fetch users for counting team members
   const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
-  });
-
-  // Fetch account info
-  const { data: account, isLoading: accountLoading } = useQuery<Account>({
-    queryKey: ["/api/admin/account"],
-  });
-
-  // Fetch credit transactions
-  const { data: creditTransactions = [], isLoading: creditsLoading } = useQuery<CreditTransaction[]>({
-    queryKey: ["/api/admin/credit-transactions"],
   });
 
   // Create team mutation
@@ -216,311 +212,91 @@ const TeamsPage = () => {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Team Management</h1>
           <p className="text-muted-foreground mt-2">
-            Manage your teams, users, credits, and account settings
+            Manage client organizations and their users
           </p>
         </div>
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Team
+        </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="teams" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Teams
-          </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center gap-2">
-            <UserPlus className="h-4 w-4" />
-            Users
-          </TabsTrigger>
-          <TabsTrigger value="credits" className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            Credits
-          </TabsTrigger>
-          <TabsTrigger value="account" className="flex items-center gap-2">
-            <Building className="h-4 w-4" />
-            Account
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="teams">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Teams ({teams.length})
-                  </CardTitle>
-                  <CardDescription>
-                    Manage teams and organize your client contacts
-                  </CardDescription>
-                </div>
-                <Button onClick={() => setIsCreateDialogOpen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Team
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {teamsLoading ? (
-                <div className="text-center py-8">Loading teams...</div>
-              ) : teamsWithCounts.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No teams created yet</p>
-                  <p className="text-sm">Create your first team to get started</p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Members</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="w-[50px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {teamsWithCounts.map((team) => (
-                      <TableRow key={team.id}>
-                        <TableCell className="font-medium">{team.name}</TableCell>
-                        <TableCell>{team.description || "—"}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">{team.userCount || 0} members</Badge>
-                        </TableCell>
-                        <TableCell>{format(new Date(team.createdAt), "MMM d, yyyy")}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openEditDialog(team)}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => handleDeleteTeam(team.id)}
-                                className="text-destructive"
-                                disabled={team.userCount! > 0}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="users">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <UserPlus className="h-5 w-5" />
-                    Users ({users.length})
-                  </CardTitle>
-                  <CardDescription>
-                    Manage user accounts and team assignments
-                  </CardDescription>
-                </div>
-                <Button onClick={() => window.location.href = '/user-management'}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Manage Users
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {usersLoading ? (
-                <div className="text-center py-8">Loading users...</div>
-              ) : users.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <UserPlus className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No users found</p>
-                  <p className="text-sm">Users will appear here once created</p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Team</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((user: User) => {
-                      const userTeam = teams.find((team: Team) => team.id === user.teamId);
-                      return (
-                        <TableRow key={user.id}>
-                          <TableCell className="font-medium">
-                            {user.firstName} {user.lastName}
-                          </TableCell>
-                          <TableCell>{user.email}</TableCell>
-                          <TableCell>
-                            <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                              {user.role}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{userTeam?.name || "No team"}</TableCell>
-                          <TableCell>
-                            <Badge variant={user.isEmailVerified ? 'default' : 'destructive'}>
-                              {user.isEmailVerified ? 'Verified' : 'Pending'}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="credits">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Credit Balance
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {accountLoading ? (
-                  <div className="text-center py-8">Loading account...</div>
-                ) : (
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-primary mb-2">
-                      {account?.credits?.toLocaleString() || 0}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Client Teams ({teamsWithCounts.length})
+          </CardTitle>
+          <CardDescription>
+            Manage client organizations and their billing information
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {teamsLoading ? (
+            <div className="text-center py-8">Loading teams...</div>
+          ) : teamsWithCounts.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No teams created yet</p>
+              <p className="text-sm">Create your first client organization to get started</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {teamsWithCounts.map((team) => (
+                <div key={team.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{team.name}</h3>
+                        <Badge variant="outline">{team.userCount} {team.userCount === 1 ? 'user' : 'users'}</Badge>
+                      </div>
+                      {team.description && (
+                        <p className="text-sm text-muted-foreground">{team.description}</p>
+                      )}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <CreditCard className="h-3 w-3" />
+                          {team.credits?.toLocaleString() || 0} credits
+                        </span>
+                        <span className="flex items-center gap-1 capitalize">
+                          <Crown className="h-3 w-3" />
+                          {team.subscriptionPlan || 'free'}
+                        </span>
+                        {team.billingEmail && (
+                          <span className="flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
+                            {team.billingEmail}
+                          </span>
+                        )}
+                        <span className="text-xs">
+                          Created {format(new Date(team.createdAt), "MMM d, yyyy")}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-muted-foreground">Available Credits</p>
-                    <Button 
-                      className="mt-4" 
-                      onClick={() => window.location.href = '/user-management'}
-                    >
-                      <DollarSign className="h-4 w-4 mr-2" />
-                      Add Credits
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Credit Transaction History</CardTitle>
-                <CardDescription>
-                  View all credit transactions for your account
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {creditsLoading ? (
-                  <div className="text-center py-8">Loading transactions...</div>
-                ) : creditTransactions.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No credit transactions yet</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Description</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {creditTransactions.map((transaction: CreditTransaction) => (
-                        <TableRow key={transaction.id}>
-                          <TableCell>
-                            {format(new Date(transaction.createdAt), "MMM d, yyyy HH:mm")}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={transaction.amount > 0 ? 'default' : 'secondary'}>
-                              {transaction.type}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className={transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}>
-                            {transaction.amount > 0 ? '+' : ''}{transaction.amount.toLocaleString()}
-                          </TableCell>
-                          <TableCell>{transaction.description}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="account">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building className="h-5 w-5" />
-                Account Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {accountLoading ? (
-                <div className="text-center py-8">Loading account...</div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <Label className="text-sm font-medium">Account Name</Label>
-                      <p className="text-lg">{account?.name}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Current Credits</Label>
-                      <p className="text-lg">{account?.credits?.toLocaleString() || 0}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Subscription Plan</Label>
-                      <p className="text-lg capitalize">{account?.subscriptionPlan || 'Free'}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Subscription Status</Label>
-                      <Badge variant={account?.subscriptionStatus === 'active' ? 'default' : 'secondary'}>
-                        {account?.subscriptionStatus || 'inactive'}
-                      </Badge>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Account Created</Label>
-                      <p className="text-lg">
-                        {account?.createdAt ? format(new Date(account.createdAt), "MMM d, yyyy") : '—'}
-                      </p>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Last Updated</Label>
-                      <p className="text-lg">
-                        {account?.updatedAt ? format(new Date(account.updatedAt), "MMM d, yyyy") : '—'}
-                      </p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEditDialog(team)}
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteTeam(team.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Create Team Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
