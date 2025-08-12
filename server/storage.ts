@@ -28,7 +28,7 @@ export interface IStorage {
   
   // Team operations
   getTeam(id: number): Promise<Team | undefined>;
-  getTeamsByAccountId(accountId: number): Promise<Team[]>;
+  getAllTeams(): Promise<Team[]>;
   createTeam(team: InsertTeam): Promise<Team>;
   updateTeam(id: number, team: Partial<InsertTeam>): Promise<Team>;
   deleteTeam(id: number): Promise<void>;
@@ -135,14 +135,20 @@ export class DatabaseStorage implements IStorage {
     return team || undefined;
   }
 
-  async getTeamsByAccountId(accountId: number): Promise<Team[]> {
-    return await db.select().from(teams).where(eq(teams.accountId, accountId));
+  // Get all teams (since teams are now independent client organizations)
+  async getAllTeams(): Promise<Team[]> {
+    return await db.select().from(teams).orderBy(teams.createdAt);
   }
 
   async createTeam(team: InsertTeam): Promise<Team> {
     const [newTeam] = await db
       .insert(teams)
-      .values(team)
+      .values({
+        ...team,
+        credits: team.credits || 5000, // Default credits for new teams
+        subscriptionPlan: team.subscriptionPlan || "free",
+        subscriptionStatus: team.subscriptionStatus || "active"
+      })
       .returning();
     return newTeam;
   }

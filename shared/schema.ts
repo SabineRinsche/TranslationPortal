@@ -24,12 +24,16 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// Teams table for grouping client contacts
+// Teams table - each team is a separate client organization with its own account
 export const teams = pgTable("teams", {
   id: serial("id").primaryKey(),
-  accountId: integer("account_id").notNull().references(() => accounts.id),
   name: text("name").notNull(),
   description: text("description"),
+  // Each team has its own credits and billing
+  credits: integer("credits").default(5000).notNull(),
+  subscriptionPlan: text("subscription_plan").default("free").notNull(),
+  subscriptionStatus: text("subscription_status").default("active").notNull(),
+  billingEmail: text("billing_email"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -60,10 +64,11 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Credit transaction history for audit trail
+// Credit transaction history for audit trail - now linked to teams
 export const creditTransactions = pgTable("credit_transactions", {
   id: serial("id").primaryKey(),
-  accountId: integer("account_id").notNull().references(() => accounts.id),
+  accountId: integer("account_id").references(() => accounts.id), // legacy support
+  teamId: integer("team_id").references(() => teams.id), // new team-based structure
   userId: integer("user_id").references(() => users.id), // null for system transactions
   amount: integer("amount").notNull(), // positive for credits added, negative for credits used
   type: text("type").notNull(), // 'purchase', 'usage', 'refund', 'admin_adjustment'

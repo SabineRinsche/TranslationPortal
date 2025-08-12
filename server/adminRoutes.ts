@@ -9,8 +9,7 @@ const router = Router();
 // Get all teams in the account
 router.get('/teams', requireAdmin, async (req, res) => {
   try {
-    const currentUser = req.user!;
-    const teams = await storage.getTeamsByAccountId(currentUser.accountId);
+    const teams = await storage.getAllTeams();
     res.json(teams);
   } catch (error) {
     console.error('Error fetching teams:', error);
@@ -36,9 +35,9 @@ router.get('/teams/:teamId/users', requireAdmin, async (req, res) => {
     const currentUser = req.user!;
     const teamId = parseInt(req.params.teamId);
     
-    // Verify team belongs to user's account
+    // Verify team exists
     const team = await storage.getTeam(teamId);
-    if (!team || team.accountId !== currentUser.accountId) {
+    if (!team) {
       return res.status(404).json({ message: 'Team not found' });
     }
     
@@ -91,7 +90,6 @@ router.post('/teams', requireAdmin, async (req, res) => {
     
     const newTeam = await storage.createTeam({
       ...validatedData,
-      accountId: currentUser.accountId,
     });
     
     res.status(201).json(newTeam);
@@ -116,14 +114,10 @@ router.patch('/teams/:teamId', requireAdmin, async (req, res) => {
     const teamId = parseInt(req.params.teamId);
     const validatedData = updateTeamSchema.parse(req.body);
     
-    // Check if the team exists and belongs to the same account
+    // Check if the team exists
     const existingTeam = await storage.getTeam(teamId);
     if (!existingTeam) {
       return res.status(404).json({ message: 'Team not found' });
-    }
-    
-    if (existingTeam.accountId !== currentUser.accountId) {
-      return res.status(403).json({ message: 'Access denied' });
     }
     
     const updatedTeam = await storage.updateTeam(teamId, validatedData);
@@ -143,14 +137,10 @@ router.delete('/teams/:teamId', requireAdmin, async (req, res) => {
     const currentUser = req.user!;
     const teamId = parseInt(req.params.teamId);
     
-    // Check if the team exists and belongs to the same account
+    // Check if the team exists
     const existingTeam = await storage.getTeam(teamId);
     if (!existingTeam) {
       return res.status(404).json({ message: 'Team not found' });
-    }
-    
-    if (existingTeam.accountId !== currentUser.accountId) {
-      return res.status(403).json({ message: 'Access denied' });
     }
     
     // Check if team has users before deleting

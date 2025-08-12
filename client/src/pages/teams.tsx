@@ -58,6 +58,7 @@ const TeamsPage = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    billingEmail: "",
   });
 
   const { toast } = useToast();
@@ -91,7 +92,7 @@ const TeamsPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/teams"] });
       setIsCreateDialogOpen(false);
-      setFormData({ name: "", description: "" });
+      setFormData({ name: "", description: "", billingEmail: "" });
       toast({
         title: "Success",
         description: "Team created successfully",
@@ -115,7 +116,7 @@ const TeamsPage = () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/teams"] });
       setIsEditDialogOpen(false);
       setSelectedTeam(null);
-      setFormData({ name: "", description: "" });
+      setFormData({ name: "", description: "", billingEmail: "" });
       toast({
         title: "Success",
         description: "Team updated successfully",
@@ -189,6 +190,7 @@ const TeamsPage = () => {
     setFormData({
       name: team.name,
       description: team.description || "",
+      billingEmail: team.billingEmail || "",
     });
     setIsEditDialogOpen(true);
   };
