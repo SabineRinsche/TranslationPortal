@@ -165,6 +165,63 @@ router.delete('/teams/:teamId', requireAdmin, async (req, res) => {
   }
 });
 
+// Get individual team by ID
+router.get('/teams/:teamId', requireAdmin, async (req, res) => {
+  try {
+    const teamId = parseInt(req.params.teamId);
+    const team = await storage.getTeam(teamId);
+    
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+    
+    res.json(team);
+  } catch (error) {
+    console.error('Error fetching team:', error);
+    res.status(500).json({ message: 'Failed to fetch team' });
+  }
+});
+
+// Add credits to team
+const addTeamCreditsSchema = z.object({
+  amount: z.number().int().positive('Amount must be a positive integer'),
+  description: z.string().optional(),
+});
+
+router.post('/teams/:teamId/credits', requireAdmin, async (req, res) => {
+  try {
+    const teamId = parseInt(req.params.teamId);
+    const { amount, description } = addTeamCreditsSchema.parse(req.body);
+    
+    // Get team to verify it exists
+    const team = await storage.getTeam(teamId);
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+    
+    // Add credits to the team
+    await storage.addCreditsToTeam(teamId, amount);
+    
+    // Record the credit transaction
+    await storage.createCreditTransaction({
+      accountId: team.id, // Using team ID as account ID for team-based structure
+      userId: req.user!.id,
+      amount,
+      type: 'admin_adjustment',
+      description: description || `Credits added to team: ${team.name}`,
+    });
+    
+    res.json({ message: 'Credits added successfully', amount });
+    
+  } catch (error: any) {
+    console.error('Error adding credits to team:', error);
+    if (error.name === 'ZodError') {
+      return res.status(400).json({ message: error.errors[0].message });
+    }
+    res.status(500).json({ message: 'Failed to add credits' });
+  }
+});
+
 const createUserSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),

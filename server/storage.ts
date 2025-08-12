@@ -7,7 +7,7 @@ import {
   creditTransactions, type CreditTransaction, type InsertCreditTransaction
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, sql } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -32,6 +32,7 @@ export interface IStorage {
   createTeam(team: InsertTeam): Promise<Team>;
   updateTeam(id: number, team: Partial<InsertTeam>): Promise<Team>;
   deleteTeam(id: number): Promise<void>;
+  addCreditsToTeam(teamId: number, amount: number): Promise<void>;
   
   // Authentication-specific user operations
   getUserByEmailVerificationToken(token: string): Promise<User | undefined>;

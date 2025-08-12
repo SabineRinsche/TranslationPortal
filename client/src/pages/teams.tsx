@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 
 // Types
 interface Team {
@@ -69,6 +70,7 @@ const TeamsPage: React.FC = () => {
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   // Fetch teams
   const { data: teams = [], isLoading: teamsLoading } = useQuery<Team[]>({
@@ -243,7 +245,11 @@ const TeamsPage: React.FC = () => {
           ) : (
             <div className="space-y-4">
               {teamsWithCounts.map((team) => (
-                <div key={team.id} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                <div 
+                  key={team.id} 
+                  className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => setLocation(`/teams/${team.id}`)}
+                >
                   <div className="flex items-center justify-between">
                     <div className="space-y-1 flex-1">
                       <div className="flex items-center gap-2">
@@ -277,14 +283,20 @@ const TeamsPage: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => openEditDialog(team)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditDialog(team);
+                        }}
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteTeam(team.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTeam(team.id);
+                        }}
                         className="text-destructive hover:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
