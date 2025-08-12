@@ -115,19 +115,19 @@ const FileAnalysis = () => {
   const workflows = [
     { 
       id: 'ai-translation', 
-      name: 'Automated AI Translation only', 
+      name: 'AI Translation only', 
       description: 'Automated translation workflow, which leverages your translation assets and our state of the art AI enabled translation systems.',
       icon: <Brain className="h-5 w-5 text-blue-500" />
     },
     { 
       id: 'ai-translation-qc', 
-      name: 'Automated AI Translation, followed by LQE', 
+      name: 'AI Translation + LQE', 
       description: 'The automated translation workflow is enhanced with an automated LQE (language quality evaluation) step, to provide guidance on quality achieved by the automated translation process. This allows you to decide if the workflow needs further improvement for your content types and language pairs.',
       icon: <Cpu className="h-5 w-5 text-purple-500" />
     },
     { 
       id: 'ai-translation-human', 
-      name: 'Automated AI Translation, LQE and Human review', 
+      name: 'AI Translation + LQE + HR', 
       description: 'Following automated translation, the automated LQE will decide which segments should be reviewed by a human to improve quality. Human reviews allow the system to learn by enhancing your translation assets, and improve quality further in the future.',
       icon: <Sparkles className="h-5 w-5 text-yellow-500" />
     },

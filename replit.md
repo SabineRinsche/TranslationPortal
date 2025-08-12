@@ -132,3 +132,13 @@ The system now operates as a true multi-tenant platform where each team represen
 - **Status Management**: Complete translation workflow status tracking from pending → in-progress → complete
 
 The API is ready to trigger external translation workflows and receive completed translations back into the portal.
+
+### User Experience Enhancements (August 12, 2025)
+- **Real-Time Translation Progress**: Implemented animated progress screen with floating icons and status updates
+- **Client-Side Waiting Experience**: Users stay on same screen during translation with engaging animations
+- **Workflow Name Consistency**: Updated all dashboard displays to use consistent shortened workflow names:
+  - "AI Translation only" (shortened from "Automated AI Translation only")
+  - "AI Translation + LQE" (shortened from "Automated AI Translation, followed by LQE")  
+  - "AI Translation + LQE + HR" (shortened from "Automated AI Translation, LQE and Human review")
+- **Progress Polling**: Real-time status tracking with 2-second intervals for immediate user feedback
+- **Completion State Display**: Automatic file download options when translations complete

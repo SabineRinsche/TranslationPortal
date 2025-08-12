@@ -781,10 +781,10 @@ export default function JobDetail() {
                 <h3 className="text-sm font-medium">Translation Process</h3>
                 <p className="mt-1">
                   {project.workflow === 'ai-translation-qc' 
-                    ? 'AI Translation with Quality Assurance - Machine translation with automatic quality control checks.'
+                    ? 'AI Translation + LQE - Machine translation with automated language quality evaluation.'
                     : project.workflow === 'ai-translation-human'
-                      ? 'AI Translation with Expert Review - Machine translation followed by human expert review and editing.'
-                      : 'AI Neural Translation - High-quality neural machine translation.'}
+                      ? 'AI Translation + LQE + HR - Machine translation with quality evaluation and human review.'
+                      : 'AI Translation only - High-quality neural machine translation.'}
                 </p>
               </div>
             </CardContent>

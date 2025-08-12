@@ -76,15 +76,15 @@ export default function JobsList() {
   
   // Get a formatted workflow name
   const getWorkflowName = (workflow: string | null | undefined) => {
-    if (!workflow) return 'AI Neural Translation';
+    if (!workflow) return 'AI Translation only';
     
     switch (workflow) {
       case 'ai-translation-qc':
-        return 'AI Translation with QA';
+        return 'AI Translation + LQE';
       case 'ai-translation-human':
-        return 'AI Translation with Expert Review';
+        return 'AI Translation + LQE + HR';
       default:
-        return 'AI Neural Translation';
+        return 'AI Translation only';
     }
   };
   
