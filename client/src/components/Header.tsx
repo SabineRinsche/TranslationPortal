@@ -21,15 +21,27 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const [, navigate] = useLocation();
+  const { addNotification } = useNotifications();
   
   // Function to handle logout
   const handleLogout = async () => {
     await logout();
     navigate('/login');
+  };
+
+  // Test notification function
+  const testNotification = () => {
+    addNotification({
+      title: "Test Notification",
+      message: "This is a test notification to see the bell animation",
+      type: "job_complete",
+      jobId: Math.floor(Math.random() * 1000)
+    });
   };
   
   return (
@@ -85,6 +97,16 @@ const Header = () => {
               )}
               
               <ThemeToggle />
+              
+              {/* Test Notification Button - For development */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={testNotification}
+                className="text-xs"
+              >
+                Test Bell
+              </Button>
               
               {/* Notifications */}
               <NotificationsDropdown />

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -17,8 +17,24 @@ import { useNotifications } from '@/contexts/NotificationContext';
 
 export function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
+  const [showPulse, setShowPulse] = useState(false);
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [_, setLocation] = useLocation();
+  const [previousUnreadCount, setPreviousUnreadCount] = useState(0);
+
+  // Trigger pulse animation when new notifications arrive
+  useEffect(() => {
+    if (unreadCount > previousUnreadCount && previousUnreadCount !== 0) {
+      setShowPulse(true);
+      // Remove pulse effect after animation completes
+      const timer = setTimeout(() => {
+        setShowPulse(false);
+      }, 2000); // 2 seconds for the pulse animation
+      
+      return () => clearTimeout(timer);
+    }
+    setPreviousUnreadCount(unreadCount);
+  }, [unreadCount, previousUnreadCount]);
 
   // Get notification icon based on type
   const getNotificationIcon = (type: string) => {
@@ -52,14 +68,24 @@ export function NotificationsDropdown() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative"
+          className={`relative ${showPulse ? 'animate-pulse-ring' : ''}`}
           aria-label="Notifications"
         >
-          <Bell className="h-5 w-5" />
+          <Bell className={`h-5 w-5 transition-all duration-200 ${
+            unreadCount > 0 ? 'text-primary' : 'text-muted-foreground'
+          } ${showPulse ? 'animate-bell-ring' : ''}`} />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+            <span className={`absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center transition-all duration-200 ${
+              showPulse ? 'animate-bounce scale-110' : ''
+            }`}>
               {unreadCount}
             </span>
+          )}
+          {showPulse && (
+            <>
+              <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping"></span>
+              <span className="absolute inset-0 rounded-full bg-primary/10 animate-ping delay-75"></span>
+            </>
           )}
         </Button>
       </DropdownMenuTrigger>
