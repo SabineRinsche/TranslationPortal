@@ -10,7 +10,8 @@ import {
   Mail,
   Calendar,
   Building2,
-  TrendingUp
+  TrendingUp,
+  UserPlus
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -28,6 +29,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Tabs,
   TabsContent,
@@ -84,6 +93,13 @@ const TeamDetailPage: React.FC = () => {
   const [isAddCreditsOpen, setIsAddCreditsOpen] = useState(false);
   const [creditAmount, setCreditAmount] = useState("");
   const [creditDescription, setCreditDescription] = useState("");
+  
+  // Add user dialog state
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const [userFirstName, setUserFirstName] = useState("");
+  const [userLastName, setUserLastName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userRole, setUserRole] = useState<'admin' | 'client'>('client');
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -146,6 +162,72 @@ const TeamDetailPage: React.FC = () => {
     addCreditsMutation.mutate({
       amount,
       description: creditDescription || undefined,
+    });
+  };
+
+  // Add user mutation
+  const addUserMutation = useMutation({
+    mutationFn: async (userData: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      role: 'admin' | 'client';
+      teamId: number;
+    }) => {
+      const response = await apiRequest(`/api/admin/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/admin/teams/${teamId}/users`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/admin/teams/${teamId}`] });
+      setIsAddUserOpen(false);
+      setUserFirstName("");
+      setUserLastName("");
+      setUserEmail("");
+      setUserRole('client');
+      toast({
+        title: "Success",
+        description: "User added to team successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add user",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddUser = () => {
+    if (!userFirstName.trim() || !userLastName.trim() || !userEmail.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!teamId) {
+      toast({
+        title: "Error",
+        description: "Team ID not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addUserMutation.mutate({
+      firstName: userFirstName.trim(),
+      lastName: userLastName.trim(),
+      email: userEmail.trim(),
+      role: userRole,
+      teamId: parseInt(teamId),
     });
   };
 
@@ -221,11 +303,11 @@ const TeamDetailPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold capitalize">{team.subscriptionPlan}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-xs text-muted-foreground">
               <Badge variant={team.subscriptionStatus === 'active' ? 'default' : 'secondary'} className="text-xs">
                 {team.subscriptionStatus}
               </Badge>
-            </p>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -242,13 +324,21 @@ const TeamDetailPage: React.FC = () => {
         <TabsContent value="users" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Team Members ({teamUsers.length})
-              </CardTitle>
-              <CardDescription>
-                Users assigned to this team
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Team Members ({teamUsers.length})
+                  </CardTitle>
+                  <CardDescription>
+                    Users assigned to this team
+                  </CardDescription>
+                </div>
+                <Button onClick={() => setIsAddUserOpen(true)} className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Add User
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {usersLoading ? (
@@ -457,6 +547,80 @@ const TeamDetailPage: React.FC = () => {
               disabled={addCreditsMutation.isPending}
             >
               {addCreditsMutation.isPending ? "Adding..." : "Add Credits"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add User Dialog */}
+      <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add User to Team</DialogTitle>
+            <DialogDescription>
+              Create a new user and assign them to {team.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  value={userFirstName}
+                  onChange={(e) => setUserFirstName(e.target.value)}
+                  placeholder="Enter first name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  value={userLastName}
+                  onChange={(e) => setUserLastName(e.target.value)}
+                  placeholder="Enter last name"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                placeholder="Enter email address"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <Select value={userRole} onValueChange={(value: 'admin' | 'client') => setUserRole(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="client">Client</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsAddUserOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddUser}
+              disabled={addUserMutation.isPending}
+            >
+              {addUserMutation.isPending ? "Adding..." : "Add User"}
             </Button>
           </DialogFooter>
         </DialogContent>

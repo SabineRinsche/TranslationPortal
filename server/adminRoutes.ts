@@ -222,54 +222,57 @@ router.post('/teams/:teamId/credits', requireAdmin, async (req, res) => {
   }
 });
 
+// Create a new user for teams
 const createUserSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Invalid email address'),
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  role: z.enum(['admin', 'client']),
-  teamId: z.number().int().positive().optional(),
-  jobTitle: z.string().optional(),
-  phoneNumber: z.string().optional(),
+  email: z.string().email('Valid email is required'),
+  role: z.enum(['admin', 'client']).default('client'),
+  teamId: z.number().min(1, 'Team ID is required'),
 });
 
 router.post('/users', requireAdmin, async (req, res) => {
   try {
-    const currentUser = req.user!;
-    const validatedData = createUserSchema.parse(req.body);
+    const validation = createUserSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ 
+        message: 'Invalid user data', 
+        errors: validation.error.errors 
+      });
+    }
+
+    const userData = validation.data;
     
-    // Check if email or username already exists
-    const existingUser = await storage.getUserByEmail(validatedData.email);
+    // Check if email already exists
+    const existingUser = await storage.getUserByEmail(userData.email);
     if (existingUser) {
-      return res.status(400).json({ message: 'Email already exists' });
+      return res.status(400).json({ message: 'User with this email already exists' });
     }
-    
-    const existingUsername = await storage.getUserByUsername(validatedData.username);
-    if (existingUsername) {
-      return res.status(400).json({ message: 'Username already exists' });
+
+    // Verify team exists
+    const team = await storage.getTeam(userData.teamId);
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found' });
     }
+
+    // Generate a default password and username (in production, you'd want to send an invitation email)
+    const hashedPassword = await hashPassword('defaultPassword123!');
+    const username = userData.email.split('@')[0] + Math.floor(Math.random() * 1000);
     
-    // Hash the password
-    const hashedPassword = await hashPassword(validatedData.password);
-    
-    // Create the user in the same account as the admin
-    const newUser = await storage.createUser({
-      ...validatedData,
-      accountId: currentUser.accountId,
+    const user = await storage.createUser({
+      ...userData,
+      username,
       password: hashedPassword,
-      preferredLanguages: ['French', 'Italian', 'German', 'Spanish'],
+      accountId: 2, // Using fixed account ID for now (AlphaCRCInternal)
+      isActive: true,
+      preferredLanguages: ['English', 'Spanish', 'French'],
     });
     
-    // Remove sensitive data before sending response
-    const { password, ...userWithoutPassword } = newUser;
-    res.status(201).json(userWithoutPassword);
-    
-  } catch (error: any) {
+    // Remove password from response
+    const { password, ...userResponse } = user;
+    res.status(201).json(userResponse);
+  } catch (error) {
     console.error('Error creating user:', error);
-    if (error.name === 'ZodError') {
-      return res.status(400).json({ message: error.errors[0].message });
-    }
     res.status(500).json({ message: 'Failed to create user' });
   }
 });
@@ -282,6 +285,7 @@ const updateUserSchema = z.object({
   username: z.string().min(3).optional(),
   password: z.string().min(8).optional(),
   role: z.enum(['admin', 'client']).optional(),
+  teamId: z.number().int().positive().optional(),
   jobTitle: z.string().optional(),
   phoneNumber: z.string().optional(),
 });
