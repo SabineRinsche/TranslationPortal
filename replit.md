@@ -117,5 +117,8 @@ The architecture is designed to be scalable and maintainable, with clear separat
 - **API Request Format**: Corrected apiRequest calls to use proper parameter structure (url, method, data)
 - **Database Consistency**: All teams now properly reference account ID 2 for credit transaction compatibility
 - **User Interface Alignment**: Updated frontend User interface to match actual database schema
+- **Translation Request Submission**: Fixed "Invalid request method" error by correcting parameter order in FileAnalysis component
+- **Authentication Flow**: Updated landing page logic to show public page for guests, workspace for authenticated users
+- **External Workflow Integration**: Enhanced POST /api/translation-requests to support external workflow triggering
 
-The system now operates as a true multi-tenant platform where each team represents an independent client organization with separate billing, credits, and user management. All core functionality for team management, user creation, and credit administration is working correctly.
+The system now operates as a true multi-tenant platform where each team represents an independent client organization with separate billing, credits, and user management. All core functionality for team management, user creation, credit administration, and translation request submission is working correctly. The API is ready to trigger external translation workflows.

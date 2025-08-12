@@ -244,7 +244,7 @@ const FileAnalysis = () => {
         totalCost: calculationSummary.totalCost,
       };
       
-      return await apiRequest('POST', '/api/translation-requests', translationRequest);
+      return await apiRequest('/api/translation-requests', 'POST', translationRequest);
     },
     onSuccess: () => {
       toast({

@@ -95,16 +95,9 @@ const Header = () => {
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center space-x-2 text-sm focus:outline-none user-menu-button">
                       <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
-                        {user && user.profileImageUrl ? (
-                          <AvatarImage 
-                            src={user.profileImageUrl} 
-                            alt={`${user.firstName} ${user.lastName}`} 
-                          />
-                        ) : (
-                          <AvatarFallback>
-                            {user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : "JD"}
-                          </AvatarFallback>
-                        )}
+                        <AvatarFallback>
+                          {user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}` : "JD"}
+                        </AvatarFallback>
                       </Avatar>
                       <span className="font-medium text-foreground hidden md:inline-block">
                         {user ? `${user.firstName} ${user.lastName}` : "User"}

@@ -154,12 +154,17 @@ apiRouter.post('/translation-requests', async (req, res) => {
     // Create translation request in database
     const translationRequest = await storage.createTranslationRequest(newTranslationRequest);
     
+    // TODO: Trigger external workflow system (webhook/API call)
+    // This would normally trigger MemoQ or other translation management system
+    console.log(`Translation request ${translationRequest.id} created - ready for external workflow trigger`);
+    
     res.status(201).json({
       id: translationRequest.id,
       status: translationRequest.status,
       creditsRequired: translationRequest.creditsRequired,
       totalCost: translationRequest.totalCost,
-      estimatedCompletionTime: new Date(Date.now() + 86400000).toISOString() // 1 day from now
+      estimatedCompletionTime: new Date(Date.now() + 86400000).toISOString(), // 1 day from now
+      webhook_ready: true // Indicates this request is ready for external processing
     });
   } catch (error) {
     if (error instanceof ZodError) {
