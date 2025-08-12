@@ -15,7 +15,7 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
-import { LayoutDashboard, User, HelpCircle, LogIn, FileCode, Palette, Users, Zap } from "lucide-react";
+import { LayoutDashboard, User, HelpCircle, LogIn, FileCode, Palette, Users, Zap, BookOpen } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
@@ -69,6 +69,13 @@ const Header = () => {
                 <Button variant="ghost" size="sm" className="gap-2">
                   <LayoutDashboard className="h-4 w-4" />
                   <span className="hidden md:inline">Dashboard</span>
+                </Button>
+              </Link>
+              
+              <Link href="/user-guide">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  <span className="hidden md:inline">User Guide</span>
                 </Button>
               </Link>
               
@@ -136,6 +143,12 @@ const Header = () => {
                     <Link href="/settings">
                       <DropdownMenuItem>
                         Settings
+                      </DropdownMenuItem>
+                    </Link>
+                    <Link href="/user-guide">
+                      <DropdownMenuItem>
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        User Guide
                       </DropdownMenuItem>
                     </Link>
                     <Link href="/dashboard?tab=usage">
