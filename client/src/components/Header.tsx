@@ -19,9 +19,7 @@ import { LayoutDashboard, User, HelpCircle, LogIn, FileCode, Palette, Users, Zap
 import { Link, useLocation } from "wouter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
-// Temporarily comment out problematic components
-// import { NotificationsDropdown } from "@/components/NotificationsDropdown";
-// import { HelpButton } from "@/components/HelpButton";
+import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
@@ -88,7 +86,8 @@ const Header = () => {
               
               <ThemeToggle />
               
-              {/* Temporarily disabled components causing issues */}
+              {/* Notifications */}
+              <NotificationsDropdown />
 
               <div className="relative">
                 <DropdownMenu>
