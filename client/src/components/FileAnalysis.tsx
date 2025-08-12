@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { InsertTranslationRequest } from '@shared/schema';
 import { Brain, Cpu, Sparkles, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import TranslationProgressAnimation from './TranslationProgressAnimation';
 // Remove ChatContext dependency
 
 interface LanguageOption {
@@ -190,6 +191,8 @@ const FileAnalysis = () => {
   // Step management
   const [showCalculation, setShowCalculation] = useState(false);
   const [showWorkflowStep, setShowWorkflowStep] = useState(false);
+  const [showProgressAnimation, setShowProgressAnimation] = useState(false);
+  const [submittedRequestId, setSubmittedRequestId] = useState<number | null>(null);
   
   const handleCompleteLanguageSelection = () => {
     if (selectedLanguages.length > 0 && fileAnalysis) {
@@ -246,10 +249,13 @@ const FileAnalysis = () => {
       
       return await apiRequest('/api/translation-requests', 'POST', translationRequest);
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      // Show progress animation instead of just a toast
+      setSubmittedRequestId(data.id);
+      setShowProgressAnimation(true);
       toast({
         title: "Request submitted successfully",
-        description: "Your translation request has been submitted. We'll process it shortly.",
+        description: "Your translation is now processing. Stay on this screen to track progress!",
       });
     },
     onError: (error) => {
@@ -301,6 +307,22 @@ const FileAnalysis = () => {
   };
 
   if (!fileAnalysis) return null;
+
+  // Show progress animation when request is submitted
+  if (showProgressAnimation && submittedRequestId && fileAnalysis) {
+    return (
+      <TranslationProgressAnimation
+        requestId={submittedRequestId}
+        sourceLanguage={fileAnalysis.sourceLanguage}
+        targetLanguages={selectedLanguages}
+        fileName={fileAnalysis.fileName}
+        onComplete={(translatedFiles) => {
+          console.log('Translation completed with files:', translatedFiles);
+          // Keep showing the animation with completion state
+        }}
+      />
+    );
+  }
 
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border p-6">

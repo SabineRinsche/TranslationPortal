@@ -117,6 +117,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static files from the public directory
   app.use(express.static(path.join(process.cwd(), 'public')));
   
+  // Individual translation request endpoint
+  app.get('/api/translation-requests/:id', async (req, res) => {
+    try {
+      const requestId = parseInt(req.params.id);
+      if (isNaN(requestId)) {
+        return res.status(400).json({ error: 'Invalid request ID' });
+      }
+
+      const request = await storage.getTranslationRequest(requestId);
+      if (!request) {
+        return res.status(404).json({ error: 'Translation request not found' });
+      }
+
+      res.json(request);
+    } catch (error) {
+      console.error('Error fetching translation request:', error);
+      res.status(500).json({ error: 'Failed to fetch translation request' });
+    }
+  });
+
   // Translation requests endpoint (using simple auth check for web interface)
   app.post('/api/translation-requests', async (req, res) => {
     // Simple auth check - if no session userId, use the mock user for now
