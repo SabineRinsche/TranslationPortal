@@ -67,7 +67,7 @@ export const users = pgTable("users", {
 // Credit transaction history for audit trail - now linked to teams
 export const creditTransactions = pgTable("credit_transactions", {
   id: serial("id").primaryKey(),
-  accountId: integer("account_id").references(() => accounts.id), // legacy support
+  accountId: integer("account_id").references(() => accounts.id), // legacy support, nullable
   teamId: integer("team_id").references(() => teams.id), // new team-based structure
   userId: integer("user_id").references(() => users.id), // null for system transactions
   amount: integer("amount").notNull(), // positive for credits added, negative for credits used

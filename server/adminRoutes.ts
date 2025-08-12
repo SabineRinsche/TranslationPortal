@@ -3,6 +3,9 @@ import { requireAdmin } from './auth';
 import { storage } from './storage';
 import { hashPassword } from './auth';
 import { z } from 'zod';
+import { db } from './db';
+import { teams } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 
 const router = Router();
 
@@ -202,9 +205,15 @@ router.post('/teams/:teamId/credits', requireAdmin, async (req, res) => {
     // Add credits to the team
     await storage.addCreditsToTeam(teamId, amount);
     
-    // Record the credit transaction
+    // Record the credit transaction - get account_id from database
+    const teamAccountQuery = await db.select({ accountId: teams.accountId })
+      .from(teams)
+      .where(eq(teams.id, teamId));
+    const accountId = teamAccountQuery[0]?.accountId || 2;
+    
     await storage.createCreditTransaction({
-      accountId: team.id, // Using team ID as account ID for team-based structure
+      accountId: accountId,
+      teamId: teamId,
       userId: req.user!.id,
       amount,
       type: 'admin_adjustment',
