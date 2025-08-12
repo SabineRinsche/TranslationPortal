@@ -75,7 +75,7 @@ export function NotificationsDropdown() {
             unreadCount > 0 ? 'text-primary' : 'text-muted-foreground'
           } ${showPulse ? 'animate-bell-ring' : ''}`} />
           {unreadCount > 0 && (
-            <span className={`absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center transition-all duration-200 ${
+            <span className={`absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full h-4 w-4 flex items-center justify-center transition-all duration-200 ${
               showPulse ? 'animate-bounce scale-110' : ''
             }`}>
               {unreadCount}
@@ -83,8 +83,8 @@ export function NotificationsDropdown() {
           )}
           {showPulse && (
             <>
-              <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping"></span>
-              <span className="absolute inset-0 rounded-full bg-primary/10 animate-ping delay-75"></span>
+              <span className="absolute inset-0 rounded-full bg-accent/20 animate-ping"></span>
+              <span className="absolute inset-0 rounded-full bg-accent/10 animate-ping delay-75"></span>
             </>
           )}
         </Button>
