@@ -719,18 +719,18 @@ function prepareLanguageData(requests: TranslationRequest[]) {
 // Helper function to prepare workflow distribution data
 function prepareWorkflowData(requests: TranslationRequest[]) {
   const workflowCount: Record<string, {count: number, credits: number, cost: number}> = {
-    'AI Neural Translation': {count: 0, credits: 0, cost: 0},
-    'AI Translation with Quality Assurance': {count: 0, credits: 0, cost: 0},
-    'AI Translation with Expert Review': {count: 0, credits: 0, cost: 0},
+    'AI Translation only': {count: 0, credits: 0, cost: 0},
+    'AI Translation + LQE': {count: 0, credits: 0, cost: 0},
+    'AI Translation + LQE + HR': {count: 0, credits: 0, cost: 0},
   };
   
   requests.forEach(request => {
-    let workflowName = 'AI Neural Translation'; // Default
+    let workflowName = 'AI Translation only'; // Default
     
     if (request.workflow === 'ai-translation-qc') {
-      workflowName = 'AI Translation with Quality Assurance';
+      workflowName = 'AI Translation + LQE';
     } else if (request.workflow === 'ai-translation-human') {
-      workflowName = 'AI Translation with Expert Review';
+      workflowName = 'AI Translation + LQE + HR';
     }
     
     workflowCount[workflowName].count++;
