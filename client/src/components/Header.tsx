@@ -69,32 +69,42 @@ const Header = () => {
               
               {/* Admin-only navigation items */}
               {user && user.role === 'admin' && (
-                <>
-                  <Link href="/teams">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="gap-2">
-                      <Users className="h-4 w-4" />
-                      <span className="hidden md:inline">Teams</span>
+                      <Shield className="h-4 w-4" />
+                      <span className="hidden md:inline">Admin</span>
                     </Button>
-                  </Link>
-                  <Link href="/api-docs">
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      <FileCode className="h-4 w-4" />
-                      <span className="hidden md:inline">API Docs</span>
-                    </Button>
-                  </Link>
-                  <Link href="/style-guide">
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      <Palette className="h-4 w-4" />
-                      <span className="hidden md:inline">Style Guide</span>
-                    </Button>
-                  </Link>
-                  <Link href="/admin-guide">
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      <BookOpen className="h-4 w-4" />
-                      <span className="hidden md:inline">Admin Guide</span>
-                    </Button>
-                  </Link>
-                </>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuLabel>Administration</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <Link href="/teams">
+                      <DropdownMenuItem>
+                        <Users className="h-4 w-4 mr-2" />
+                        Teams
+                      </DropdownMenuItem>
+                    </Link>
+                    <Link href="/api-docs">
+                      <DropdownMenuItem>
+                        <FileCode className="h-4 w-4 mr-2" />
+                        API Docs
+                      </DropdownMenuItem>
+                    </Link>
+                    <Link href="/style-guide">
+                      <DropdownMenuItem>
+                        <Palette className="h-4 w-4 mr-2" />
+                        Style Guide
+                      </DropdownMenuItem>
+                    </Link>
+                    <Link href="/admin-guide">
+                      <DropdownMenuItem>
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Admin Guide
+                      </DropdownMenuItem>
+                    </Link>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
               
               <ThemeToggle />
