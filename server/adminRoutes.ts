@@ -205,14 +205,9 @@ router.post('/teams/:teamId/credits', requireAdmin, async (req, res) => {
     // Add credits to the team
     await storage.addCreditsToTeam(teamId, amount);
     
-    // Record the credit transaction - get account_id from database
-    const teamAccountQuery = await db.select({ accountId: teams.accountId })
-      .from(teams)
-      .where(eq(teams.id, teamId));
-    const accountId = teamAccountQuery[0]?.accountId || 2;
-    
+    // Record the credit transaction - use account 2 for all teams
     await storage.createCreditTransaction({
-      accountId: accountId,
+      accountId: 2, // All teams are under AlphaCRC account
       teamId: teamId,
       userId: req.user!.id,
       amount,
