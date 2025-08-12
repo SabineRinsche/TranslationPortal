@@ -86,7 +86,7 @@ const TeamsPage = () => {
 
   // Create team mutation
   const createTeamMutation = useMutation({
-    mutationFn: async (teamData: { name: string; description?: string }) => {
+    mutationFn: async (teamData: { name: string; description?: string; billingEmail?: string }) => {
       return await apiRequest("/api/admin/teams", "POST", teamData);
     },
     onSuccess: () => {
@@ -109,7 +109,7 @@ const TeamsPage = () => {
 
   // Update team mutation
   const updateTeamMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: { name?: string; description?: string } }) => {
+    mutationFn: async ({ id, data }: { id: number; data: { name?: string; description?: string; billingEmail?: string } }) => {
       return await apiRequest(`/api/admin/teams/${id}`, "PATCH", data);
     },
     onSuccess: () => {
@@ -164,6 +164,7 @@ const TeamsPage = () => {
     createTeamMutation.mutate({
       name: formData.name,
       description: formData.description || undefined,
+      billingEmail: formData.billingEmail || undefined,
     });
   };
 
@@ -181,6 +182,7 @@ const TeamsPage = () => {
       data: {
         name: formData.name,
         description: formData.description || undefined,
+        billingEmail: formData.billingEmail || undefined,
       },
     });
   };
@@ -525,7 +527,7 @@ const TeamsPage = () => {
           <DialogHeader>
             <DialogTitle>Create New Team</DialogTitle>
             <DialogDescription>
-              Create a new team to organize your client contacts and users.
+              Create a new client organization with its own credits and billing.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -535,7 +537,7 @@ const TeamsPage = () => {
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter team name"
+                placeholder="Enter client organization name"
               />
             </div>
             <div>
@@ -544,8 +546,18 @@ const TeamsPage = () => {
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Enter team description (optional)"
+                placeholder="Describe this client organization (optional)"
                 rows={3}
+              />
+            </div>
+            <div>
+              <Label htmlFor="billingEmail">Billing Email</Label>
+              <Input
+                id="billingEmail"
+                type="email"
+                value={formData.billingEmail}
+                onChange={(e) => setFormData({ ...formData, billingEmail: e.target.value })}
+                placeholder="billing@clientcompany.com (optional)"
               />
             </div>
           </div>
@@ -569,7 +581,7 @@ const TeamsPage = () => {
           <DialogHeader>
             <DialogTitle>Edit Team</DialogTitle>
             <DialogDescription>
-              Update team information and settings.
+              Update client organization information and settings.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -590,6 +602,16 @@ const TeamsPage = () => {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Enter team description (optional)"
                 rows={3}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-billingEmail">Billing Email</Label>
+              <Input
+                id="edit-billingEmail"
+                type="email"
+                value={formData.billingEmail}
+                onChange={(e) => setFormData({ ...formData, billingEmail: e.target.value })}
+                placeholder="billing@clientcompany.com (optional)"
               />
             </div>
           </div>
