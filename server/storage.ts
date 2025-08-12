@@ -7,7 +7,7 @@ import {
   creditTransactions, type CreditTransaction, type InsertCreditTransaction
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, inArray, sql } from "drizzle-orm";
+import { eq, and, inArray, sql, isNull } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -133,7 +133,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getNewRegistrations(): Promise<User[]> {
-    const userList = await db.select().from(users).where(eq(users.teamId, null));
+    const userList = await db.select().from(users).where(isNull(users.teamId));
     return userList;
   }
 
