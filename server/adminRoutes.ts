@@ -81,7 +81,7 @@ router.get('/credit-transactions', requireAdmin, async (req, res) => {
 const createTeamSchema = z.object({
   name: z.string().min(1, 'Team name is required'),
   description: z.string().optional(),
-  billingEmail: z.string().email('Invalid email address').optional().or(z.literal("")),
+  billingEmail: z.string().email('Invalid email address').optional().nullable().or(z.literal("")),
 });
 
 router.post('/teams', requireAdmin, async (req, res) => {
@@ -111,7 +111,7 @@ router.post('/teams', requireAdmin, async (req, res) => {
 const updateTeamSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
-  billingEmail: z.string().email('Invalid email address').optional().or(z.literal("")),
+  billingEmail: z.string().email('Invalid email address').optional().nullable().or(z.literal("")),
 });
 
 router.patch('/teams/:teamId', requireAdmin, async (req, res) => {

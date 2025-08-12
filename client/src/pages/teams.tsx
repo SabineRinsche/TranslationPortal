@@ -87,6 +87,7 @@ const TeamsPage = () => {
   // Create team mutation
   const createTeamMutation = useMutation({
     mutationFn: async (teamData: { name: string; description?: string; billingEmail?: string }) => {
+      console.log('Frontend: Creating team with data:', teamData);
       return await apiRequest("/api/admin/teams", "POST", teamData);
     },
     onSuccess: () => {
