@@ -17,15 +17,10 @@ const Landing = () => {
             Fast, accurate, and reliable translations in 100+ languages.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/login">
-              <Button size="lg" className="text-lg px-8 py-3">
-                Sign In
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
             <Link href="/register">
-              <Button variant="outline" size="lg" className="text-lg px-8 py-3">
+              <Button size="lg" className="text-lg px-8 py-3">
                 Get Started
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
           </div>
