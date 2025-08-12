@@ -208,6 +208,154 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Push API endpoints for external systems (webhook-style integration)
+  
+  // Endpoint for external systems to retrieve pending translation requests
+  app.get('/api/push/translation-requests', async (req, res) => {
+    try {
+      // Get all pending translation requests ready for external processing
+      const allRequests = await storage.getAllTranslationRequests();
+      const pendingRequests = allRequests.filter(request => request.status === 'pending');
+      
+      // Format for external system consumption
+      const formattedRequests = pendingRequests.map((request: any) => ({
+        id: request.id,
+        fileName: request.fileName,
+        fileFormat: request.fileFormat,
+        fileSize: request.fileSize,
+        wordCount: request.wordCount,
+        characterCount: request.characterCount,
+        sourceLanguage: request.sourceLanguage,
+        targetLanguages: request.targetLanguages,
+        workflow: request.workflow,
+        priority: request.priority,
+        dueDate: request.dueDate,
+        creditsRequired: request.creditsRequired,
+        createdAt: request.createdAt,
+        webhook_url: `${req.protocol}://${req.get('host')}/api/push/translation-delivery/${request.id}`
+      }));
+      
+      console.log(`External system requested ${formattedRequests.length} pending translation requests`);
+      res.json({
+        status: 'success',
+        count: formattedRequests.length,
+        requests: formattedRequests
+      });
+    } catch (error) {
+      console.error('Error fetching pending requests:', error);
+      res.status(500).json({ error: 'Failed to fetch pending translation requests' });
+    }
+  });
+
+  // Endpoint for external systems to deliver completed translations
+  app.post('/api/push/translation-delivery/:requestId', async (req, res) => {
+    try {
+      const requestId = parseInt(req.params.requestId);
+      if (isNaN(requestId)) {
+        return res.status(400).json({ error: 'Invalid request ID' });
+      }
+
+      // Schema for translation delivery
+      const deliverySchema = z.object({
+        status: z.enum(['complete', 'failed', 'in-progress']),
+        completionPercentage: z.number().min(0).max(100).optional(),
+        translatedFiles: z.array(z.object({
+          language: z.string(),
+          fileName: z.string(),
+          fileUrl: z.string().optional(),
+          fileContent: z.string().optional() // Base64 encoded file content
+        })).optional(),
+        qualityScore: z.number().min(0).max(100).optional(),
+        notes: z.string().optional(),
+        estimatedCompletionTime: z.string().optional()
+      });
+
+      const validatedData = deliverySchema.parse(req.body);
+      
+      // Get the original request
+      const originalRequest = await storage.getTranslationRequest(requestId);
+      if (!originalRequest) {
+        return res.status(404).json({ error: 'Translation request not found' });
+      }
+
+      // Update the translation request status
+      const updatedRequest = await storage.updateTranslationRequest(requestId, {
+        status: validatedData.status,
+        completionPercentage: validatedData.completionPercentage || (validatedData.status === 'complete' ? 100 : originalRequest.completionPercentage),
+        updatedAt: new Date()
+      });
+
+      // Log project update
+      await storage.createProjectUpdate({
+        requestId: requestId,
+        userId: originalRequest.userId,
+        updateType: validatedData.status === 'complete' ? 'milestone' : 'status_change',
+        updateText: validatedData.status === 'complete' 
+          ? `Translation completed for ${validatedData.translatedFiles?.length || 0} target languages`
+          : `Status updated to: ${validatedData.status}`,
+        newStatus: validatedData.status
+      });
+
+      console.log(`Translation request ${requestId} updated to status: ${validatedData.status}`);
+      
+      res.json({
+        status: 'success',
+        message: 'Translation delivery processed successfully',
+        requestId: requestId,
+        newStatus: validatedData.status
+      });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        return res.status(400).json({ error: validationError.message });
+      }
+      console.error('Error processing translation delivery:', error);
+      res.status(500).json({ error: 'Failed to process translation delivery' });
+    }
+  });
+
+  // Endpoint for external systems to acknowledge request pickup
+  app.post('/api/push/translation-requests/:requestId/acknowledge', async (req, res) => {
+    try {
+      const requestId = parseInt(req.params.requestId);
+      if (isNaN(requestId)) {
+        return res.status(400).json({ error: 'Invalid request ID' });
+      }
+
+      // Update status to in-progress
+      const updatedRequest = await storage.updateTranslationRequest(requestId, {
+        status: 'in-progress',
+        updatedAt: new Date()
+      });
+
+      // Get the original request for userId
+      const originalRequest = await storage.getTranslationRequest(requestId);
+      if (!originalRequest) {
+        return res.status(404).json({ error: 'Translation request not found' });
+      }
+      
+      // Log project update
+      await storage.createProjectUpdate({
+        requestId: requestId,
+        userId: originalRequest.userId,
+        updateType: 'status_change',
+        updateText: 'Translation request picked up by external system',
+        newStatus: 'in-progress'
+      });
+
+      console.log(`Translation request ${requestId} acknowledged by external system`);
+      
+      res.json({
+        status: 'success',
+        message: 'Request acknowledgment processed',
+        requestId: requestId
+      });
+    } catch (error) {
+      console.error('Error acknowledging request:', error);
+      res.status(500).json({ error: 'Failed to acknowledge request' });
+    }
+  });
+
   // Register the API v1 router for advanced API access (still with API key auth)
   app.use('/api/v1', apiRouter);
   

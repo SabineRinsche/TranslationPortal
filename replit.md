@@ -121,4 +121,14 @@ The architecture is designed to be scalable and maintainable, with clear separat
 - **Authentication Flow**: Updated landing page logic to show public page for guests, workspace for authenticated users
 - **External Workflow Integration**: Enhanced POST /api/translation-requests to support external workflow triggering
 
-The system now operates as a true multi-tenant platform where each team represents an independent client organization with separate billing, credits, and user management. All core functionality for team management, user creation, credit administration, and translation request submission is working correctly. The API is ready to trigger external translation workflows.
+The system now operates as a true multi-tenant platform where each team represents an independent client organization with separate billing, credits, and user management. All core functionality for team management, user creation, credit administration, and translation request submission is working correctly.
+
+### Push API Integration (August 12, 2025)
+- **External System Integration**: Implemented push API endpoints for external translation workflow systems
+- **Translation Request Retrieval**: GET /api/push/translation-requests endpoint for external systems to fetch pending requests
+- **Translation Delivery**: POST /api/push/translation-delivery/:requestId endpoint for external systems to deliver completed translations
+- **Request Acknowledgment**: POST /api/push/translation-requests/:requestId/acknowledge endpoint for external systems to confirm request pickup
+- **Webhook-Ready Architecture**: Each translation request includes webhook URLs for seamless integration
+- **Status Management**: Complete translation workflow status tracking from pending → in-progress → complete
+
+The API is ready to trigger external translation workflows and receive completed translations back into the portal.

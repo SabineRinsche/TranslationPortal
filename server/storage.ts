@@ -322,6 +322,13 @@ export class DatabaseStorage implements IStorage {
       );
   }
 
+  async getTranslationRequestsByStatus(status: string): Promise<TranslationRequest[]> {
+    return await db
+      .select()
+      .from(translationRequests)
+      .where(eq(translationRequests.status, status));
+  }
+
   async getTranslationRequest(id: number): Promise<TranslationRequest | undefined> {
     const [request] = await db
       .select()
