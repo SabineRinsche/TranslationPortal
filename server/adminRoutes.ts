@@ -6,6 +6,18 @@ import { z } from 'zod';
 
 const router = Router();
 
+// Get all teams in the account
+router.get('/teams', requireAdmin, async (req, res) => {
+  try {
+    const currentUser = req.user!;
+    const teams = await storage.getTeamsByAccountId(currentUser.accountId);
+    res.json(teams);
+  } catch (error) {
+    console.error('Error fetching teams:', error);
+    res.status(500).json({ message: 'Failed to fetch teams' });
+  }
+});
+
 // Get all users in the same account
 router.get('/users', requireAdmin, async (req, res) => {
   try {
@@ -15,6 +27,26 @@ router.get('/users', requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ message: 'Failed to fetch users' });
+  }
+});
+
+// Get users by team ID
+router.get('/teams/:teamId/users', requireAdmin, async (req, res) => {
+  try {
+    const currentUser = req.user!;
+    const teamId = parseInt(req.params.teamId);
+    
+    // Verify team belongs to user's account
+    const team = await storage.getTeam(teamId);
+    if (!team || team.accountId !== currentUser.accountId) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+    
+    const users = await storage.getUsersByTeamId(teamId);
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching team users:', error);
+    res.status(500).json({ message: 'Failed to fetch team users' });
   }
 });
 
@@ -46,6 +78,97 @@ router.get('/credit-transactions', requireAdmin, async (req, res) => {
 });
 
 // Create a new user
+// Create a new team
+const createTeamSchema = z.object({
+  name: z.string().min(1, 'Team name is required'),
+  description: z.string().optional(),
+});
+
+router.post('/teams', requireAdmin, async (req, res) => {
+  try {
+    const currentUser = req.user!;
+    const validatedData = createTeamSchema.parse(req.body);
+    
+    const newTeam = await storage.createTeam({
+      ...validatedData,
+      accountId: currentUser.accountId,
+    });
+    
+    res.status(201).json(newTeam);
+  } catch (error: any) {
+    console.error('Error creating team:', error);
+    if (error.name === 'ZodError') {
+      return res.status(400).json({ message: error.errors[0].message });
+    }
+    res.status(500).json({ message: 'Failed to create team' });
+  }
+});
+
+// Update a team
+const updateTeamSchema = z.object({
+  name: z.string().min(1).optional(),
+  description: z.string().optional(),
+});
+
+router.patch('/teams/:teamId', requireAdmin, async (req, res) => {
+  try {
+    const currentUser = req.user!;
+    const teamId = parseInt(req.params.teamId);
+    const validatedData = updateTeamSchema.parse(req.body);
+    
+    // Check if the team exists and belongs to the same account
+    const existingTeam = await storage.getTeam(teamId);
+    if (!existingTeam) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+    
+    if (existingTeam.accountId !== currentUser.accountId) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
+    const updatedTeam = await storage.updateTeam(teamId, validatedData);
+    res.json(updatedTeam);
+  } catch (error: any) {
+    console.error('Error updating team:', error);
+    if (error.name === 'ZodError') {
+      return res.status(400).json({ message: error.errors[0].message });
+    }
+    res.status(500).json({ message: 'Failed to update team' });
+  }
+});
+
+// Delete a team
+router.delete('/teams/:teamId', requireAdmin, async (req, res) => {
+  try {
+    const currentUser = req.user!;
+    const teamId = parseInt(req.params.teamId);
+    
+    // Check if the team exists and belongs to the same account
+    const existingTeam = await storage.getTeam(teamId);
+    if (!existingTeam) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+    
+    if (existingTeam.accountId !== currentUser.accountId) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
+    // Check if team has users before deleting
+    const teamUsers = await storage.getUsersByTeamId(teamId);
+    if (teamUsers.length > 0) {
+      return res.status(400).json({ 
+        message: 'Cannot delete team with users. Please reassign or remove users first.' 
+      });
+    }
+    
+    await storage.deleteTeam(teamId);
+    res.json({ message: 'Team deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting team:', error);
+    res.status(500).json({ message: 'Failed to delete team' });
+  }
+});
+
 const createUserSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
@@ -53,6 +176,7 @@ const createUserSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   role: z.enum(['admin', 'client']),
+  teamId: z.number().int().positive().optional(),
   jobTitle: z.string().optional(),
   phoneNumber: z.string().optional(),
 });

@@ -1,6 +1,7 @@
 import { 
   accounts, type Account, type InsertAccount,
   users, type User, type InsertUser, 
+  teams, type Team, type InsertTeam,
   translationRequests, type TranslationRequest, type InsertTranslationRequest,
   projectUpdates, type ProjectUpdate, type InsertProjectUpdate,
   creditTransactions, type CreditTransaction, type InsertCreditTransaction
@@ -21,8 +22,16 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUsersByAccountId(accountId: number): Promise<User[]>;
+  getUsersByTeamId(teamId: number): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<InsertUser>): Promise<User>;
+  
+  // Team operations
+  getTeam(id: number): Promise<Team | undefined>;
+  getTeamsByAccountId(accountId: number): Promise<Team[]>;
+  createTeam(team: InsertTeam): Promise<Team>;
+  updateTeam(id: number, team: Partial<InsertTeam>): Promise<Team>;
+  deleteTeam(id: number): Promise<void>;
   
   // Authentication-specific user operations
   getUserByEmailVerificationToken(token: string): Promise<User | undefined>;
@@ -115,9 +124,43 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async getUsersByAccountId(accountId: number): Promise<User[]> {
-    const userList = await db.select().from(users).where(eq(users.accountId, accountId));
+  async getUsersByTeamId(teamId: number): Promise<User[]> {
+    const userList = await db.select().from(users).where(eq(users.teamId, teamId));
     return userList;
+  }
+
+  // Team operations
+  async getTeam(id: number): Promise<Team | undefined> {
+    const [team] = await db.select().from(teams).where(eq(teams.id, id));
+    return team || undefined;
+  }
+
+  async getTeamsByAccountId(accountId: number): Promise<Team[]> {
+    return await db.select().from(teams).where(eq(teams.accountId, accountId));
+  }
+
+  async createTeam(team: InsertTeam): Promise<Team> {
+    const [newTeam] = await db
+      .insert(teams)
+      .values(team)
+      .returning();
+    return newTeam;
+  }
+
+  async updateTeam(id: number, teamData: Partial<InsertTeam>): Promise<Team> {
+    const [team] = await db
+      .update(teams)
+      .set({
+        ...teamData,
+        updatedAt: new Date()
+      })
+      .where(eq(teams.id, id))
+      .returning();
+    return team;
+  }
+
+  async deleteTeam(id: number): Promise<void> {
+    await db.delete(teams).where(eq(teams.id, id));
   }
 
   async getCreditTransactionsByAccountId(accountId: number): Promise<CreditTransaction[]> {

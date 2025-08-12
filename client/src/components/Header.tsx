@@ -59,10 +59,10 @@ const Header = () => {
               {/* Admin-only navigation items */}
               {user && user.role === 'admin' && (
                 <>
-                  <Link href="/user-management">
+                  <Link href="/teams">
                     <Button variant="ghost" size="sm" className="gap-2">
                       <Users className="h-4 w-4" />
-                      <span className="hidden md:inline">Users</span>
+                      <span className="hidden md:inline">Teams</span>
                     </Button>
                   </Link>
                   <Link href="/api-docs">
