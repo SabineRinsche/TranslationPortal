@@ -74,7 +74,7 @@ interface User {
   lastName: string;
   email: string;
   role: 'admin' | 'client';
-  isActive: boolean;
+  isEmailVerified: boolean;
   createdAt: string;
 }
 
@@ -174,11 +174,7 @@ const TeamDetailPage: React.FC = () => {
       role: 'admin' | 'client';
       teamId: number;
     }) => {
-      const response = await apiRequest(`/api/admin/users`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      });
+      const response = await apiRequest("/api/admin/users", "POST", userData);
       return response;
     },
     onSuccess: () => {
@@ -373,8 +369,8 @@ const TeamDetailPage: React.FC = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={user.isActive ? 'default' : 'destructive'}>
-                            {user.isActive ? 'Active' : 'Inactive'}
+                          <Badge variant={user.isEmailVerified ? 'default' : 'secondary'}>
+                            {user.isEmailVerified ? 'Verified' : 'Pending'}
                           </Badge>
                         </TableCell>
                         <TableCell>

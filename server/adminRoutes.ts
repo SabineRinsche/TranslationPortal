@@ -264,7 +264,6 @@ router.post('/users', requireAdmin, async (req, res) => {
       username,
       password: hashedPassword,
       accountId: 2, // Using fixed account ID for now (AlphaCRCInternal)
-      isActive: true,
       preferredLanguages: ['English', 'Spanish', 'French'],
     });
     
