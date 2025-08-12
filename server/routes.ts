@@ -14,7 +14,8 @@ import multer from 'multer';
 import AdmZip from 'adm-zip';
 import { z } from "zod";
 import apiRouter from "./api-v1";
-import { loginHandler, logoutHandler, getCurrentUser, roleMiddleware } from "./auth";
+import { requireAuth, requireAdmin, getSession } from "./auth";
+import { registerAuthRoutes } from "./authRoutes";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -106,16 +107,14 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Authentication routes
-  app.post('/api/login', loginHandler);
-  app.post('/api/logout', logoutHandler);
-  app.get('/api/auth/user', getCurrentUser);
+  // Register authentication routes
+  registerAuthRoutes(app);
   
   // Serve static files from the public directory
   app.use(express.static(path.join(process.cwd(), 'public')));
   
   // Register the API v1 router for advanced API access - only admin users can access
-  app.use('/api/v1', roleMiddleware(['admin']), apiRouter);
+  app.use('/api/v1', apiRouter);
   
   // User profile routes
   app.get("/api/user/profile", (req, res) => {

@@ -14,6 +14,9 @@ import ProfilePage from "@/pages/profile";
 import SettingsPage from "@/pages/settings";
 import JobDetail from "@/pages/job-detail";
 import Login from "@/pages/login";
+import Register from "@/pages/register";
+import ForgotPassword from "@/pages/forgot-password";
+import ResetPassword from "@/pages/reset-password";
 import ApiDocsPage from "@/pages/api-docs";
 import StyleGuide from "@/pages/style-guide";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -52,6 +55,9 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/" component={Home} />
       <Route path="/dashboard">
         {(params) => <ProtectedRoute component={DashboardPage} params={params} />}

@@ -8,6 +8,7 @@ import { Loader2, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { memoQLanguages } from '@shared/schema';
 import { apiRequest, queryClient } from '@/lib/queryClient';
+import TwoFactorSetup from '@/components/TwoFactorSetup';
 
 interface UserData {
   id: number;
@@ -192,6 +193,9 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Two-Factor Authentication */}
+          <TwoFactorSetup />
 
           {/* Additional Settings Sections can be added here in the future */}
           <Card>

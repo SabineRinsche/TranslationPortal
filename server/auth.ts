@@ -1,120 +1,225 @@
-import { Request, Response, NextFunction } from "express";
-import { storage } from "./storage";
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import speakeasy from 'speakeasy';
+import qrcode from 'qrcode';
+import nodemailer from 'nodemailer';
+import session from 'express-session';
+import connectPg from 'connect-pg-simple';
+import type { Express, RequestHandler } from 'express';
+import { storage } from './storage';
 
-// Add a basic user database (in a real app, this would use the storage system)
-export const users = [
-  {
-    id: 1,
-    accountId: 1,
-    firstName: "John",
-    lastName: "Doe",
-    email: "admin@example.com",
-    username: "admin",
-    password: "admin123",
-    role: "admin",
-    jobTitle: "Localization Manager",
-    phoneNumber: "+44 1234 567890",
-    profileImageUrl: null,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 2,
-    accountId: 1,
-    firstName: "Jane",
-    lastName: "Smith",
-    email: "client@example.com",
-    username: "client",
-    password: "client123",
-    role: "client",
-    jobTitle: "Project Manager",
-    phoneNumber: "+44 9876 543210",
-    profileImageUrl: null,
-    createdAt: new Date(),
-    updatedAt: new Date()
+// Session configuration
+export function getSession() {
+  const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  const pgStore = connectPg(session);
+  const sessionStore = new pgStore({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: false,
+    ttl: sessionTtl,
+    tableName: "sessions",
+  });
+  
+  return session({
+    secret: process.env.SESSION_SECRET || 'alpha-translation-secret-key',
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: sessionTtl,
+    },
+  });
+}
+
+// Password hashing utilities
+export async function hashPassword(password: string): Promise<string> {
+  const saltRounds = 12;
+  return bcrypt.hash(password, saltRounds);
+}
+
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
+}
+
+// Token generation utilities
+export function generateSecureToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+export function generateEmailVerificationToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+export function generatePasswordResetToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+// Two-factor authentication utilities
+export function generateTwoFactorSecret(): string {
+  return speakeasy.generateSecret({
+    name: 'Alpha Translation Portal',
+    length: 32,
+  }).base32;
+}
+
+export async function generateQRCode(secret: string, userEmail: string): Promise<string> {
+  const otpauthUrl = speakeasy.otpauthURL({
+    secret,
+    label: userEmail,
+    issuer: 'Alpha Translation Portal',
+  });
+  
+  return qrcode.toDataURL(otpauthUrl);
+}
+
+export function verifyTwoFactorToken(token: string, secret: string): boolean {
+  return speakeasy.totp.verify({
+    secret,
+    token,
+    window: 2, // Allow 2 time steps before/after current
+    time: Math.floor(Date.now() / 1000),
+  });
+}
+
+// Email service configuration
+export function createEmailTransporter() {
+  if (process.env.SMTP_HOST) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
   }
-];
+  
+  // For development - use console logging
+  return nodemailer.createTransport({
+    streamTransport: true,
+    newline: 'unix',
+    buffer: true,
+  });
+}
+
+// Email templates
+export async function sendEmailVerification(email: string, token: string) {
+  const transporter = createEmailTransporter();
+  const verificationUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/verify-email?token=${token}`;
+  
+  const mailOptions = {
+    from: process.env.FROM_EMAIL || 'noreply@alpha-translation.com',
+    to: email,
+    subject: 'Verify Your Email Address',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Welcome to Alpha Translation Portal!</h2>
+        <p>Please verify your email address by clicking the link below:</p>
+        <a href="${verificationUrl}" style="background: #5f55a4; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+          Verify Email Address
+        </a>
+        <p>If you didn't create an account, please ignore this email.</p>
+        <p>This link will expire in 24 hours.</p>
+      </div>
+    `,
+  };
+  
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Email verification link:', verificationUrl);
+  }
+  
+  return transporter.sendMail(mailOptions);
+}
+
+export async function sendPasswordReset(email: string, token: string) {
+  const transporter = createEmailTransporter();
+  const resetUrl = `${process.env.BASE_URL || 'http://localhost:5000'}/reset-password?token=${token}`;
+  
+  const mailOptions = {
+    from: process.env.FROM_EMAIL || 'noreply@alpha-translation.com',
+    to: email,
+    subject: 'Reset Your Password',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Password Reset Request</h2>
+        <p>You requested to reset your password. Click the link below to set a new password:</p>
+        <a href="${resetUrl}" style="background: #5f55a4; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+          Reset Password
+        </a>
+        <p>If you didn't request this, please ignore this email.</p>
+        <p>This link will expire in 1 hour.</p>
+      </div>
+    `,
+  };
+  
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Password reset link:', resetUrl);
+  }
+  
+  return transporter.sendMail(mailOptions);
+}
 
 // Authentication middleware
-export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  // Skip auth for the login route and public assets
-  if (req.path === '/api/login' || !req.path.startsWith('/api')) {
-    return next();
+export const requireAuth: RequestHandler = async (req, res, next) => {
+  const userId = req.session?.userId;
+  
+  if (!userId) {
+    return res.status(401).json({ message: 'Authentication required' });
   }
   
-  // For demo purposes, set a mock user for testing file and translation request operations
-  // This is temporary to fix the functionality during development
-  if (req.path === '/api/files/upload' || 
-      req.path === '/api/translation-requests' || 
-      req.path.startsWith('/api/user/') || 
-      req.path.startsWith('/api/account/')) {
-    req.user = {
-      id: 1,
-      accountId: 1
-    };
-    return next();
-  }
-  
-  // Check if user is in session
-  if (!req.session || !req.session.user) {
-    return res.status(401).json({ message: "Unauthorized. Please log in." });
-  }
-  
-  // Set user in request object
-  req.user = req.session.user;
-  next();
-};
-
-// Role-based authorization middleware
-export const roleMiddleware = (roles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      return res.status(401).json({ message: "Unauthorized. Please log in." });
+  try {
+    const user = await storage.getUser(userId);
+    if (!user) {
+      req.session.destroy((err) => {
+        if (err) console.error('Session destroy error:', err);
+      });
+      return res.status(401).json({ message: 'User not found' });
     }
     
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Forbidden. You don't have permission to access this resource." });
-    }
-    
+    req.user = user;
     next();
-  };
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    res.status(500).json({ message: 'Authentication error' });
+  }
 };
 
-// Login handler
-export const loginHandler = (req: Request, res: Response) => {
-  const { username, password } = req.body;
+export const requireAdmin: RequestHandler = async (req, res, next) => {
+  const userId = req.session?.userId;
   
-  // Find user by username
-  const user = users.find(u => u.username === username && u.password === password);
-  
-  if (!user) {
-    return res.status(401).json({ message: "Invalid username or password" });
+  if (!userId) {
+    return res.status(401).json({ message: 'Authentication required' });
   }
   
-  // Store user in session
-  req.session.user = user;
-  
-  // Return user info without password
-  const { password: _, ...userWithoutPassword } = user;
-  res.json(userWithoutPassword);
-};
-
-// Logout handler
-export const logoutHandler = (req: Request, res: Response) => {
-  // Clear the session
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ message: "Failed to logout" });
+  try {
+    const user = await storage.getUser(userId);
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required' });
     }
-    res.json({ message: "Logged out successfully" });
-  });
+    
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error('Admin middleware error:', error);
+    res.status(500).json({ message: 'Authentication error' });
+  }
 };
 
-// Get current user info
-export const getCurrentUser = (req: Request, res: Response) => {
-  if (!req.user) {
-    return res.status(401).json({ message: "Not authenticated" });
+import type { User } from '@shared/schema';
+
+// Type augmentation for Express session
+declare module 'express-session' {
+  interface SessionData {
+    userId?: number;
   }
-  
-  res.json(req.user);
-};
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: User;
+    }
+  }
+}

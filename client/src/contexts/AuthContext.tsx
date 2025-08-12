@@ -1,129 +1,138 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { apiRequest } from '@/lib/queryClient';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
+import type { User } from '@shared/schema';
 
-// Define user interface
-interface User {
-  id: number;
-  username: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-  profileImageUrl?: string | null;
+interface LoginResult {
+  success: boolean;
+  requiresTwoFactor?: boolean;
+  message?: string;
 }
 
 interface AuthContextType {
   user: User | null;
+  login: (email: string, password: string, twoFactorCode?: string) => Promise<LoginResult>;
+  logout: () => Promise<void>;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
-  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Demo users for testing without backend authentication
-const DEMO_USERS = {
-  admin: {
-    id: 1,
-    username: "admin",
-    firstName: "Admin",
-    lastName: "User",
-    email: "admin@example.com",
-    role: "admin",
-    profileImageUrl: null
-  },
-  client: {
-    id: 2,
-    username: "client",
-    firstName: "Client",
-    lastName: "User",
-    email: "client@example.com",
-    role: "client",
-    profileImageUrl: null
-  }
-};
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Check if user is already in local storage on initialization
-  const storedUser = localStorage.getItem('currentUser');
-  const [user, setUser] = useState<User | null>(storedUser ? JSON.parse(storedUser) : null);
-  const [isLoading, setIsLoading] = useState(false);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Simple login function that uses demo users
-  const login = async (username: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    
-    try {
-      // For demo, just check against our hardcoded users
-      if (username === "admin" && password === "admin123") {
-        setUser(DEMO_USERS.admin);
-        localStorage.setItem('currentUser', JSON.stringify(DEMO_USERS.admin));
-        toast({
-          title: 'Login Successful',
-          description: 'Welcome back, Admin!',
+  // Check if user is already logged in on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/user', {
+          credentials: 'include',
         });
-        return true;
-      } else if (username === "client" && password === "client123") {
-        setUser(DEMO_USERS.client);
-        localStorage.setItem('currentUser', JSON.stringify(DEMO_USERS.client));
-        toast({
-          title: 'Login Successful',
-          description: 'Welcome back, Client!',
-        });
-        return true;
-      } else {
-        toast({
-          title: 'Login Failed',
-          description: 'Invalid username or password',
-          variant: 'destructive',
-        });
-        return false;
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        // User not authenticated
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast({
-        title: 'Login Error',
-        description: 'An unexpected error occurred. Please try again.',
-        variant: 'destructive',
+    };
+    
+    checkAuth();
+  }, []);
+
+  const login = async (email: string, password: string, twoFactorCode?: string): Promise<LoginResult> => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password, twoFactorCode }),
       });
-      return false;
-    } finally {
-      setIsLoading(false);
+
+      const data = await response.json();
+
+      if (data.requiresTwoFactor) {
+        return {
+          success: false,
+          requiresTwoFactor: true,
+          message: data.message,
+        };
+      }
+
+      if (response.ok && data.user) {
+        setUser(data.user);
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${data.user.firstName}!`,
+        });
+        return { success: true };
+      }
+
+      return {
+        success: false,
+        message: data.message || "Login failed",
+      };
+
+    } catch (error: any) {
+      const message = error.message || "Login failed";
+      toast({
+        title: "Login failed",
+        description: message,
+        variant: "destructive"
+      });
+      return {
+        success: false,
+        message,
+      };
     }
   };
 
-  // Simple logout function
   const logout = async (): Promise<void> => {
-    setUser(null);
-    localStorage.removeItem('currentUser');
-    toast({
-      title: 'Logout Successful',
-      description: 'You have been logged out.',
-    });
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
+    }
+  };
+
+  const value = {
+    user,
+    login,
+    logout,
+    isLoading,
+    isAuthenticated: !!user,
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isAuthenticated: !!user,
-        login,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = (): AuthContextType => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}

@@ -2,7 +2,8 @@ import {
   accounts, type Account, type InsertAccount,
   users, type User, type InsertUser, 
   translationRequests, type TranslationRequest, type InsertTranslationRequest,
-  projectUpdates, type ProjectUpdate, type InsertProjectUpdate
+  projectUpdates, type ProjectUpdate, type InsertProjectUpdate,
+  creditTransactions, type CreditTransaction, type InsertCreditTransaction
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, inArray } from "drizzle-orm";
@@ -22,6 +23,18 @@ export interface IStorage {
   getUsersByAccountId(accountId: number): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<InsertUser>): Promise<User>;
+  
+  // Authentication-specific user operations
+  getUserByEmailVerificationToken(token: string): Promise<User | undefined>;
+  getUserByPasswordResetToken(token: string): Promise<User | undefined>;
+  updateUserPassword(id: number, hashedPassword: string): Promise<User>;
+  updateUserEmailVerification(id: number, isVerified: boolean): Promise<User>;
+  updateUserTwoFactor(id: number, secret: string, enabled: boolean): Promise<User>;
+  updateUserLastLogin(id: number): Promise<User>;
+  
+  // Credit transaction operations
+  getCreditTransactions(accountId: number): Promise<CreditTransaction[]>;
+  createCreditTransaction(transaction: InsertCreditTransaction): Promise<CreditTransaction>;
   
   // Translation request operations
   getAllTranslationRequests(): Promise<TranslationRequest[]>;
@@ -110,6 +123,83 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  // Authentication-specific user operations
+  async getUserByEmailVerificationToken(token: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.emailVerificationToken, token));
+    return user || undefined;
+  }
+
+  async getUserByPasswordResetToken(token: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.passwordResetToken, token));
+    return user || undefined;
+  }
+
+  async updateUserPassword(id: number, hashedPassword: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        password: hashedPassword,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async updateUserEmailVerification(id: number, isVerified: boolean): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        isEmailVerified: isVerified,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async updateUserTwoFactor(id: number, secret: string, enabled: boolean): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        twoFactorSecret: secret,
+        twoFactorEnabled: enabled,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async updateUserLastLogin(id: number): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        lastLogin: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  // Credit transaction operations
+  async getCreditTransactions(accountId: number): Promise<CreditTransaction[]> {
+    return await db.select().from(creditTransactions).where(eq(creditTransactions.accountId, accountId));
+  }
+
+  async createCreditTransaction(transaction: InsertCreditTransaction): Promise<CreditTransaction> {
+    const [creditTransaction] = await db
+      .insert(creditTransactions)
+      .values(transaction)
+      .returning();
+    return creditTransaction;
   }
 
   // Translation request operations

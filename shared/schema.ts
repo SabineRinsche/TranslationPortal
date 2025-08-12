@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, jsonb, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -10,8 +10,21 @@ export const accounts = pgTable("accounts", {
   subscriptionStatus: text("subscription_status"),
   subscriptionRenewal: timestamp("subscription_renewal"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Session storage table for user sessions
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: text("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User accounts with authentication features
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   accountId: integer("account_id").notNull().references(() => accounts.id),
@@ -24,8 +37,28 @@ export const users = pgTable("users", {
   jobTitle: text("job_title"),
   phoneNumber: text("phone_number"),
   preferredLanguages: text("preferred_languages").array().default(['French', 'Italian', 'German', 'Spanish']).notNull(),
+  isEmailVerified: boolean("is_email_verified").notNull().default(false),
+  emailVerificationToken: text("email_verification_token"),
+  emailVerificationExpires: timestamp("email_verification_expires"),
+  passwordResetToken: text("password_reset_token"),
+  passwordResetExpires: timestamp("password_reset_expires"),
+  twoFactorSecret: text("two_factor_secret"),
+  twoFactorEnabled: boolean("two_factor_enabled").notNull().default(false),
+  lastLogin: timestamp("last_login"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Credit transaction history for audit trail
+export const creditTransactions = pgTable("credit_transactions", {
+  id: serial("id").primaryKey(),
+  accountId: integer("account_id").notNull().references(() => accounts.id),
+  userId: integer("user_id").references(() => users.id), // null for system transactions
+  amount: integer("amount").notNull(), // positive for credits added, negative for credits used
+  type: text("type").notNull(), // 'purchase', 'usage', 'refund', 'admin_adjustment'
+  description: text("description").notNull(),
+  translationRequestId: integer("translation_request_id").references(() => translationRequests.id), // for usage transactions
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const translationRequests = pgTable("translation_requests", {
@@ -119,15 +152,30 @@ export const subscriptionPlans = [
   }
 ];
 
+// Schema definitions for form validation
 export const insertAccountSchema = createInsertSchema(accounts).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  isEmailVerified: true,
+  emailVerificationToken: true,
+  emailVerificationExpires: true,
+  passwordResetToken: true,
+  passwordResetExpires: true,
+  twoFactorSecret: true,
+  twoFactorEnabled: true,
+  lastLogin: true,
+});
+
+export const insertCreditTransactionSchema = createInsertSchema(creditTransactions).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const insertTranslationRequestSchema = createInsertSchema(translationRequests).omit({
@@ -150,17 +198,61 @@ export const insertProjectUpdateSchema = createInsertSchema(projectUpdates).omit
   createdAt: true,
 });
 
+// Authentication schemas
+export const registerSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain uppercase, lowercase, and number"),
+  accountName: z.string().min(1, "Account name is required"),
+  jobTitle: z.string().optional(),
+  phoneNumber: z.string().optional(),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+  twoFactorCode: z.string().optional(),
+});
+
+export const passwordResetRequestSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
+export const passwordResetSchema = z.object({
+  token: z.string().min(1, "Reset token is required"),
+  password: z.string().min(8, "Password must be at least 8 characters")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain uppercase, lowercase, and number"),
+});
+
+export const twoFactorSetupSchema = z.object({
+  secret: z.string().min(1, "Secret is required"),
+  token: z.string().length(6, "Verification code must be 6 digits"),
+});
+
+// Type definitions
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type Account = typeof accounts.$inferSelect;
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
+export type InsertCreditTransaction = z.infer<typeof insertCreditTransactionSchema>;
+export type CreditTransaction = typeof creditTransactions.$inferSelect;
+
 export type InsertTranslationRequest = z.infer<typeof insertTranslationRequestSchema>;
 export type TranslationRequest = typeof translationRequests.$inferSelect;
 
 export type InsertProjectUpdate = z.infer<typeof insertProjectUpdateSchema>;
 export type ProjectUpdate = typeof projectUpdates.$inferSelect;
+
+export type RegisterForm = z.infer<typeof registerSchema>;
+export type LoginForm = z.infer<typeof loginSchema>;
+export type PasswordResetRequestForm = z.infer<typeof passwordResetRequestSchema>;
+export type PasswordResetForm = z.infer<typeof passwordResetSchema>;
+export type TwoFactorSetupForm = z.infer<typeof twoFactorSetupSchema>;
 
 export const fileAnalysisSchema = z.object({
   fileName: z.string(),
